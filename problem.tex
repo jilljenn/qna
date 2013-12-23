@@ -1,0 +1,32 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage[french]{babel}
+
+\def\N{\mathbb{N}}
+
+\title{Questions adaptatives}
+\author{Jean-Bastien Grill \and Jill-Jênn Vie}
+
+\begin{document}
+\maketitle
+
+On considère une population d'individus numérotés $m = 1, \ldots, n$, chacun ayant une capacité $k_m \in \N$ parmi un ensemble $C$.
+
+$\alpha_{ij}, \beta_{ij}$ connus.
+
+$p_{ij}$ inconnus $\sim B(\alpha_{ij}, \beta_{ij})$ indépendants.
+
+$k_m$ iid $\sim$ un a priori $\pi$
+
+\paragraph{Mécanique.} Séquence de questions posées aux individus.
+
+$q_{mt} \in \N, t = 1, \ldots, T$
+
+Il répond $r_{mt} \sim Ber(p_{q_{mt}, k_m})$.
+
+\paragraph{Objectif.} Estimation efficace des $k_m$ ?
+
+\end{document}
