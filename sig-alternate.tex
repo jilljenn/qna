@@ -58,7 +58,7 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{Adaptive tests using q-matrices\titlenote{(Produces the permission block, and
+\title{A Novel Approach to Adaptive Testing\titlenote{(Produces the permission block, and
 copyright information). For use with
 SIG-ALTERNATE.CLS. Supported by ACM.}}
 \subtitle{English subtitles
@@ -107,12 +107,11 @@ SIG-ALTERNATE.CLS. Supported by ACM.}}
 % e-mail address with \email.
 %
 % 1st. author
-\alignauthor
-Yolaine Bourda\titlenote{Blah blah blah.}\\
-       \affaddr{Supélec -- Dép. informatique}\\
-       \affaddr{3 rue Joliot Curie}\\
-       \affaddr{91192 Gif-sur-Yvette, France}\\
-       \email{yolaine.bourda@supelec.fr}
+\alignauthor Jill-Jênn Vie\titlenote{Blah blah blah.}\\
+       \affaddr{ENS Cachan -- Bât. Cournot}\\
+       \affaddr{61 av. du Président Wilson}\\
+       \affaddr{94235 Cachan, France}\\
+       \email{vie@jill-jenn.net}
 % 2nd. author
 \alignauthor
 Fabrice Popineau\titlenote{Blah blah blah.}\\
@@ -121,11 +120,12 @@ Fabrice Popineau\titlenote{Blah blah blah.}\\
        \affaddr{91192 Gif-sur-Yvette, France}\\
        \email{fabrice.popineau@supelec.fr}
 % 3rd. author
-\alignauthor Jill-Jênn Vie\titlenote{Blah blah blah.}\\
-       \affaddr{ENS Cachan -- Bât. Cournot}\\
-       \affaddr{61 av. du Président Wilson}\\
-       \affaddr{94235 Cachan, France}\\
-       \email{vie@jill-jenn.net}
+\alignauthor
+Yolaine Bourda\titlenote{Blah blah blah.}\\
+       \affaddr{Supélec -- Dép. informatique}\\
+       \affaddr{3 rue Joliot Curie}\\
+       \affaddr{91192 Gif-sur-Yvette, France}\\
+       \email{yolaine.bourda@supelec.fr}
 }
 % There's nothing stopping you putting the seventh, eighth, etc.
 % author on the opening page (as the 'third row') but we ask,
@@ -155,35 +155,46 @@ Q-matrices To our knowledge, this is the first use of q-matrices for adaptive te
 
 \section{Introduction}
 
+Let us consider a test composed of multiple-choice questions. If we already have a gigantic database of who answered what, it is natural to wonder which questions bring the most information about an examinee, of if there is a ``best sequence'' according to which the questions should be asked. % process in an interview
+
+Indeed, if the examinee behaves typically, a subset of results may be enough to guess how she will perform on the rest of the questions, using common response patterns.
+
+This is the idea behind item response theory. Users are modeled by a latent parameter $\theta$ called \emph{ability}, which enables the estimation of probability response items. % flou
+Throughout the test, the question that will bring the most information about $\theta$ according to some criteria is asked to the examinee. Thus, a confidence interval around $\theta$ is devised and resserré. % TODO
+
+A q-matrix is a model link between competences and results. skills required to answer
+
 Recent work tend to infer such q-matrices from student data. Based on this structure, it is possible to refine an estimation of a newcomer's skills, according to her answers. Indeed, according to the presupposed state of a newcomer's current skills, it is interesting to pick the question that will bring the most information about her true skills.
 
 \subsection{Our contribution}
 
-This paper tends to address three cases:
-\begin{itemize}
-\item every student answers according to its true skills;
-\item every student may fail one question whereas she has the correct skills or answer correctly while she hasn't the required skills, according to a \emph{slip} parameter;
-\item an new question is added to the test, the skills required to answer to it being unknown.
-\end{itemize}
+This paper compares the IRT approach to the Q-matrix approach.
 
 \subsection{Outline}
 
-In section lol we will.
+We will first present both models, explain how they allow us to build a test satisfying our needs, then how they behave differently on simulated data and real data.
 
 \section{Preliminaries}
 
-\subsection{Definitions}
+\subsection{Models}
 
 A user is modeled by a binary vector, called \emph{state}, representing her master of the different skills.
 
-A $Q$-matrix represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise.
+The student data matrix.
 
+\paragraph{Item response theory} Well-known method based on a Rasch model
+\[ \Pr{lol} = \frac1{e^{dis(\theta - d)}} \]
 
+\paragraph{Q-matrices} A $Q$-matrix represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise. For example. Required.
+
+\subsection{Generalized Binary Search}
+
+Eliminate hypotheses using bayesian thing.
 
 \section{Test framework}
 
 \begin{algorithm}
-\caption*{\textbf{Algorithm}}
+\caption*{\textbf{Adaptive testing using IRT}}
 \begin{algorithmic}
 \Procedure{Test}{}
 \While{$entropy(\pi) > threshold$}
@@ -194,26 +205,38 @@ A $Q$-matrix represents, for each question, the different skills required to ans
 \end{algorithmic}
 \end{algorithm}
 
+\begin{algorithm}
+\caption*{\textbf{Adaptive testing using Q-matrix}}
+\begin{algorithmic}
+\Procedure{Test}{}
+\While{$entropy(\pi) > threshold$}
+	\State Pick a question
+	\State Update $\pi$
+\EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+We used cross-validation to compare those scenarios.
+
 \section{Results}
 
-\section{Conclusions}
-This paragraph will end the body of this sample document.
-Remember that you might still have Acknowledgments or
-Appendices; brief samples of these
-follow.  There is still the Bibliography to deal with; and
-we will make a disclaimer about that here: with the exception
-of the reference to the \LaTeX\ book, the citations in
-this paper are to articles which have nothing to
-do with the present subject and are used as
-examples only.
-%\end{document}  % This is where a 'short' article might terminate
+\subsection{Simulated data}
 
-%ACKNOWLEDGMENTS are optional
+OMG. Super graphe.
+
+\subsection{True data}
+
+LSAT.
+
+\section{Conclusions}
+
+Outperforms on both simulated data and real data.
+
 \section{Acknowledgments}
 
 We wish to thank JBG for his valuable comments.
 
-%
 % The following two commands are all you need in the
 % initial runs of your .tex file to
 % produce the bibliography for the citations in your paper.
@@ -230,49 +253,8 @@ We wish to thank JBG for his valuable comments.
 %\balancecolumns
 \appendix
 %Appendix A
-\section{Headings in Appendices}
-The rules about hierarchical headings discussed above for
-the body of the article are different in the appendices.
-In the \textbf{appendix} environment, the command
-\textbf{section} is used to
-indicate the start of each Appendix, with alphabetic order
-designation (i.e. the first is A, the second B, etc.) and
-a title (if you include one).  So, if you need
-hierarchical structure
-\textit{within} an Appendix, start with \textbf{subsection} as the
-highest level. Here is an outline of the body of this
-document in Appendix-appropriate form:
-\subsection{Introduction}
-\subsection{The Body of the Paper}
-\subsubsection{Type Changes and  Special Characters}
-\subsubsection{Math Equations}
-\paragraph{Inline (In-text) Equations}
-\paragraph{Display Equations}
-\subsubsection{Citations}
-\subsubsection{Tables}
-\subsubsection{Figures}
-\subsubsection{Theorem-like Constructs}
-\subsubsection*{A Caveat for the \TeX\ Expert}
-\subsection{Conclusions}
-\subsection{Acknowledgments}
-\subsection{Additional Authors}
-This section is inserted by \LaTeX; you do not insert it.
-You just add the names and information in the
-\texttt{{\char'134}additionalauthors} command at the start
-of the document.
-\subsection{References}
-Generated by bibtex from your ~.bib file.  Run latex,
-then bibtex, then latex twice (to resolve references)
-to create the ~.bbl file.  Insert that ~.bbl file into
-the .tex source file and comment out
-the command \texttt{{\char'134}thebibliography}.
-% This next section command marks the start of
-% Appendix B, and does not continue the present hierarchy
-\section{More Help for the Hardy}
-The sig-alternate.cls file itself is chock-full of succinct
-and helpful comments.  If you consider yourself a moderately
-experienced to expert user of \LaTeX, you may find reading
-it useful but please remember not to change it.
+\section{If I have something more to say}
+
 %\balancecolumns % GM June 2007
 % That's all folks!
 \end{document}
