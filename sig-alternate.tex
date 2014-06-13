@@ -91,7 +91,7 @@ SIG-ALTERNATE.CLS. Supported by ACM.}}
 % without further effort on your part as the last section in
 % the body of your article BEFORE References or any Appendices.
 
-\numberofauthors{8} %  in this sample file, there are a *total*
+\numberofauthors{5} %  in this sample file, there are a *total*
 % of EIGHT authors. SIX appear on the 'first-page' (for formatting
 % reasons) and the remaining two appear in the \additionalauthors section.
 %
@@ -127,13 +127,13 @@ Jean-Bastien Grill\titlenote{Blah blah blah.}\\
        \affaddr{75005 Paris}\\
        \email{jeanbastien.grill@gmail.com}
 \and
-% 1st. author
+% 4th. author
 \alignauthor Éric Bruillard\titlenote{Blah blah blah.}\\
        \affaddr{ENS Cachan -- Bât. Cournot}\\
        \affaddr{61 av. du Président Wilson}\\
        \affaddr{94235 Cachan, France}\\
        \email{eric.bruillard@ens-cachan.fr}
-% 3rd. author
+% 5th. author
 \alignauthor
 Yolaine Bourda\titlenote{Blah blah blah.}\\
        \affaddr{Supélec -- Dép. informatique}\\
@@ -179,7 +179,7 @@ Throughout the test, the question that will bring the most information about $\t
 
 A q-matrix is a model link between competences and results. skills required to answer. We can try to guess the state in which the examinee is in asking the good questions. For example, 011, 010 will be less informative than 110. Thus we maintain a probability distribution, updated according to a Bayesian rule.
 
-Recent work tend to infer such q-matrices from student data. Based on this structure, it is possible to refine an estimation of a newcomer's skills, according to her answers. Indeed, according to the presupposed state of a newcomer's current skills, it is interesting to pick the question that will bring the most information about her true skills.
+Recent work tend to infer such q-matrices from student data~\cite{Desmarais2011}. Based on this structure, it is possible to refine an estimation of a newcomer's skills, according to her answers. Indeed, according to the presupposed state of a newcomer's current skills, it is interesting to pick the question that will bring the most information about her true skills.
 
 \subsection{Our contribution}
 
@@ -233,13 +233,13 @@ A key algorithm lies within the item selection process, we want to select the be
 
 % À l'origine diagnostic, feedback, à partir d'avis d'experts
 
-Instead of a summative score, people can receive a profile, specifying which skills are mastered and which ones are not. % Exemples de skills [Huebner]
+Instead of a summative score, people can receive a profile, specifying which skills are mastered and which ones are not~\cite{Cheng2009}. % Exemples de skills [Huebner]
 
 Let us assume there are $K$ different skills. A user can be modeled by a binary vector $(a_1, \ldots, a_K)$, called \emph{state}, representing her master of the different skills. % Exemple de vecteur
 
 % Liens entre questions et compétences item-to-skill [Desmarais]
 
-A $q$-matrix \cite{Takaoka} represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise. We consider here the DINA model, where a student will answer correctly a question if and only if she has all the required skills. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question. % Il y a aussi d'autres trucs
+A $q$-matrix \cite{Takaoka} represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise. We consider here the DINA model~\cite{Desmarais2012}, where a student will answer correctly a question if and only if she has all the required skills. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question. % Il y a aussi d'autres trucs
 \[ Q = \left(\begin{array}{lll}
 1 & 1 & 0\\
 1 & 0 & 1\\
@@ -248,6 +248,8 @@ A $q$-matrix \cite{Takaoka} represents, for each question, the different skills 
 
 % Plus tu as de skills, certains considèrent des probabilités pour la q-matrice. [Huebner] conjonctif disjonctif 0, 1/2, 1
 % Modulo two parameters called slip and guessing.
+
+Probability ~\cite{Huebner2010}
 
 % Des experts fixent cette q-matrice, ce qui permet de donner un feedback explicite, mais ici on s'intéresse seulement à prédire les résultats
 % determine q-matrix from student data is currently an open field of research
