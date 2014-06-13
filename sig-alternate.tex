@@ -58,14 +58,14 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{A Novel Approach to Adaptive Testing\titlenote{(Produces the permission block, and
+\title{Item Response Theory VS Q-matrices for Adaptive Testing\titlenote{(Produces the permission block, and
 copyright information). For use with
 SIG-ALTERNATE.CLS. Supported by ACM.}}
-\subtitle{English subtitles
-\titlenote{A full version of this paper is available as
-\textit{Author's Guide to Preparing ACM SIG Proceedings Using
-\LaTeX$2_\epsilon$\ and BibTeX} at
-\texttt{www.acm.org/eaddress.htm}}}
+%\subtitle{English subtitles
+%\titlenote{A full version of this paper is available as
+%\textit{Author's Guide to Preparing ACM SIG Proceedings Using
+%\LaTeX$2_\epsilon$\ and BibTeX} at
+%\texttt{www.acm.org/eaddress.htm}}}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -121,6 +121,20 @@ Fabrice Popineau\titlenote{Blah blah blah.}\\
        \email{fabrice.popineau@supelec.fr}
 % 3rd. author
 \alignauthor
+Jean-Bastien Grill\titlenote{Blah blah blah.}\\
+       \affaddr{École normale supérieure}\\
+       \affaddr{25 rue d'Ulm}\\
+       \affaddr{75005 Paris}\\
+       \email{jeanbastien.grill@gmail.com}
+\and
+% 1st. author
+\alignauthor Éric Bruillard\titlenote{Blah blah blah.}\\
+       \affaddr{ENS Cachan -- Bât. Cournot}\\
+       \affaddr{61 av. du Président Wilson}\\
+       \affaddr{94235 Cachan, France}\\
+       \email{eric.bruillard@ens-cachan.fr}
+% 3rd. author
+\alignauthor
 Yolaine Bourda\titlenote{Blah blah blah.}\\
        \affaddr{Supélec -- Dép. informatique}\\
        \affaddr{3 rue Joliot Curie}\\
@@ -141,8 +155,7 @@ Yolaine Bourda\titlenote{Blah blah blah.}\\
 
 \maketitle
 \begin{abstract}
-Q-matrices To our knowledge, this is the first use of q-matrices for adaptive tests.
-\end{abstract}
+We present a new definition of adaptive testing and compare approaches from latent trait analysis, the so-called response theory and cognitive diagnosis, using q-matrices. Q-matrices perform better on both simulated and real data.\end{abstract}
 
 % A category with the (minimum) three required fields
 \category{}{Student assessment}{Adaptive testing}
@@ -155,14 +168,16 @@ Q-matrices To our knowledge, this is the first use of q-matrices for adaptive te
 
 \section{Introduction}
 
+Nowadays machin
+
 Let us consider a test composed of multiple-choice questions. If we already have a gigantic database of who answered what, it is natural to wonder which questions bring the most information about an examinee, of if there is a ``best sequence'' according to which the questions should be asked. % process in an interview
 
 Indeed, if the examinee behaves typically, a subset of results may be enough to guess how she will perform on the rest of the questions, using common response patterns.
 
 This is the idea behind item response theory. Users are modeled by a latent parameter $\theta$ called \emph{ability}, which enables the estimation of probability response items. % flou
-Throughout the test, the question that will bring the most information about $\theta$ according to some criteria is asked to the examinee. Thus, a confidence interval around $\theta$ is devised and resserré. % TODO
+Throughout the test, the question that will bring the most information about $\theta$ according to some criteria is asked to the examinee. Thus, a confidence interval around $\theta$ is devised and tightened. % TODO
 
-A q-matrix is a model link between competences and results. skills required to answer
+A q-matrix is a model link between competences and results. skills required to answer. We can try to guess the state in which the examinee is in asking the good questions. For example, 011, 010 will be less informative than 110. Thus we maintain a probability distribution, updated according to a Bayesian rule.
 
 Recent work tend to infer such q-matrices from student data. Based on this structure, it is possible to refine an estimation of a newcomer's skills, according to her answers. Indeed, according to the presupposed state of a newcomer's current skills, it is interesting to pick the question that will bring the most information about her true skills.
 
@@ -174,24 +189,81 @@ This paper compares the IRT approach to the Q-matrix approach.
 
 We will first present both models, explain how they allow us to build a test satisfying our needs, then how they behave differently on simulated data and real data.
 
-\section{Preliminaries}
+\section{Background and Related Work}
 
-\subsection{Models}
+An adaptive is seen the following way: we ask a subset of questions, thus we have an estimation of the parameters of our model which allows to infer probability for all items that remain in our bank.
 
-A user is modeled by a binary vector, called \emph{state}, representing her master of the different skills.
+We present here two models that allow us to predict performance.
 
-The student data matrix.
+The first model relies on the assumption that all questions are pairwise independent, while the second one tends to capture dependence between questions.
 
-\paragraph{Item response theory} Well-known method based on a Rasch model
-\[ \Pr{lol} = \frac1{e^{dis(\theta - d)}} \]
+\subsection{Computerized adaptive testing}
 
-\paragraph{Q-matrices} A $Q$-matrix represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise. For example. Required.
+Item selection rule. Termination rule.
 
-\subsection{Generalized Binary Search}
+\subsection{Item Response Theory}
 
-Eliminate hypotheses using bayesian thing.
+% Génèse IRT
+% Déceler des mauvais tests génèrent un comportement inhabituel des étudiants
 
-\section{Test framework}
+% Bon modèle pour prévoir la probabilité
+
+Basically, we estimate the ability of a student by a unique real number $\theta$ and characterize each question by two real numbers:
+
+\begin{itemize}
+\item the \emph{difficulty} $d$, corresponding to the required ability for answering the question correctly; % FIX-MOI ÇA STP TMTC
+\item the \emph{discrimination} $\delta$, representing the capacity of the question to distinguish between students that have the required ability from the other ones.
+\end{itemize}
+
+Knowing the ability $\theta$ of a given student and both the difficulty $d$ and the discrimination parameter $\delta$ of a given question, the model allows us to compute the probability of this student correctly answering this question:
+\[ \Pr\{success\} = \frac1{1+e^{\delta(\theta - d)}} \]
+
+The challenge is to determine the parameters that fit the most the student data.
+
+% Évaluer des étudiants efficacement et le choix principal de modèle pour computerized adaptive testing
+
+% Related work à propos des selection criteria
+
+A key algorithm lies within the item selection process, we want to select the best question according to a certain criteria, that will allow us to narrow at best the confidence interval around $\theta$.
+
+% IRT CAT
+% Item selection via formule de Bayes
+
+\subsection{Cognitive Diagnosis Model}
+
+% À l'origine diagnostic, feedback, à partir d'avis d'experts
+
+Instead of a summative score, people can receive a profile, specifying which skills are mastered and which ones are not. % Exemples de skills [Huebner]
+
+Let us assume there are $K$ different skills. A user can be modeled by a binary vector $(a_1, \ldots, a_K)$, called \emph{state}, representing her master of the different skills. % Exemple de vecteur
+
+% Liens entre questions et compétences item-to-skill [Desmarais]
+
+A $q$-matrix \cite{Takaoka} represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise. We consider here the DINA model, where a student will answer correctly a question if and only if she has all the required skills. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question. % Il y a aussi d'autres trucs
+\[ Q = \left(\begin{array}{lll}
+1 & 1 & 0\\
+1 & 0 & 1\\
+0 & 1 & 1
+\end{array}\right) \]
+
+% Plus tu as de skills, certains considèrent des probabilités pour la q-matrice. [Huebner] conjonctif disjonctif 0, 1/2, 1
+% Modulo two parameters called slip and guessing.
+
+% Des experts fixent cette q-matrice, ce qui permet de donner un feedback explicite, mais ici on s'intéresse seulement à prédire les résultats
+% determine q-matrix from student data is currently an open field of research
+
+% 2^k états possibles Distribution de probabilité sur les états, exemples avec K = 3
+% Connaissant une distribution de probabilité, il est facile d'estimer la probabilité de répondre aux questions
+
+% Aussi Bayes
+
+\section{Algorithms}
+
+% Précisons
+
+\subsection{Item Response Theory}
+
+% Précalcul des paramètres
 
 \begin{algorithm}
 \caption*{\textbf{Adaptive testing using IRT}}
@@ -229,13 +301,17 @@ OMG. Super graphe.
 
 LSAT.
 
+\section{Discussion and Future Work}
+
+Add a last column to q-matrix
+
 \section{Conclusions}
 
 Outperforms on both simulated data and real data.
 
-\section{Acknowledgments}
-
-We wish to thank JBG for his valuable comments.
+%\section{Acknowledgments}
+%
+%We wish to thank JBG for his valuable comments.
 
 % The following two commands are all you need in the
 % initial runs of your .tex file to
@@ -251,9 +327,9 @@ We wish to thank JBG for his valuable comments.
 %
 %APPENDICES are optional
 %\balancecolumns
-\appendix
+%\appendix
 %Appendix A
-\section{If I have something more to say}
+%\section{If I have something more to say}
 
 %\balancecolumns % GM June 2007
 % That's all folks!

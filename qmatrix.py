@@ -65,7 +65,7 @@ def export_to_guacamole(student_data):
 			for j in range(nb_questions):
 				f.write(','.join(map(str, [i, j, 1, student_data[i][j]])) + '\n')
 
-generate(50)
+# generate(50)
 
 # Q[i][j] pour les valeurs α-β de la question j sachant que l'objet est i
 # Q = [[random.randint(1, 2) == 1 for _ in range(nb_competences)] for _ in range(nb_questions)]
