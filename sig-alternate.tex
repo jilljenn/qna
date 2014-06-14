@@ -52,6 +52,7 @@
 \usepackage{color}
 
 \newcommand\alert[1]{\textcolor{red}{#1}}
+\newcommand\note[1]{\textcolor{blue}{#1}}
 
 \begin{document}
 %
@@ -124,9 +125,9 @@ Fabrice Popineau\\
 \alignauthor
 Jean-Bastien Grill\\
        \affaddr{École normale supérieure}\\
-       \affaddr{25 rue d'Ulm}\\
+       \affaddr{45 rue d'Ulm}\\
        \affaddr{75005 Paris}\\
-       \email{jeanbastien.grill@gmail.com}
+       \email{grill@clipper.ens.fr}
 \and
 % 4th. author
 \alignauthor Éric Bruillard\\
@@ -173,52 +174,39 @@ We found that q-matrices perform better on both simulated data and real data.
 \keywords{Adaptive assessment}
 
 \section{Introduction}
+Automated assessment has been made possible with the help of online technologies; online tests such as GMAT, or more recently with the introduction of massive online open courses (MOOCs). Ranking thousands of students automatically in evaluating or recruiting purposes or providing personal feedback to thousand of students automatically in formative purposes have been of growing interest.
 
-\alert{Contexte : Increasing access to quality education is a global issue, and one of the most exciting developments in recent years has been the introduction of MOOCs -- massively online open courses, in which hundreds or thousands of students take a course online. While this works wonderfully for lectures, assessment in the form of quizzes and exams presents some significant challenges. (Plagiat.)} We focus on binary questions (correct or incorrect).
+\note{En fait, il faudrait dire qu'il est aujourd'hui simple de récolter l'information de tests mais qu'on ne sait pas encore comment s'en servir.}
 
-\alert{CAT.} Let us consider a test composed of binary questions. If we already have a gigantic database of who answered what, it is natural to wonder which questions bring the most information about an examinee, i.e. if there is a ``best sequence'' according to which the questions should be asked. In oral examinations, the examiner picks the next question to ask according to the past performance of the examinee. CAT can be seen as automated version of this process.
+Let us consider a test of questions answered correctly or incorrectly. If we already have a gigantic database of performance of who answered what \alert{(ceci n'est pas de l'anglais)}, it is natural to wonder which questions bring the most information about an examinee, i.e. if there is a ``best sequence'' according to which the questions should be asked. In oral examinations, the examiner usually picks the next question to ask according to the past performance of the examinee. Computerized adaptive testing can be seen as an automated version of this process: keep asking the best possible questions until enough information has been gathered. Indeed, if the examinee behaves typically, a subset of carefully chosen results may be enough to guess how she will perform on the rest of the questions, by analyzing common response patterns \alert{(vaseux)}.
 
-\alert{Framework.} If the examinee behaves typically, a subset of results may be enough to guess how she will perform on the rest of the questions, using common response patterns. We can then.
+Item Response Theory (IRT) was first designed as a tool to detect \alert{TODOref} poor quality items in tests by establishing a link between difficulty of items and ability of contestants. It gained interest for computerized adaptive testing and several methods were proposed and implemented. In concrete terms \alert{(c'est bien, ça ?)}, an examinee answers questions and gets an ability $\theta$, corresponding to a score. \alert{(a confidence interval around $\theta$ is devised and tightened; est-ce que je dis : a user is modeled by its ability $\theta$?)}
 
-\alert{IRT.}
-
-\alert{Q-matrix.}
-
-
-
-
-
-
-%This is the idea behind item response theory. Users are modeled by a latent parameter $\theta$ called \emph{ability}, which enables the estimation of probability response items. % flou
-%Throughout the test, the question that will bring the most information about $\theta$ according to some criteria is asked to the examinee. Thus, a confidence interval around $\theta$ is devised and tightened. % TODO
-
-%A q-matrix is a model link between competences and results. skills required to answer. We can try to guess the state in which the examinee is in asking the good questions. For example, 011, 010 will be less informative than 110. Thus we maintain a probability distribution, updated according to a Bayesian rule.
-
-%Recent work tend to infer such q-matrices from student data~\cite{Desmarais2011}. Based on this structure, it is possible to refine an estimation of a newcomer's skills, according to her answers. Indeed, according to the presupposed state of a newcomer's current skills, it is interesting to pick the question that will bring the most information about her true skills.
+Instead of a summative score, examinees can receive at the end of the test a profile, specifying which skills are mastered and which ones are not~\cite{Cheng2009}. This is the idea behind cognitive diagnosis, allowing for researchers to detect misconceptions of the examinee. Most models in this scope rely on an q-matrix specifying which questions require which skills. For example, the skills required by a test of fraction subtraction may include 1) converting a whole number to a fraction, 2) separating a whole number from a fraction, 3) simplifying before subtracting, and so forth (de la Torre \& Douglas, 2004), and a reading test may require the skills 1) remembering details, 2) knowing fact from opinion, 3) speculating from contextual clues, and so on (McGlohen \& Chang, 2008). \alert{(Plagiat.)} Based on this structure, it is possible to refine an estimation of a newcomer's skills \alert{(c'est anglais, ce génitif ?)}, according to her answers. Indeed, according to the presupposed state of a newcomer's current skills, it is interesting to pick the question that will bring the most information about her true skills. Recently, adaptive tests have been designed in order to guess the state of the examinee effectively~\cite{Huebner2010}. \alert{Bon, là je dis deux fois la même chose} \note{For example, knowing an examinee answered correctly a question that requires skills 2 and 3, asking to her a question that only requires skill 2 will be less informative than asking a question that requires both skills 1 and 2.} \alert{(exemple utile ?)} At first, q-matrices were specified by experts, but recent work in the educational data mining field tend to infer such q-matrices directly from student data~\cite{Barnes2005}, using non-negative matrix factorization~\cite{Desmarais2011} or the EM algorithm~\cite{Huebner2010}. \alert{(super important)} \note{Peut-être préciser que du coup, les compétences sont implicites.}
 
 \subsection{Our contribution}
 
-This paper compares the IRT approach to the Q-matrix approach.
+In this paper, we propose a new framework for evaluating adaptive testing algorithms and use it to compare the performances of both a traditional CAT using IRT and a more recent cognitive diagnosis model from the literature in psychometrics using q-matrices. More precisely, we tend to answer the following question: given a budget of $B$ questions asked according to a certain adaptive selection rule, which model performs the best in predicting the answers of the examinee over the remaining questions?
+
+One could wonder why \alert{(maladroit ?)} we compare a model designed for assessment versus a model designed for feedback. We will see later that they have similar functioning and the framework we propose for evaluation captures both models. The first model relies on the assumption that all questions are pairwise independent, while the second one tends to capture dependence between questions in order to provide a useful feedback.
 
 \subsection{Outline}
 
-We will first present both models, explain how they allow us to build a test satisfying our needs, then how they behave differently on simulated data and real data.
+We will first present the CAT framework and both models, then describe the framework and main algorithms we chose for our simulation and our evaluation method. We will then present how both models behave on simulated and real data.
 
 \section{Background and Related Work}
 
-An adaptive is seen the following way: we ask a subset of questions, thus we have an estimation of the parameters of our model which allows to infer probability for all items that remain in our bank.
-
-We present here two models that allow us to predict performance.
-
-The first model relies on the assumption that all questions are pairwise independent, while the second one tends to capture dependence between questions.
+We present here two models that allow us to predict performance of the examinee.
 
 \subsection{Computerized adaptive testing}
 
 In a computerized adaptive test (CAT), the examinee is presented with adaptively selected questions according to her previous performance. Thus, a CAT framework relies on two main subroutines:
 \begin{itemize}
-\item \textsc{NextItem} : the item selection algorithm, that will pick the next question to ask according to the previous answers;
+\item \textsc{NextItem} : the item selection algorithm, that will pick the next question to ask according to the previous answers of the examinee;
 \item \textsc{TerminationRule} : a condition that will end the test, when enough information has been gathered and the competence has been measured satisfyingly.
 \end{itemize}
+
+Common criteria for the item selection rule are minimizing the Shannon entropy of the distribution on the parameters, or maximizing the Kullback-Leibler divergence. % Plus précis ?
 
 The framework of a CAT can be represented by the following algorithm.
 
@@ -239,10 +227,7 @@ The framework of a CAT can be represented by the following algorithm.
 
 \subsection{Item Response Theory}
 
-Item Response Theory (IRT) was first designed as a tool to detect \alert{TODOref} poor quality items in tests by establishing a link between difficulty of items and ability of contestants. It gained interest for computerized adaptive testing and several methods were proposed and implemented for the next item criterion. 
-For our needs, it features a commonly used model allowing to compute the probability item response.
-
-Basically, IRT estimate the ability of a student by a unique real number $\theta$ and characterize each question by two real numbers:
+For our needs, IRT features a commonly used model allowing to compute the probability item response. Basically, IRT estimate the ability of a student by a unique real number $\theta$ and characterize each question by two real numbers:
 
 \begin{itemize}
 \item the \emph{difficulty} $d$, corresponding to the required ability for answering the question correctly; % FIX-MOI ÇA STP TMTC
@@ -265,15 +250,11 @@ A key algorithm lies within the item selection process, we want to select the be
 
 \subsection{Cognitive Diagnosis Model}
 
-\alert{À l'origine diagnostic, feedback, à partir d'avis d'experts}
-
-Instead of a summative score, people can receive a profile, specifying which skills are mastered and which ones are not~\cite{Cheng2009}. \alert{Exemples concrets de skills [Huebner]}
-
 Let us assume there are $K$ different skills. A user can be modeled by a binary vector $(a_1, \ldots, a_K$, called \emph{state}, representing her master of the different skills. 
 
 \alert{Liens entre questions et compétences item-to-skill [Desmarais]}
 
-A $q$-matrix \cite{Takaoka} represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise. We consider here the DINA model~\cite{Desmarais2012}, where a student will answer correctly a question if and only if she has all the required skills. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question, skills 1 and 3 for the second question and only skill 3 for last question. % Il y a aussi d'autres trucs
+A $q$-matrix \cite{Tatsuoka1983} represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise. We consider here the DINA model~\cite{Desmarais2012}, where a student will answer correctly a question if and only if she has all the required skills. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question, skills 1 and 3 for the second question and only skill 3 for last question. % Il y a aussi d'autres trucs
 \[ Q = \left(\begin{array}{lll}
 1 & 1 & 0\\
 1 & 0 & 1\\
@@ -296,67 +277,62 @@ A $q$-matrix \cite{Takaoka} represents, for each question, the different skills 
 
 \section{Our Test Framework}
 
-Our student data is a binary matrix contestants $\times$ questions where $c_{ij}$ is 1 if contestant $i$ answered the question $j$, 0 otherwise.
+Our student data is a binary matrix contestants $\times$ questions where $c_{ij}$ is 1 if contestant $i$ answered the question $j$ correctly, 0 otherwise. We used a technique similar to cross-validation to compare those scenarios: given a training set of all students but one, we are trying to predict the performance of that one after having asked her a certain budget of questions. Thus, our \textsc{TerminationRule} will be : ``There have been $b$ questions asked so far.''
 
 \begin{itemize}
-\item Step 1. Train with subset of student data
-\item Step 2. Choose next item
-\item Step 3. Update parameters accordingly
-\item Step 4. Compute probability and error
+\item Step 1. Train the model with a subset of student data.
+\item Step 2. Choose next item to ask.
+\item Step 3. Estimate parameters according to the answer.
+\item Step 4. Compute probability and error.
 \end{itemize}
 
-Steps 2 and 3 are repeated $b$ times, where $b$ represents the \emph{budget}.
+\note{Le souci, c'est que lorsque $b$ tend vers le nombre de questions total, la performance devrait être complètement prédite ; dans le cas de IRT, ce n'est actuellement pas le cas.}
 
-\subsection{Item Response Theory}
+Steps 2 and 3 are repeated $b$ times, where $b$ represents the \emph{budget} of questions to ask.
 
-\begin{itemize}
-\item Step 1. Determine difficulties, discrimination parameter and the ability $\theta$ of each student
-\item Step 2. We chose the Minimum Expected Posterior Variance criterion, which corresponds to minimizing the entropy of the distribution
-\item Step 3. Bayesian update of $\theta^*$
-\item Step 4. Compute probability and error
-\end{itemize}
+\subsection{Item Response Theory Design}
 
-\alert{Précalcul des paramètres}
+We used the R package catR~\cite{MagisRaiche12} for this part of our experiments.
 
-\begin{algorithm}
-\caption*{\textbf{Adaptive testing using IRT}}
-\begin{algorithmic}
-\Procedure{Test}{}
-\While{$entropy(\pi) > threshold$}
-	\State Pick a question
-	\State Update $\pi$
-\EndWhile
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
+For our first step, we determine from the training set all the parameters of the model, i.e. difficulty $d_j$ and discrimination $\delta_j$ of each question and ability $\theta_i$ of each training student.
 
-\begin{algorithm}
-\caption*{\textbf{Adaptive testing using Q-matrix}}
-\begin{algorithmic}
-\Procedure{Test}{}
-\While{$entropy(\pi) > threshold$}
-	\State Pick a question
-	\State Update $\pi$
-\EndWhile
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
+We are then going to simulate a CAT for our examinee, estimating her ability $\theta$, initialized at 0. As an item selection rule, we choose the question realizing the MEPV (Minimum Expected Posterior Variance) over $\theta$.
 
-We used cross-validation to compare those scenarios.
+For our third step, we estimate $\theta$ via Bayesian updates according to her answer.
+
+For our fourth step, we compute her probability of answering correctly to the remaining questions in the bank and error.
+
+\subsection{Cognitive Diagnosis Model Design}
+
+For our first step, we determine the q-matrix $Q$, the slipping and guessing parameters according to our training set.
+
+We are then going to simulate a CAT for our examinee, maintaining a probability distribution $\pi$ over the possible states, initialized at the uniform distribution. As an item selection rule, we choose the question minimizing the Shannon entropy of the distribution over the possible states. Please note that this is the same logic that the MEPV criterion used in the IRT design~\cite{Cheng2009}.
+
+For our third step, we update $\pi$ via the Bayes rule according to her answer.
+
+For our fourth step, we compute her probability of answering correctly to the remaining questions in the bank and error.
+
+\subsection{Our Evaluation Framework}
+
+We choose the log-likelihood to compare both performances.
 
 \section{Results}
 
 \subsection{Simulated data}
 
-OMG. Super graphe.
+Here we first generate a random q-matrix and guessing and slipping parameters, then we determine the student data accordingly. Therefore our q-matrix is perfectly calibrated.
 
 \subsection{True data}
 
 LSAT.
 
+\alert{Peut-être mettre plus que deux algorithmes (IRT et q-matrix) sur le graphe ?}
+
 \section{Discussion and Future Work}
 
 Add a last column to q-matrix
+
+No study has been done yet over the number of skills
 
 \section{Conclusions}
 
