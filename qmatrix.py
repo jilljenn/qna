@@ -11,9 +11,11 @@ RANDOM = 0
 
 mode = RANDOM
 nb_questions = 100
-nb_competences = 8
+nb_competences = 6
 nb_states = 1 << nb_competences
-eps = 0.1
+guess = 0.1
+slip = 0.1
+budget = 20
 
 def entr(x):
 	return x if x < 1e-6 else (-x) * math.log(x, 2)
@@ -44,7 +46,7 @@ def match(question, state):
 
 def generate(nb_students):
 	if mode == RANDOM:
-		states = sorted(random.sample(range(nb_states), nb_students - 1)) + [63]
+		states = sorted(random.choice(range(nb_states)) for _ in range(nb_students))
 		Q = [[random.randint(1, 2) == 1 for _ in range(nb_competences)] for _ in range(nb_questions)]
 	else:
 		states = sorted(random.sample(range(nb_states), nb_students))
@@ -65,7 +67,10 @@ def export_to_guacamole(student_data):
 			for j in range(nb_questions):
 				f.write(','.join(map(str, [i, j, 1, student_data[i][j]])) + '\n')
 
-# generate(50)
+def logloss(estimated, real):
+	return sum(math.log(estimated[i]) if real[i] else math.log(1 - estimated[i]) for i in range(len(real))) / len(real)
+
+generate(100)
 
 # Q[i][j] pour les valeurs α-β de la question j sachant que l'objet est i
 # Q = [[random.randint(1, 2) == 1 for _ in range(nb_competences)] for _ in range(nb_questions)]
@@ -78,31 +83,42 @@ true_competences = states[len(states) / 2] # random.choice(range(nb_states)) # 
 p_competences = [1. / nb_states] * nb_states
 
 print 'Véritables compétences', bin(true_competences)[2:]
-for t in range(10):
+loglosses = []
+for t in range(budget):
 	min_entropy = entropy(p_competences)
 	best_question = -1
 	for i in range(nb_questions):
 		p_answering = sum([p for state, p in enumerate(p_competences) if match(Q[i], state)])
-		my_competences_if_correct = normalize([p * (1 - eps) if match(Q[i], state) else p * eps for state, p in enumerate(p_competences)])
-		my_competences_if_incorrect = normalize([p * eps if match(Q[i], state) else p * (1 - eps) for state, p in enumerate(p_competences)])
+		my_competences_if_correct = normalize([p * (1 - slip) if match(Q[i], state) else p * guess for state, p in enumerate(p_competences)])
+		my_competences_if_incorrect = normalize([p * slip if match(Q[i], state) else p * (1 - guess) for state, p in enumerate(p_competences)])
 		mean_entropy = p_answering * entropy(my_competences_if_correct) + (1 - p_answering) * entropy(my_competences_if_incorrect)
 		if mean_entropy < min_entropy:
 			min_entropy = mean_entropy
 			best_question = i
 	print 'Tour', t + 1, ': on lui pose la question', best_question, Q[best_question], min_entropy
-	if match(Q[best_question], true_competences):
+	is_skilled = match(Q[best_question], true_competences)
+	if (is_skilled and random.random() > slip) or (not is_skilled and random.random() <= guess):
 		print 'OK'
-		p_competences = normalize([p * (1 - eps) if match(Q[best_question], state) else p * eps for state, p in enumerate(p_competences)])
+		p_competences = normalize([p * (1 - slip) if match(Q[best_question], state) else p * guess for state, p in enumerate(p_competences)])
 	else:
 		print 'NOK'
-		p_competences = normalize([p * eps if match(Q[best_question], state) else p * (1 - eps) for state, p in enumerate(p_competences)])
+		p_competences = normalize([p * slip if match(Q[best_question], state) else p * (1 - guess) for state, p in enumerate(p_competences)])
 	print sorted(map(lambda (x, y): (y, bin(x)[2:]), enumerate(surround(p_competences))))[::-1][:5]
 	proba_question = [0] * nb_questions
-	for state, p in enumerate(p_competences):
-		for i in range(nb_questions):
+	for i in range(nb_questions):
+		for state, p in enumerate(p_competences):
 			if match(Q[i], state):
 				proba_question[i] += p
+		proba_question[i] = proba_question[i] * (1 - slip) + (1 - proba_question[i]) * guess
+
 	print surround(proba_question)
 	print 'Résultats / vrais résultats'
 	print ''.join(map(lambda x: str(int(round(x))), proba_question))
 	print ''.join(map(lambda x: str(int(x)), student_data[len(states) / 2]))
+	loglosses.append(logloss(proba_question, student_data[len(states) / 2]))
+	print loglosses[-1]
+
+fig, ax = plt.subplots()
+ax.plot(range(len(loglosses)), map(math.exp, loglosses), color='blue')
+ax.set_title('Log loss')
+plt.show()
