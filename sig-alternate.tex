@@ -265,7 +265,7 @@ A $q$-matrix \cite{Tatsuoka1983} represents, for each question, the different sk
 
 \section{Our Test Framework}
 
-Our student data is a binary matrix contestants $\times$ questions where $c_{ij}$ is 1 if contestant $i$ answered the question $j$ correctly, 0 otherwise. We used a technique similar to cross-validation to compare those scenarios: given a training set of all students but one, we are trying to predict the performance of that one after having asked her a certain budget $B$ of questions. Thus, our \textsc{TerminationRule} will be : ``There have been $B$ questions asked so far.''
+Our student data is a binary matrix contestants $\times$ questions where $c_{ij}$ is 1 if contestant $i$ answered the question $j$ correctly, 0 otherwise. We used a technique similar to cross-validation to compare those scenarios: given a training set of all students but one, we are trying to predict the performance of that one after having asked her a certain budget $B$ of questions. Thus, for both models considered, our \textsc{TerminationRule} will be : ``There have been $B$ questions asked so far.''
 
 \begin{algorithm}
 \caption*{\textbf{Computerized Adaptive Testing Framework}}
@@ -277,46 +277,61 @@ Our student data is a binary matrix contestants $\times$ questions where $c_{ij}
 	\State $q_{i + 1} \gets \Call{NextItem}{q_1, r_1, \ldots, q_i, r_i, parameters}$
 	\State Ask question $q_{i + 1}$ to the examinee
 	\State Get reply $r_{i + 1}$
-	\State \Call{Update}{} $parameters$ accordingly
+	\State \Call{EstimateParameters}{}
 \EndWhile
-\State \Call{Evaluate}{}
+\State $p \gets$ \Call{PredictPerformance}{$parameters$}
+\State \Call{Evaluate}{$p$}
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
+Our framework relies on the following subroutines:
+
 \begin{itemize}
-\item Step 1. Train the model with a subset of student data.
-\item Step 2. Choose next item to ask.
-\item Step 3. Estimate parameters according to the answer.
-\item Step 4. Compute probability and error.
+\item \textsc{TrainingStep} : Train the model with a subset of student data.
+\item \textsc{NextItem} : Choose the best question to ask according to a certain criterion.
+\item \textsc{EstimateParameters} : Estimate parameters according to the answer.
+\item \textsc{PredictPerformance} : Predict performance on the whole test with respect to the parameters of the model.
+\item \textsc{Evaluate} : Evaluate the performance prediction according to the true response vector.
 \end{itemize}
-
-\note{Le souci, c'est que lorsque $b$ tend vers le nombre de questions total, la performance devrait être complètement prédite ; dans le cas de IRT, ce n'est actuellement pas le cas.}
-
-Steps 2 and 3 are repeated $b$ times, where $b$ represents the \emph{budget} of questions to ask.
 
 \subsection{Item Response Theory Design}
 
-\subsubsection{Test}
 We used the R package catR~\cite{MagisRaiche12} for this part of our experiments.
 
-For our first step, we determine from the training set all the parameters of the model, i.e. difficulty $d_j$ and discrimination $\delta_j$ of each question and ability $\theta_i$ of each training student.
+\subsubsection{Training Step}
+
+Using a variant of the EM algorithm, we determine from the training set all the parameters of the model, i.e. difficulty $d_j$ and discrimination $\delta_j$ of each question and ability $\theta_i$ of each training student.
+
+\subsubsection{Item Selection Rule}
 
 We are then going to simulate a CAT for our examinee, estimating her ability $\theta$, initialized at 0. As an item selection rule, we choose the question realizing the MEPV (Minimum Expected Posterior Variance) over $\theta$.
 
-For our third step, we estimate $\theta$ via Bayesian updates according to her answer.
+\subsubsection{Parameters Estimation}
 
-For our fourth step, we compute her probability of answering correctly to the remaining questions in the bank and error.
+We estimate $\theta$ via Bayesian updates according to her answer.
+
+\subsubsection{Performance Prediction}
+
+We compute her probability of answering correctly to the remaining questions in the bank and error.
 
 \subsection{Cognitive Diagnosis Model Design}
 
-For our first step, we determine the q-matrix $Q$, the slipping and guessing parameters according to our training set.
+\subsubsection{Training Step}
+
+We determine the q-matrix $Q$, the slipping and guessing parameters according to our training set.
+
+\subsubsection{Item Selection Rule}
 
 We are then going to simulate a CAT for our examinee, maintaining a probability distribution $\pi$ over the possible states, initialized at the uniform distribution. As an item selection rule, we choose the question minimizing the Shannon entropy of the distribution over the possible states. Please note that this is the same logic that the MEPV criterion used in the IRT design~\cite{Cheng2009}.
 
-For our third step, we update $\pi$ via the Bayes rule according to her answer.
+\subsubsection{Parameters Estimation}
 
-For our fourth step, we compute her probability of answering correctly to the remaining questions in the bank and error.
+We update $\pi$ via the Bayes rule according to her answer.
+
+\subsubsection{Performance Prediction}
+
+We compute her probability of answering correctly to the remaining questions in the bank and error.
 
 \subsection{Our Evaluation Framework}
 
