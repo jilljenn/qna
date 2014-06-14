@@ -213,21 +213,6 @@ Common criteria for the item selection rule are minimizing the Shannon entropy o
 
 The framework of a CAT can be represented by the following algorithm.
 
-\begin{algorithm}
-\caption*{\textbf{Computerized Adaptive Testing Framework}}
-\begin{algorithmic}
-\Procedure{Test}{}
-\State $i \gets 0$
-\While{\textsc{TerminationRule} is not satisfied}
-	\State $q_{i + 1} \gets \Call{NextItem}{q_1, r_1, \ldots, q_i, r_i, parameters}$
-	\State Ask question $q_{i + 1}$ to the examinee
-	\State Get reply $r_{i + 1}$
-	\State Update $parameters$ accordingly
-\EndWhile
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
-
 \subsection{Item Response Theory}
 
 For our needs, IRT features a commonly used model allowing to compute the probability item response. Basically, IRT estimate the ability of a student by a unique real number $\theta$ and characterize each question by two real numbers:
@@ -280,7 +265,24 @@ A $q$-matrix \cite{Tatsuoka1983} represents, for each question, the different sk
 
 \section{Our Test Framework}
 
-Our student data is a binary matrix contestants $\times$ questions where $c_{ij}$ is 1 if contestant $i$ answered the question $j$ correctly, 0 otherwise. We used a technique similar to cross-validation to compare those scenarios: given a training set of all students but one, we are trying to predict the performance of that one after having asked her a certain budget of questions. Thus, our \textsc{TerminationRule} will be : ``There have been $b$ questions asked so far.''
+Our student data is a binary matrix contestants $\times$ questions where $c_{ij}$ is 1 if contestant $i$ answered the question $j$ correctly, 0 otherwise. We used a technique similar to cross-validation to compare those scenarios: given a training set of all students but one, we are trying to predict the performance of that one after having asked her a certain budget $B$ of questions. Thus, our \textsc{TerminationRule} will be : ``There have been $B$ questions asked so far.''
+
+\begin{algorithm}
+\caption*{\textbf{Computerized Adaptive Testing Framework}}
+\begin{algorithmic}
+\Procedure{Test}{}
+\State \Call{TrainingStep}{}
+\State $i \gets 0$
+\While{\textsc{TerminationRule} is not satisfied}
+	\State $q_{i + 1} \gets \Call{NextItem}{q_1, r_1, \ldots, q_i, r_i, parameters}$
+	\State Ask question $q_{i + 1}$ to the examinee
+	\State Get reply $r_{i + 1}$
+	\State \Call{Update}{} $parameters$ accordingly
+\EndWhile
+\State \Call{Evaluate}{}
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 \begin{itemize}
 \item Step 1. Train the model with a subset of student data.
@@ -295,6 +297,7 @@ Steps 2 and 3 are repeated $b$ times, where $b$ represents the \emph{budget} of 
 
 \subsection{Item Response Theory Design}
 
+\subsubsection{Test}
 We used the R package catR~\cite{MagisRaiche12} for this part of our experiments.
 
 For our first step, we determine from the training set all the parameters of the model, i.e. difficulty $d_j$ and discrimination $\delta_j$ of each question and ability $\theta_i$ of each training student.
