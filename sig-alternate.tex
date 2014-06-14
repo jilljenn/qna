@@ -256,12 +256,12 @@ Our student data is a binary matrix students $\times$ questions where $c_{ij}$ i
 We used the following cross-validation based method: 
 
 \begin{itemize}
-\item \textsc{TrainingStep} : Train the model with all the student but one in order to produces questions parameters. In the case of an IRT based model questions difficulties are computed, in the case of CDM based model this is the q-matrix which is computed. 
+\item \textsc{TrainingStep} : Train the model with all the student but one in order to produces questions parameters. In the case of an IRT based model questions difficulties are computed, in the case of CDM based model the q-matrix along with a slip and guessing parameters for each question are computed. 
 \item \textsc{PriorInitialisation} : Initialize the prior on the student parameters.  These parameters are the distribution on the skills in the case of CDM based model and the distribution on the ability for IRT based model. 
 \item \textsc{NextItem} : Choose the best question to ask according to a certain criterion given all previous questions and answers. 
-\item \textsc{UpdateParameters} : Given the question just asked and the answer given, we update the student parameters.
+\item \textsc{UpdateParameters} : Given the question just asked and the answer given, update the student parameters.
 \item \textsc{TerminationRule} : "There have been $B$ questions asked so far". Indeed, as we want to compare different algorithm, we need them on an equal footing (i.e. the same number of questions asked). 
-\item \textsc{PredictPerformance} : Predict answers of the student on the whole test.
+\item \textsc{PredictAnswers} : Evaluate to probability of correct answers of the student on the rest of the test.
 \item \textsc{Evaluate} : Compare the true answers with the predicted ones in order to produce a performance indicator of the algorithm. 
 \end{itemize}
 
@@ -286,13 +286,21 @@ We used the following cross-validation based method:
 \end{algorithmic}
 \end{algorithm}
 
+\subsection{Our Evaluation Framework}
+
+After the probability of correct answers of the student are computed, we need to compare them to actual response and deduce a performance indicator from it. Among all proper scoring rule (i.e. scoring rule for which the maximum value is reach for the actual probabilities) we chose the logarithmic score being the most common. \alert{we tried with the quadratic score, an other proper scoring rule, leading us to similar results}
+
+The logarithmic score is easy to both define and compute. Let $(p_i)$ be the probabilities of correct answer and $(a_i)$ be 1 if the answer was actually correct, 0 otherwise, the logarithmic score is: 
+
+\[ \sum_i a_i\ln(p_i) + (1-a_i)\ln(1-p_i)\]
+
 \subsection{Item Response Theory Design}
 
 We used the R packages ltm~\cite{Rizopoulos2006} and catR~\cite{MagisRaiche2012} for this part of our experiments.
 
 \subsubsection{Training Step}
 
-We compute for each question $j$ its difficulty $d_j$ along with its discrimination $\delta_j$ and also for each student $i$ her ability $\theta_i$ and the variance associated $v_i$ which satisfied the maximum likelihood. Let $x_i$ being the unobserved true ability of students, the log-likelihood can be computed using Baye formula: 
+We compute for each question $j$ its difficulty $d_j$ along with its discrimination $\delta_j$ and also for each student $i$ her ability $\theta_i$ and the variance associated $v_i$ that satisfied the maximum likelihood. Let $x_i$ being the unobserved true ability of students, the log-likelihood can be computed using Baye formula: 
 
 \[\log \mathcal{L} = \sum_{i,j} \log \int \frac{P(x_i | \theta_i, v_i)dx_i}{1+\exp(\delta_j (d_j - \theta))}\]
 
@@ -325,10 +333,6 @@ Knowing the student answer, the update of $\pi$ is done according to the Bayes r
 \[ \pi_{n+1}(x) = \pi_n(x) \cdot [r\cdot(1-s) + (1-r)\cdot s] \]
 otherwise
 \[ \pi_{n+1}(x) = \pi_n(x) \cdot [r\cdot g + (1-r)\cdot(1-g)] \]
-
-\subsection{Our Evaluation Framework}
-
-We choose the log-likelihood to compare both performances.
 
 \section{Results}
 
