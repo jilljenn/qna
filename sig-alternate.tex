@@ -175,15 +175,15 @@ We found that q-matrices perform better on both simulated data and real data.
 \keywords{Adaptive assessment}
 
 \section{Introduction}
-Automated assessment has been developed with the help of online initiatives such as the GMAT~\cite{Machin}, or more recently with the introduction of massive online open courses (MOOCs). The fact of ranking thousands of students automatically in evaluating or recruiting purposes or providing personal feedback to thousand of students automatically in formative purposes has been of growing interest.
+Automated assessment has been developed with the help of online initiatives such as the GMAT~\cite{Rudner2010}, or more recently with the introduction of massive online open courses (MOOCs). The fact of ranking thousands of students automatically in evaluating or recruiting purposes or providing personal feedback to thousand of students automatically in formative purposes has been of growing interest.
 
 If we already have for a certain test a large-scale database of item responses, it is natural to wonder which questions bring the most information about an examinee, i.e. if there is a ``best'' sequence according to which the questions should be asked. In oral examinations, the examiner usually picks the next question to ask according to the past performance of the examinee. Computerized adaptive testing can be seen as an automated version of this process: keep asking the best possible questions until enough information has been gathered. Indeed, if the examinee behaves typically, a subset of carefully chosen results may be enough to guess how she will perform on the rest of the questions.
 
-In order to address this purpose, Item Response Theory (IRT) is of great help. Although IRT was first designed as a tool to detect~\cite{Snif} poor quality items in tests by establishing a link between difficulty of items and ability of contestants, it gained interest for computerized adaptive testing and several methods were proposed and implemented. According to her performance, an examinee gets a score. The simplicity of the IRT models allowed a strong theoretical analysis~\cite{Baker2004} while increasing its popularity.
+In order to address this purpose, Item Response Theory (IRT) is of great help. Although the purpose IRT was first to provide a framework for evaluating how well individual items on assessments work~\cite{Hambleton1991} by establishing a link between difficulty of items and ability of contestants, it gained interest for computerized adaptive testing and several methods were proposed and implemented. According to her performance, an examinee gets a score. The simplicity of the IRT models allowed a strong theoretical analysis~\cite{Baker2004} while increasing its popularity.
 
 More recently, the No Child Left Behind Act of 2001 called for more formative assessments, in order to detect early students with cognitive disabilities and urged the need of cognitive diagnosis models. Instead of a summative score, examinees would receive a detailed feedback, specifying which skills are mastered and which ones are not~\cite{Cheng2009}. These models allow researchers to reveal possible misconceptions of the examinee in order to suggest her appropriate exercises. Most of these models rely on an q-matrix specifying for each question the different skills required to solve it. For example, a fraction test may require 1) converting a whole number to a fraction, 2) separating a whole number from a fraction, 3) simplifying before subtracting, and so on~\cite{DeLaTorreDouglas2004}. Recently, adaptive tests have been designed in order to guess the skills of the examinee effectively~\cite{Huebner2010}.
 
-Whereas . At first, q-matrices were specified by experts, but recent work in the educational data mining field tend to infer such q-matrices directly from student data, using hill-climbing techniques~\cite{Barnes2005}, non-negative matrix factorization~\cite{Desmarais2011} or  the EM algorithm~\cite{Huebner2010}. The skills extracted by data mining algorithms are therefore implicit, but have proven to produce better inference~\cite{Barnes2003}.
+Originally, q-matrices were specified by experts, but recent work in the educational data mining field tend to infer such q-matrices directly from student data, using hill-climbing techniques~\cite{Barnes2005}, non-negative matrix factorization~\cite{Desmarais2011} or the EM algorithm~\cite{Huebner2010}. The skills extracted by data mining algorithms are therefore implicit, but have proven to produce better inference~\cite{Barnes2003}.
 
 \subsection{Our contribution}
 
@@ -199,7 +199,7 @@ We will first present the computerized adaptive testing framework and two popula
 
 \section{Background and Related Work}
 
-We present here two models that allow us to predict performance of the examinee.
+We present here two models that allow us to predict the performance of the examinee.
 
 \subsection{Computerized adaptive testing}
 
@@ -209,59 +209,45 @@ In a computerized adaptive test (CAT), the examinee is presented with adaptively
 \item \textsc{TerminationRule} : a condition that will end the test, when enough information has been gathered and the competence has been measured satisfyingly.
 \end{itemize}
 
-Common criteria for the item selection rule are minimizing the Shannon entropy of the distribution on the parameters, or maximizing the Kullback-Leibler divergence. % Plus précis ?
+Common criteria for the item selection rule are minimizing the Shannon entropy of the distribution over the parameters, or maximizing the Kullback-Leibler divergence. \alert{TODO Plus précis ?}
 
-The framework of a CAT can be represented by the following algorithm.
+The framework of a CAT can be represented by the following algorithm: while the termination rule is not satisfied, the algorithm picks the question that maximizes a certain criterion according to the item selection rule and update the parameters according to the answer.
 
 \subsection{Item Response Theory}
 
-For our needs, IRT features a commonly used model allowing to compute the probability item response. Basically, IRT estimate the ability of a student by a unique real number $\theta$ and characterize each question by two real numbers:
+For our needs, IRT features a commonly used model allowing to compute the probability item response. Basically, IRT estimate the ability of a student by a unique real number $\theta$ and characterize each question by two real numbers: \alert{TODO est-ce que j'ai bien dit ce qu'était probability item response ?}
 
 \begin{itemize}
-\item the \emph{difficulty} $d$, corresponding to the required ability for answering the question correctly; % FIX-MOI ÇA STP TMTC
+\item the \emph{difficulty} $d$, corresponding to the required ability for answering the question correctly; \alert{TODO ok ?}
 \item the \emph{discrimination} $\delta$, representing the capacity of the question to distinguish between students that have the required ability from the other ones.
 \end{itemize}
 
-Knowing the ability $\theta$ of a given student and both the difficulty $d$ and the discrimination parameter $\delta$ of a given question, the model allows us to compute the probability of this student correctly answering this question:
-\[ \Pr\{success\} = \frac1{1+e^{\delta(\theta - d)}} \]
+Knowing the ability $\theta$ of a given student and both the difficulty $d$ and the discrimination parameter $\delta$ of a given question, the model allows us to compute the probability of the event “student answers correctly a question of difficulty $d$ and discrimination $\delta$”, there denoted by \emph{success}:
+\[ \Pr\{success|\theta\} = \frac1{1+e^{-\delta(\theta - d)}} \]
 
-The challenge is to determine the parameters that fit the most the student data.
-
-\alert{Évaluer des étudiants efficacement et le choix principal de modèle pour computerized adaptive testing}
-
-\alert{Related work à propos des selection criteria}
-
-A key algorithm lies within the item selection process, we want to select the best question according to a certain criteria, that will allow us to narrow at best the confidence interval around $\theta$.
-
-\alert{IRT CAT}
-\alert{Item selection via formule de Bayes}
+The challenge is to determine the parameters that fit the most the student data. We maintain a probability distribution of $\theta$ and each question answered allows to refine the confidence interval around $\theta$ using the Bayes rule. This simple model is commonly used in computerized adaptive testing, and many methods are implemented for next item selection~\cite{MagisRaiche2012}. From the probability distribution over $\theta$, it is possible to compute the expected probability of answering every question of the bank. \alert{TODO}
 
 \subsection{Cognitive Diagnosis Model}
 
-Let us assume there are $K$ different skills. A user can be modeled by a binary vector $(a_1, \ldots, a_K$, called \emph{state}, representing her master of the different skills. 
+Let us assume there are $K$ different skills. A user can be modeled by a vector of binary values $(a_1, \ldots, a_K)$, called \emph{state}, representing her master of the different skills. Thus, there are $2^K$ possible states.
 
-\alert{Liens entre questions et compétences item-to-skill [Desmarais]}
-
-A $q$-matrix \cite{Tatsuoka1983} represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise. We consider here the DINA model~\cite{Desmarais2012}, where a student will answer correctly a question if and only if she has all the required skills. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question, skills 1 and 3 for the second question and only skill 3 for last question. % Il y a aussi d'autres trucs
+A q-matrix \cite{Tatsuoka1983} represents, for each question, the different skills involved in answering the question. $Q_{ij}$ is equal to 1 if the skill $j$ is involved in the resolution of the question $i$, 0 otherwise. If all involved skills are necessary to succeed the corresponding item, the model is considered part of the \emph{conjunctive} class. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question, skills 1 and 3 are required for the second question and mastering skill 3 is sufficient to solve last question.
 \[ Q = \left(\begin{array}{lll}
 1 & 1 & 0\\
 1 & 0 & 1\\
 0 & 0 & 1
 \end{array}\right) \]
+If the mastery of one single skill is sufficient to succeed the item, it will be considered part of the \emph{compensatory} class. We consider here the NIDA conjunctive model~\cite{Desmarais2012}: the probability of a correct response at item $i$ is $1 - s_i$ if all skills involved are mastered, $g_i$ if any skill is not mastered. $s_i$ and $g_i$ are respectively called the \emph{slip} and \emph{guess} parameters of item $i$.
 
-\alert{Il existe d'autres approches : il faut un seul skill parmi ceux demandés pour répondre correctement, plus des skills sont maitrisés plus la probabilité de répondre correctement est élevée, certains considèrent des états d'apprentissage intermédiaires (0, 1/2, 1) ou l'ajout de paramètres slip and guessing. }
+Determining the best q-matrix that fits a given student data set is currently an open field of research, as well as the best number of attributes $K$~\cite{Huebner2010} \alert{(maladroit)}, the most known methods being non-negative matrix factorization or EM algorithm~\cite{Huebner2010}. 
 
-\alert{Pour chaque user, il y a $2^K$ états possibles. On maintient pour chacun une distribution de probabilité sur les états (donc $2^K$ réels) ~\cite{Huebner2010}.}
+In order to compute the state of an examinee effectively, the method is similar to the IRT model: we maintain a probability distribution over the $2^K$ possible states~\cite{Huebner2010} and each question answered allows to update this distribution using the Bayes rule. Several methods for next item selection have been compared, such as Shannon entropy~\cite{Xu2003}.
 
-\alert{Connaissant une distribution de probabilité, il est facile d'estimer la probabilité de répondre aux questions. L'update de l'état est fait via la formule de Bayes}
+From this probability distribution over all possible states, we can get the probability for our examinee to get skill $j$ by summing the probabilities of all states having the $j$-th bit at 1. Thus, we can derive the probability for her to answer correctly every question in the bank, with the help of our q-matrix.
 
-\alert{Formule de Bayes}
-
-\alert{Exemples avec $K = 3$}
-
-\alert{Lorsque des experts fixent cette q-matrice, on peut donner un feedback explicite, mais ici on s'intéresse seulement à prédire les résultats. On peut donc se libérer de cette contrainte de q-matrice imposée et en calculer une qui colle au mieux aux données}
-
-\alert{Néanmoins : determine q-matrix from student data is currently an open field of research}
+\begin{table}
+\caption{Example for $K = 3$.}
+\end{table}
 
 \section{Our Test Framework}
 
@@ -302,7 +288,7 @@ We used the following cross-validation based method:
 
 \subsection{Item Response Theory Design}
 
-We used the R package catR~\cite{MagisRaiche12} for this part of our experiments.
+We used the R packages ltm~\cite{Rizopoulos2006} and catR~\cite{MagisRaiche2012} for this part of our experiments.
 
 \subsubsection{Training Step}
 
