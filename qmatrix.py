@@ -1,23 +1,22 @@
 # coding=utf8
 import math, random
-from scipy.stats import beta
 import numpy as np
 from numpy.random import beta
-import matplotlib.pyplot as plt
 from operator import mul, and_, or_
 import json
 from itertools import product
 
-RANDOM = 0
+SIMULATED = 0
+REAL = 1
 
-mode = RANDOM
+mode = REAL
 nb_questions = 10
 nb_competences = 5
 nb_states = 1 << nb_competences
 guess = [0.1] * nb_questions
 slip = [0.1] * nb_questions
-budget = 5
-nb_students = 50
+budget = 20
+nb_students = 10
 
 def entr(x):
 	return x if x < 1e-6 else (-x) * math.log(x, 2)
@@ -46,21 +45,24 @@ def bool2int(l):
 def match(question, state):
 	return bool2int(question) & (nb_states - 1 - state) == 0
 
+def backup(filename, data):
+	with open(filename, 'w') as f:
+		f.write(json.dumps(data))
+
 def generate(silent=False):
-	if mode == RANDOM:
-		states = sorted(random.choice(range(nb_states)) for _ in range(nb_students))
-		Q = [[random.randint(1, 2) == 1 for _ in range(nb_competences)] for _ in range(nb_questions)]
-		"""print('\n# True q-matrix\n')
-		for line in Q:
-			print(line)"""
-		if silent:
-			return Q
-	else:
+	states = sorted(random.choice(range(nb_states)) for _ in range(nb_students))
+	Q = [[random.randint(1, 2) == 1 for _ in range(nb_competences)] for _ in range(nb_questions)]
+	"""print('\n# True q-matrix\n')
+	for line in Q:
+		print(line)"""
+	if silent:
+		return Q
+	"""else:
 		states = sorted(random.sample(range(nb_states), nb_students))
 		Q = []
 		for _ in range(2):
 			Q.append([True] * nb_competences)
-		Q.extend([k >= i / 2 for k in range(nb_competences)] for i in range(4, 12))
+		Q.extend([k >= i / 2 for k in range(nb_competences)] for i in range(4, 12))"""
 	if not silent:
 		student_data = [[] for _ in range(nb_students)]
 		print('\n# True student data\n')
@@ -69,7 +71,7 @@ def generate(silent=False):
 				is_skilled = match(Q[j], states[i])
 				student_data[i].append((is_skilled and random.random() > slip[j]) or (not is_skilled and random.random() <= guess[j]))
 			#print student_data[i], states[i]
-		open('stuff.json', 'w').write(json.dumps({'states': states, 'Q': Q, 'student_data': student_data, 'slip': slip, 'guess': guess}))
+		backup('stuff.json', {'states': states, 'Q': Q, 'student_data': student_data, 'slip': slip, 'guess': guess})
 	# export_to_guacamole(student_data)
 
 def export_to_guacamole(student_data):
@@ -134,7 +136,7 @@ def infer_guess_slip(p_states):
 	for i in range(nb_questions):
 		logloss_min = 100000
 		g = 0.1
-		for s in np.arange(0.01, 0.15, 0.01):
+		for s in np.arange(0.1, 1, 0.1):
 			estimated_column = [compute_proba_question(p_states[student_id], i, Q, s, g) for student_id in range(nb_students)] 
 			real_column = [student_data[student_id][i] for student_id in range(nb_students)]
 			if s == 0.1:
@@ -148,7 +150,7 @@ def infer_guess_slip(p_states):
 				slip[i] = s
 		logloss_min = 100000
 		s = slip[i]
-		for g in np.arange(0.05, 0.15, 0.01):
+		for g in np.arange(0.1, 1, 0.1):
 			estimated_column = [compute_proba_question(p_states[student_id], i, Q, s, g) for student_id in range(nb_students)]
 			real_column = [student_data[student_id][i] for student_id in range(nb_students)]
 			temp = logloss(estimated_column, real_column) + (g-0.1)*(g-0.1)*0
@@ -196,71 +198,87 @@ def train(true_Q):
 		#print temp
 		previous_v = temp
 		temp = qmatrix_logloss(Q, slip, guess)
-	print temp
+	# print temp
+	backup('data/result.json', {'p_states': p_states, 'guess': guess, 'slip': slip, 'Q': Q})
 	#print
 	return p_states
 
-generate()
+# generate()
 
 # Q[i][j] pour les valeurs α-β de la question j sachant que l'objet est i
 # Q = [[random.randint(1, 2) == 1 for _ in range(nb_competences)] for _ in range(nb_questions)]
-stuff = json.load(open('stuff.json'))
-student_data = stuff['student_data']
-states = stuff['states']
-true_Q = stuff['Q']
-true_slip = stuff['slip']
-true_guess = stuff['guess']
-
-Q = generate(silent=True)
-guess = [0.05] * nb_questions
-slip = [0.05] * nb_questions
-p_states = train(true_Q)
-print "True value : " + str(qmatrix_logloss(true_Q, true_guess, true_slip)) + "\n"
-print qmatrix_logloss(Q, slip, guess)
-
-# print true_Q
-
-for i in range(10):
+if mode == SIMULATED:
+	stuff = json.load(open('stuff.json'))
+	student_data = stuff['student_data']
+	states = stuff['states']
+	true_Q = stuff['Q']
+	true_slip = stuff['slip']
+	true_guess = stuff['guess']
 	Q = generate(silent=True)
 	guess = [0.05] * nb_questions
 	slip = [0.05] * nb_questions
 	p_states = train(true_Q)
+	print "True value : " + str(qmatrix_logloss(true_Q, true_guess, true_slip)) + "\n"
+	print qmatrix_logloss(Q, slip, guess)
+else:
+	sat = json.load(open('data/sat.json'))
+	student_data = sat['student_data']
+	nb_questions = len(student_data[0])
+	nb_students = len(student_data)
 
 # print true_Q
 
 """
-loglosses = []
-for student_id in range(nb_students):
-	true_competences = states[student_id] # random.choice(range(nb_states)) # Gars médian
+for i in range(1):
+	Q = generate(silent=True)
+	guess = [0.05] * nb_questions
+	slip = [0.05] * nb_questions
+	p_states = train(true_Q if mode == SIMULATED else Q)
+"""
+
+result = json.load(open('data/sat-qmatrix.json'))
+Q = result['Q']
+guess = result['guess']
+slip = result['slip']
+
+# print true_Q
+
+loglosses = [[0] * budget for _ in range(nb_students)]
+student_sample = range(nb_students)
+for student_id in student_sample: #range(nb_students):
+	replied_so_far = []
+	# true_competences = states[student_id] # random.choice(range(nb_states)) # Gars médian
 	p_competences = [1. / nb_states] * nb_states
-	print 'Véritables compétences', bin(true_competences)[2:]
+	# print 'Véritables compétences', bin(true_competences)[2:]
 	for t in range(budget):
 		min_entropy = entropy(p_competences)
 		best_question = -1
 		for i in range(nb_questions):
-			p_answering = sum([p for state, p in enumerate(p_competences) if match(Q[i], state)])
-			my_competences_if_correct = normalize([p * (1 - slip) if match(Q[i], state) else p * guess for state, p in enumerate(p_competences)])
-			my_competences_if_incorrect = normalize([p * slip if match(Q[i], state) else p * (1 - guess) for state, p in enumerate(p_competences)])
+			if i in replied_so_far: # On ne repose pas les questions déjà posées
+				continue
+			# p_answering = sum([p for state, p in enumerate(p_competences) if match(Q[i], state)])
+			p_answering = compute_proba_question(p_competences, i, Q, guess[i], slip[i])
+			my_competences_if_correct = normalize([p * (1 - slip[i]) if match(Q[i], state) else p * guess[i] for state, p in enumerate(p_competences)])
+			my_competences_if_incorrect = normalize([p * slip[i] if match(Q[i], state) else p * (1 - guess[i]) for state, p in enumerate(p_competences)])
 			mean_entropy = p_answering * entropy(my_competences_if_correct) + (1 - p_answering) * entropy(my_competences_if_incorrect)
 			if mean_entropy < min_entropy:
 				min_entropy = mean_entropy
 				best_question = i
-		print 'Tour', t + 1, ': on lui pose la question', best_question, Q[best_question], min_entropy
-		p_competences = ask_question(student_id, best_question, p_competences)
-		print sorted(map(lambda (x, y): (y, bin(x)[2:]), enumerate(surround(p_competences))))[::-1][:5]
+		# print 'Tour', t + 1, ': on lui pose la question', best_question, Q[best_question], min_entropy
+		p_competences = ask_question(student_id, best_question, p_competences, Q, slip, guess)
+		replied_so_far.append(best_question)
+		# print sorted(map(lambda (x, y): (y, bin(x)[2:]), enumerate(surround(p_competences))))[::-1][:5]
 		proba_question = [0] * nb_questions
 		for i in range(nb_questions):
-			proba_question[i] = compute_proba_question(i)
+			proba_question[i] = compute_proba_question(p_competences, i, Q, slip[i], guess[i])
+		# print surround(proba_question)
+		# print 'Résultats / vrais résultats'
+		# print ''.join(map(lambda x: str(int(round(x))), proba_question))
+		# print ''.join(map(lambda x: str(int(x)), student_data[student_id]))
+		loglosses[student_id][t] = logloss(proba_question, student_data[student_id])
+		# print loglosses[student_id][t]
 
-		print surround(proba_question)
-		print 'Résultats / vrais résultats'
-		print ''.join(map(lambda x: str(int(round(x))), proba_question))
-		print ''.join(map(lambda x: str(int(x)), student_data[len(states) / 2]))
-		loglosses.append(logloss(proba_question, student_data[len(states) / 2]))
-		print loglosses[-1]
+loglosses_mean = [sum(loglosses[i][t] for i in student_sample) / len(student_sample) for t in range(budget)]
+# print loglosses_mean
 
-fig, ax = plt.subplots()
-ax.plot(range(len(loglosses)), map(math.exp, loglosses), color='blue')
-ax.set_title('Log loss')
-plt.show()
-"""
+backup('data/logloss-qmatrix-all.json', loglosses)
