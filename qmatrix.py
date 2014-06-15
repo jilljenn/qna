@@ -1,22 +1,23 @@
 # coding=utf8
 import math, random
+#from scipy.stats import beta
 import numpy as np
 from operator import mul, and_, or_
 import json
 from itertools import product
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 SIMULATED = 0
 REAL = 1
 
 mode = REAL
-nb_questions = 10
-nb_competences = 5
+nb_questions = 5
+nb_competences = 3
 nb_states = 1 << nb_competences
 guess = [0.1] * nb_questions
 slip = [0.1] * nb_questions
-budget = 20
-nb_students = 10
+budget = 3
+nb_students = 20
 
 def entr(x):
 	return x if x < 1e-6 else (-x) * math.log(x, 2)
@@ -207,19 +208,31 @@ def train(true_Q):
 	"""I like trains."""
 	previous_v = -1
 	temp = -2
-	while previous_v != temp:
+	loop_limit = 0
+	while previous_v != temp and loop_limit < 10:
 		#print(_)
 		# temp = str(qmatrix_logloss(Q, slip, guess)) + " "
+		#start = time.clock()
 		p_states = infer_state(Q, slip, guess)
+		print "pstates updates", loop_limit
+		#print 'states', (time.clock() - start)
+		#start = time.clock()
 		#temp = str(qmatrix_logloss(Q, slip, guess, p_states)) + " "
 		infer_guess_slip(p_states)
+		print "slip updated", loop_limit
+		#print 'slip', (time.clock() - start)
+		#start = time.clock()
 		#temp += str(qmatrix_logloss(Q, slip, guess, p_states)) + " "
 		infer_qmatrix(p_states, true_Q)
+		print "qmatrix updated", loop_limit
+		#print 'qmatrix', (time.clock() - start)
 		#temp += str(qmatrix_logloss(Q, slip, guess, p_states)) + " "
 		#print temp
 		previous_v = temp
 		temp = qmatrix_logloss(Q, slip, guess)
-	# print temp
+		print "logloss", temp
+		loop_limit += 1
+	print temp
 	backup('data/result.json', {'p_states': p_states, 'guess': guess, 'slip': slip, 'Q': Q})
 	#print
 	return p_states
@@ -250,8 +263,8 @@ else:
 # print true_Q
 
 for _ in range(1):
-	# Q = generate(silent=True)
-	Q = json.load(open('data/sat-qmatrix.json'))['Q']
+	Q = generate(silent=True)
+	# Q = json.load(open('data/sat-qmatrix.json'))['Q']
 	guess = [0.05] * nb_questions
 	slip = [0.05] * nb_questions
 	p_states = train(true_Q if mode == SIMULATED else Q)
