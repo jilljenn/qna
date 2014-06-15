@@ -1,10 +1,10 @@
 # coding=utf8
 import math, random
 import numpy as np
-from numpy.random import beta
 from operator import mul, and_, or_
 import json
 from itertools import product
+import matplotlib.pyplot as plt
 
 SIMULATED = 0
 REAL = 1
@@ -91,8 +91,11 @@ def ask_question(student_id, question_id, p_competences, Q, slip, guess):
 def sq(x):
 	return x*x
 
-def logloss(estimated, real):
-	return -sum(math.log(estimated[i]) if real[i] else math.log(1 - estimated[i]) for i in range(len(real))) / len(real)
+def logloss(estimated, real, derivative=None):
+	if not derivative:
+		return -sum(math.log(estimated[i]) if real[i] else math.log(1 - estimated[i]) for i in range(len(real))) / len(real)
+	else:
+		return -sum(derivative[i] / estimated[i] if real[i] else -derivative[i] / (1 - estimated[i]) for i in range(len(real))) / len(real)
 
 def qmatrix_logloss(Q, slip, guess, p_states=None):
 	if not p_states:
@@ -115,12 +118,17 @@ def qmatrix_logloss(Q, slip, guess, p_states=None):
 		# print dat_logloss
 	return dat_logloss / nb_questions
 
-def compute_proba_question(p_competences, question_id, Q, s, g):
+def compute_proba_question(p_competences, question_id, Q, s, g, mode=None):
 	proba = 0
 	for state, p in enumerate(p_competences):
 		if match(Q[question_id], state):
 			proba += p
-	return proba * (1 - s) + (1 - proba) * g
+	if not mode:
+		return proba * (1 - s) + (1 - proba) * g
+	elif mode == 'slip':
+		return -s * proba
+	else:
+		return g * (1 - proba)
 
 def infer_state(Q, slip, guess):
 	p_states = []
@@ -136,27 +144,40 @@ def infer_guess_slip(p_states):
 	for i in range(nb_questions):
 		logloss_min = 100000
 		g = 0.1
-		for s in np.arange(0.1, 1, 0.1):
-			estimated_column = [compute_proba_question(p_states[student_id], i, Q, s, g) for student_id in range(nb_students)] 
+		sa, sb = 0., 1.
+		while sb - sa > 1e-4:
+			s = (sa + sb) / 2
+			estimated_column = [compute_proba_question(p_states[student_id], i, Q, s, g) for student_id in range(nb_students)]
+			sp = [compute_proba_question(p_states[student_id], i, Q, s, g, mode='slip') for student_id in range(nb_students)]
 			real_column = [student_data[student_id][i] for student_id in range(nb_students)]
-			if s == 0.1:
-				pass
-				# print('hey', estimated_column, real_column, logloss(estimated_column, real_column))
-			temp = logloss(estimated_column, real_column) + (s-0.1)*(s-0.1)*0
+			temp = logloss(estimated_column, real_column, derivative=sp)-0.05*(1/s-1/(1-s))
+			if temp > 0:
+				sb = s
+			else:
+				sa = s
 			# print temp, estimated_column, real_column
-			if temp < logloss_min:
+			"""if temp < logloss_min:
 				# print('mieux', estimated_column, real_column, logloss(estimated_column, real_column))
 				logloss_min = temp
-				slip[i] = s
+				slip[i] = s"""
+		slip[i] = (sa + sb) / 2
 		logloss_min = 100000
 		s = slip[i]
-		for g in np.arange(0.1, 1, 0.1):
+		ga, gb = 0., 1.
+		while gb - ga > 1e-4:
+			g = (ga + gb) / 2
 			estimated_column = [compute_proba_question(p_states[student_id], i, Q, s, g) for student_id in range(nb_students)]
+			gp = [compute_proba_question(p_states[student_id], i, Q, s, g, mode='guess') for student_id in range(nb_students)]
 			real_column = [student_data[student_id][i] for student_id in range(nb_students)]
-			temp = logloss(estimated_column, real_column) + (g-0.1)*(g-0.1)*0
-			if temp < logloss_min:
+			temp = logloss(estimated_column, real_column, derivative=gp)-0.05*(1/s-1/(1-s))
+			if temp > 0:
+				gb = g
+			else:
+				ga = g
+			"""if temp < logloss_min:
 				logloss_min = temp
-				guess[i] = g
+				guess[i] = g"""
+		guess[i] = (ga + gb) / 2
 
 def infer_qmatrix(p_states, true_Q):
 	for i in range(nb_questions):
@@ -228,13 +249,12 @@ else:
 
 # print true_Q
 
-"""
-for i in range(1):
-	Q = generate(silent=True)
+for _ in range(1):
+	# Q = generate(silent=True)
+	Q = json.load(open('data/sat-qmatrix.json'))['Q']
 	guess = [0.05] * nb_questions
 	slip = [0.05] * nb_questions
 	p_states = train(true_Q if mode == SIMULATED else Q)
-"""
 
 result = json.load(open('data/sat-qmatrix.json'))
 Q = result['Q']
@@ -243,8 +263,9 @@ slip = result['slip']
 
 # print true_Q
 
+"""
 loglosses = [[0] * budget for _ in range(nb_students)]
-student_sample = range(nb_students)
+student_sample = [3, 2, 24, 46, 13, 35, 47, 25, 15] #range(nb_students)
 for student_id in student_sample: #range(nb_students):
 	replied_so_far = []
 	# true_competences = states[student_id] # random.choice(range(nb_states)) # Gars médian
@@ -256,8 +277,8 @@ for student_id in student_sample: #range(nb_students):
 		for i in range(nb_questions):
 			if i in replied_so_far: # On ne repose pas les questions déjà posées
 				continue
-			# p_answering = sum([p for state, p in enumerate(p_competences) if match(Q[i], state)])
-			p_answering = compute_proba_question(p_competences, i, Q, guess[i], slip[i])
+			p_answering = sum([p for state, p in enumerate(p_competences) if match(Q[i], state)])
+			# p_answering = compute_proba_question(p_competences, i, Q, guess[i], slip[i])
 			my_competences_if_correct = normalize([p * (1 - slip[i]) if match(Q[i], state) else p * guess[i] for state, p in enumerate(p_competences)])
 			my_competences_if_incorrect = normalize([p * slip[i] if match(Q[i], state) else p * (1 - guess[i]) for state, p in enumerate(p_competences)])
 			mean_entropy = p_answering * entropy(my_competences_if_correct) + (1 - p_answering) * entropy(my_competences_if_incorrect)
@@ -281,4 +302,5 @@ for student_id in student_sample: #range(nb_students):
 loglosses_mean = [sum(loglosses[i][t] for i in student_sample) / len(student_sample) for t in range(budget)]
 # print loglosses_mean
 
-backup('data/logloss-qmatrix-all.json', loglosses)
+backup('data/logloss-qmatrix.json', loglosses_mean)
+"""
