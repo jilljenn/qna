@@ -1,319 +1,168 @@
 # coding=utf8
-import math, random
-#from scipy.stats import beta
-import numpy as np
-from operator import mul, and_, or_
-import json
+import random
+from calc import logloss, derivative_logloss, normalize, entropy
 from itertools import product
-#import matplotlib.pyplot as plt
-
-SIMULATED = 0
-REAL = 1
-
-mode = REAL
-nb_questions = 5
-nb_competences = 3
-nb_states = 1 << nb_competences
-guess = [0.1] * nb_questions
-slip = [0.1] * nb_questions
-budget = 3
-nb_students = 20
-
-def entr(x):
-	return x if x < 1e-6 else (-x) * math.log(x, 2)
-
-def entropy(l):
-	return sum(entr(x) for x in l)
-
-def entropy1(x):
-	return entropy([x, 1 - x])
-
-def normalize(p):
-	return [x / sum(p) for x in p]
-
-def surround(p):
-	return map(lambda x: round(x, 3), p)
-
-def normalize2(p, e):
-	return (p * e) / (p * e + (1 - p) * (1 - e))
-
-def multientropy(l):
-	return sum(map(entropy1, l))
+import io
 
 def bool2int(l):
 	return int(''.join(map(str, map(int, l))), 2)
 
-def match(question, state):
-	return bool2int(question) & (nb_states - 1 - state) == 0
+DEFAULT_SLIP = 0.2
+DEFAULT_GUESS = 0.2
+K = 6
+LOOP_TIMEOUT = 10
+SLIP_GUESS_PRECISION = 1e-2
 
-def backup(filename, data):
-	with open(filename, 'w') as f:
-		f.write(json.dumps(data))
+class QMatrix():
+	def __init__(self, nb_competences=K, Q=None, slip=None, guess=None, prior=None):
+		self.name = 'QMatrix'
+		self.nb_competences = nb_competences
+		self.Q = Q
+		self.prior = prior if prior else [1 / 1 << nb_competences] * (1 << nb_competences)
+		self.p_states = None
+		self.p_test = None
+		self.slip = slip
+		self.guess = guess
 
-def generate(silent=False):
-	states = sorted(random.choice(range(nb_states)) for _ in range(nb_students))
-	Q = [[random.randint(1, 2) == 1 for _ in range(nb_competences)] for _ in range(nb_questions)]
-	"""print('\n# True q-matrix\n')
-	for line in Q:
-		print(line)"""
-	if silent:
-		return Q
-	"""else:
-		states = sorted(random.sample(range(nb_states), nb_students))
-		Q = []
-		for _ in range(2):
-			Q.append([True] * nb_competences)
-		Q.extend([k >= i / 2 for k in range(nb_competences)] for i in range(4, 12))"""
-	if not silent:
-		student_data = [[] for _ in range(nb_students)]
-		print('\n# True student data\n')
-		for i in range(nb_students):
-			for j in range(nb_questions):
-				is_skilled = match(Q[j], states[i])
-				student_data[i].append((is_skilled and random.random() > slip[j]) or (not is_skilled and random.random() <= guess[j]))
-			#print student_data[i], states[i]
-		backup('stuff.json', {'states': states, 'Q': Q, 'student_data': student_data, 'slip': slip, 'guess': guess})
-	# export_to_guacamole(student_data)
+	def load(self, filename):
+		data = io.load(filename)
+		self.Q = data['Q']
+		self.slip = data['slip']
+		self.guess = data['guess']
+		# self.prior = data['prior']
 
-def export_to_guacamole(student_data):
-	with open('qmatrix.data', 'w') as f:
-		for i, student in enumerate(student_data):
-			for j in range(nb_questions):
-				f.write(','.join(map(str, [i, j, 1, student_data[i][j]])) + '\n')
+	def save(self, filename):
+		io.backup('stuff', {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior})
 
-def ask_question(student_id, question_id, p_competences, Q, slip, guess):
-	s = slip[question_id]
-	g = guess[question_id]
-	if student_data[student_id][question_id]:
-		return normalize([p * (1 - s) if match(Q[question_id], state) else p * g for state, p in enumerate(p_competences)])
-	else:
-		return normalize([p * s if match(Q[question_id], state) else p * (1 - g) for state, p in enumerate(p_competences)])
+	def match(self, question, state):
+		return bool2int(question) & ((1 << self.nb_competences) - 1 - state) == 0
 
-def sq(x):
-	return x*x
+	def training_step(self, train, opt_Q=True, opt_sg=True, timeout=LOOP_TIMEOUT):
+		nb_students = len(train)
+		nb_questions = len(train[0])
+		if not self.Q:
+			self.Q = [[random.randint(1, 2) == 1 for _ in range(self.nb_competences)] for _ in range(nb_questions)]
+		if not self.slip:
+			self.slip = [DEFAULT_SLIP] * nb_questions
+		if not self.guess:
+			self.guess = [DEFAULT_GUESS] * nb_questions
+		loop_limit = 0
+		while loop_limit < timeout: # TODO
+			self.infer_state(train)
+			if opt_sg:
+				self.infer_guess_slip(train)
+			if opt_Q:
+				self.infer_qmatrix(train)
+			self.infer_prior()
+			print self.model_error(train)
+			loop_limit += 1
 
-def logloss(estimated, real, derivative=None):
-	if not derivative:
-		return -sum(math.log(estimated[i]) if real[i] else math.log(1 - estimated[i]) for i in range(len(real))) / len(real)
-	else:
-		return -sum(derivative[i] / estimated[i] if real[i] else -derivative[i] / (1 - estimated[i]) for i in range(len(real))) / len(real)
+	def init_test(self):
+		self.p_test = self.prior
 
-def qmatrix_logloss(Q, slip, guess, p_states=None):
-	if not p_states:
-		p_states = infer_state(Q, slip, guess)
-	"""for line in p_states:
-		print surround(line)"""
-	dat_logloss = 0
-	for i in range(nb_questions):
-		estimated_column = [compute_proba_question(p_states[student_id], i, Q, slip[i], guess[i]) for student_id in range(nb_students)]
-		# print p_states[0], slip[i], guess[i]
-		real_column = [student_data[student_id][i] for student_id in range(nb_students)]
-		tmp = logloss(estimated_column, real_column)
-		"""if i == 0:
-			print 'total', i, surround(p_states[-1]), tmp, surround(estimated_column), Q[i]
-			print 'total, esti', estimated_column
-			print 'total, real', real_column"""
-		"""if i == 1:
-			print i, surround(p_states[-1]), tmp, surround(estimated_column), Q[i]"""
-		dat_logloss += tmp
-		# print dat_logloss
-	return dat_logloss / nb_questions
+	def compute_proba_question(self, question_id, p_competences, mode=None):
+		proba = sum(p for state, p in enumerate(p_competences) if self.match(self.Q[question_id], state))
+		if not mode:
+			return proba * (1 - self.slip[question_id]) + (1 - proba) * self.guess[question_id]
+		elif mode == 'slip':
+			return -self.slip[question_id] * proba
+		else:
+			return self.guess[question_id] * (1 - proba)
 
-def compute_proba_question(p_competences, question_id, Q, s, g, mode=None):
-	proba = 0
-	for state, p in enumerate(p_competences):
-		if match(Q[question_id], state):
-			proba += p
-	if not mode:
-		return proba * (1 - s) + (1 - proba) * g
-	elif mode == 'slip':
-		return -s * proba
-	else:
-		return g * (1 - proba)
+	def predict_future(self, question_id, p_competences):
+		future_if_correct = normalize([p * (1 - self.slip[question_id]) if self.match(self.Q[question_id], state) else p * self.guess[question_id] for state, p in enumerate(p_competences)])
+		future_if_incorrect = normalize([p * self.slip[question_id] if self.match(self.Q[question_id], state) else p * (1 - self.guess[question_id]) for state, p in enumerate(p_competences)])
+		return future_if_incorrect, future_if_correct
 
-def infer_state(Q, slip, guess):
-	p_states = []
-	# print('\nDistribution of probability\n')
-	for i in range(nb_students):
-		p_states.append([1. / nb_states] * nb_states)
-		for j in range(nb_questions):
-			p_states[i] = ask_question(i, j, p_states[i], Q, slip, guess)
-		# print(surround(p_states[i]))
-	return p_states
+	def ask_question(self, question_id, is_correct_answer, p_competences):
+		return self.predict_future(question_id, p_competences)[is_correct_answer] # Wooo
 
-def infer_guess_slip(p_states):
-	for i in range(nb_questions):
-		logloss_min = 100000
-		g = 0.1
-		sa, sb = 0., 1.
-		while sb - sa > 1e-4:
-			s = (sa + sb) / 2
-			estimated_column = [compute_proba_question(p_states[student_id], i, Q, s, g) for student_id in range(nb_students)]
-			sp = [compute_proba_question(p_states[student_id], i, Q, s, g, mode='slip') for student_id in range(nb_students)]
-			real_column = [student_data[student_id][i] for student_id in range(nb_students)]
-			temp = logloss(estimated_column, real_column, derivative=sp)-0.05*(1/s-1/(1-s))
-			if temp > 0:
-				sb = s
-			else:
-				sa = s
-			# print temp, estimated_column, real_column
-			"""if temp < logloss_min:
-				# print('mieux', estimated_column, real_column, logloss(estimated_column, real_column))
-				logloss_min = temp
-				slip[i] = s"""
-		slip[i] = (sa + sb) / 2
-		logloss_min = 100000
-		s = slip[i]
-		ga, gb = 0., 1.
-		while gb - ga > 1e-4:
-			g = (ga + gb) / 2
-			estimated_column = [compute_proba_question(p_states[student_id], i, Q, s, g) for student_id in range(nb_students)]
-			gp = [compute_proba_question(p_states[student_id], i, Q, s, g, mode='guess') for student_id in range(nb_students)]
-			real_column = [student_data[student_id][i] for student_id in range(nb_students)]
-			temp = logloss(estimated_column, real_column, derivative=gp)-0.05*(1/s-1/(1-s))
-			if temp > 0:
-				gb = g
-			else:
-				ga = g
-			"""if temp < logloss_min:
-				logloss_min = temp
-				guess[i] = g"""
-		guess[i] = (ga + gb) / 2
+	def estimate_parameters(self, replied_so_far, results_so_far):
+		self.p_test = self.ask_question(replied_so_far[-1], results_so_far[-1], self.p_test)
 
-def infer_qmatrix(p_states, true_Q):
-	for i in range(nb_questions):
-		logloss_min = 100000
-		for line in product([True, False], repeat=nb_competences):
-			if i == 0:
-				temp_total = qmatrix_logloss(Q, slip, guess, p_states)
-			Q[i] = line
-			estimated_column = [compute_proba_question(p_states[student_id], i, Q, slip[i], guess[i]) for student_id in range(nb_students)]
-			real_column = [student_data[student_id][i] for student_id in range(nb_students)]
-			temp = logloss(estimated_column, real_column)
-			if temp < logloss_min:
-				"""if i == 0:
-					print
-					print 'un pas', logloss_min, temp, logloss_min - temp, 'n_question', i
-					#print 'esti', estimated_column
-					#print 'real', real_column
-					print"""
-				logloss_min = temp
-				best_line = line
-				Q[i] = best_line
-				# print 'totale', temp_total - qmatrix_logloss(Q, slip, guess, p_states)
-		Q[i] = best_line
-		# print([true_Q[i][j] == Q[i][j] for j in range(nb_competences)], 0, true_Q[i], 0, Q[i], slip[i], guess[i], logloss_min)
+	def infer_state(self, train):
+		nb_students = len(train)
+		nb_questions = len(train[0])
+		self.p_states = []
+		for student_id in range(nb_students):
+			self.p_states.append(self.prior[:])
+			for question_id in range(nb_questions): # Ask her ALL questions!
+				self.p_states[student_id] = self.ask_question(question_id, train[student_id][question_id], self.p_states[student_id])
 
-def train(true_Q):
-	"""I like trains."""
-	previous_v = -1
-	temp = -2
-	loop_limit = 0
-	while previous_v != temp and loop_limit < 10:
-		#print(_)
-		# temp = str(qmatrix_logloss(Q, slip, guess)) + " "
-		#start = time.clock()
-		p_states = infer_state(Q, slip, guess)
-		print "pstates updates", loop_limit
-		#print 'states', (time.clock() - start)
-		#start = time.clock()
-		#temp = str(qmatrix_logloss(Q, slip, guess, p_states)) + " "
-		infer_guess_slip(p_states)
-		print "slip updated", loop_limit
-		#print 'slip', (time.clock() - start)
-		#start = time.clock()
-		#temp += str(qmatrix_logloss(Q, slip, guess, p_states)) + " "
-		infer_qmatrix(p_states, true_Q)
-		print "qmatrix updated", loop_limit
-		#print 'qmatrix', (time.clock() - start)
-		#temp += str(qmatrix_logloss(Q, slip, guess, p_states)) + " "
-		#print temp
-		previous_v = temp
-		temp = qmatrix_logloss(Q, slip, guess)
-		print "logloss", temp
-		loop_limit += 1
-	print temp
-	backup('data/result.json', {'p_states': p_states, 'guess': guess, 'slip': slip, 'Q': Q})
-	#print
-	return p_states
+	def evaluate_error(self, question_id, train, coefficients=None, sg=None):
+		nb_students = len(train)
+		estimated_column = [self.compute_proba_question(question_id, self.p_states[student_id]) for student_id in range(nb_students)]
+		real_column = [train[student_id][question_id] for student_id in range(nb_students)]
+		if coefficients:
+			return derivative_logloss(estimated_column, real_column, coefficients) - 0.05 * (1 / sg - 1 / (1 - sg)) # Ahem
+		else:
+			return logloss(estimated_column, real_column)
 
-# generate()
+	def model_error(self, train):
+		nb_questions = len(self.Q)
+		return sum(self.evaluate_error(question_id, train) for question_id in range(nb_questions)) / nb_questions
 
-# Q[i][j] pour les valeurs α-β de la question j sachant que l'objet est i
-# Q = [[random.randint(1, 2) == 1 for _ in range(nb_competences)] for _ in range(nb_questions)]
-if mode == SIMULATED:
-	stuff = json.load(open('stuff.json'))
-	student_data = stuff['student_data']
-	states = stuff['states']
-	true_Q = stuff['Q']
-	true_slip = stuff['slip']
-	true_guess = stuff['guess']
-	Q = generate(silent=True)
-	guess = [0.05] * nb_questions
-	slip = [0.05] * nb_questions
-	p_states = train(true_Q)
-	print "True value : " + str(qmatrix_logloss(true_Q, true_guess, true_slip)) + "\n"
-	print qmatrix_logloss(Q, slip, guess)
-else:
-	sat = json.load(open('data/sat.json'))
-	student_data = sat['student_data']
-	nb_questions = len(student_data[0])
-	nb_students = len(student_data)
+	def infer_guess_slip(self, train):
+		nb_students = len(train)
+		nb_questions = len(self.Q)
+		for question_id in range(nb_questions):
+			for mode in ['slip', 'guess']:
+				a, b = 0., 1.
+				while b - a > SLIP_GUESS_PRECISION:
+					sg = (a + b) / 2
+					coefficients = [self.compute_proba_question(question_id, self.p_states[student_id], mode=mode) for student_id in range(nb_students)]
+					derivative = self.evaluate_error(question_id, train, coefficients=coefficients, sg=sg)
+					if derivative > 0:
+						b = sg
+					else:
+						a = sg
+				if mode == 'slip':
+					self.slip[question_id] = (a + b) / 2
+				else:
+					self.guess[question_id] = (a + b) / 2
 
-# print true_Q
+	def infer_qmatrix(self, train):
+		nb_questions = len(self.Q)
+		for question_id in range(nb_questions):
+			error_min = None
+			for line in product([True, False], repeat=self.nb_competences):
+				self.Q[question_id] = line
+				question_error = self.evaluate_error(question_id, train)
+				if not error_min or question_error < error_min:
+					error_min = question_error
+					best_line = line
+			self.Q[i] = best_line
 
-for _ in range(1):
-	Q = generate(silent=True)
-	# Q = json.load(open('data/sat-qmatrix.json'))['Q']
-	guess = [0.05] * nb_questions
-	slip = [0.05] * nb_questions
-	p_states = train(true_Q if mode == SIMULATED else Q)
+	def infer_prior(self):
+		nb_students = len(self.p_states)
+		nb_states = len(self.p_states[0])
+		self.prior = [sum(self.p_states[student_id][j] for student_id in range(nb_students)) / nb_students for j in range(nb_states)]
 
-result = json.load(open('data/sat-qmatrix.json'))
-Q = result['Q']
-guess = result['guess']
-slip = result['slip']
-
-# print true_Q
-
-"""
-loglosses = [[0] * budget for _ in range(nb_students)]
-student_sample = [3, 2, 24, 46, 13, 35, 47, 25, 15] #range(nb_students)
-for student_id in student_sample: #range(nb_students):
-	replied_so_far = []
-	# true_competences = states[student_id] # random.choice(range(nb_states)) # Gars médian
-	p_competences = [1. / nb_states] * nb_states
-	# print 'Véritables compétences', bin(true_competences)[2:]
-	for t in range(budget):
-		min_entropy = entropy(p_competences)
-		best_question = -1
-		for i in range(nb_questions):
-			if i in replied_so_far: # On ne repose pas les questions déjà posées
+	def next_item(self, replied_so_far, results_so_far):
+		nb_questions = len(self.Q)
+		min_entropy = None
+		best_question = None
+		for question_id in range(nb_questions):
+			if question_id in replied_so_far:
 				continue
-			p_answering = sum([p for state, p in enumerate(p_competences) if match(Q[i], state)])
-			# p_answering = compute_proba_question(p_competences, i, Q, guess[i], slip[i])
-			my_competences_if_correct = normalize([p * (1 - slip[i]) if match(Q[i], state) else p * guess[i] for state, p in enumerate(p_competences)])
-			my_competences_if_incorrect = normalize([p * slip[i] if match(Q[i], state) else p * (1 - guess[i]) for state, p in enumerate(p_competences)])
-			mean_entropy = p_answering * entropy(my_competences_if_correct) + (1 - p_answering) * entropy(my_competences_if_incorrect)
-			if mean_entropy < min_entropy:
+			p_answering = self.compute_proba_question(question_id, self.p_test)
+			future_if_incorrect, future_if_correct = self.predict_future(question_id, self.p_test)
+			mean_entropy = p_answering * entropy(future_if_correct) + (1 - p_answering) * entropy(future_if_incorrect)
+			if not min_entropy or mean_entropy < min_entropy:
 				min_entropy = mean_entropy
-				best_question = i
-		# print 'Tour', t + 1, ': on lui pose la question', best_question, Q[best_question], min_entropy
-		p_competences = ask_question(student_id, best_question, p_competences, Q, slip, guess)
-		replied_so_far.append(best_question)
-		# print sorted(map(lambda (x, y): (y, bin(x)[2:]), enumerate(surround(p_competences))))[::-1][:5]
-		proba_question = [0] * nb_questions
-		for i in range(nb_questions):
-			proba_question[i] = compute_proba_question(p_competences, i, Q, slip[i], guess[i])
-		# print surround(proba_question)
-		# print 'Résultats / vrais résultats'
-		# print ''.join(map(lambda x: str(int(round(x))), proba_question))
-		# print ''.join(map(lambda x: str(int(x)), student_data[student_id]))
-		loglosses[student_id][t] = logloss(proba_question, student_data[student_id])
-		# print loglosses[student_id][t]
+				best_question = question_id
+		return best_question
 
-loglosses_mean = [sum(loglosses[i][t] for i in student_sample) / len(student_sample) for t in range(budget)]
-# print loglosses_mean
+	def predict_performance(self):
+		nb_questions = len(self.Q)
+		return [self.compute_proba_question(question_id, self.p_test) for question_id in range(nb_questions)]
 
-backup('data/logloss-qmatrix.json', loglosses_mean)
-"""
+	def generate_student_data(self, nb_students):
+		nb_questions = len(self.Q)
+		states = sorted(random.choice(range(1 << self.nb_competences)) for _ in range(nb_students)) # Generate random states
+		student_data = [[] for _ in range(nb_students)]
+		for student_id in range(nb_students):
+			for question_id in range(nb_questions):
+				is_skilled = self.match(self.Q[question_id], states[student_id])
+				student_data[student_id].append((is_skilled and random.random() > self.slip[question_id]) or (not is_skilled and random.random() <= self.guess[question_id]))
+		return student_data

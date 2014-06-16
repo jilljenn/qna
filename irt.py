@@ -1,0 +1,40 @@
+# coding=utf8
+import rpy2.robjects as robjects
+from rpy2.robjects.packages import importr
+from calc import logloss
+import io
+
+r = robjects.r
+ltm = importr('ltm')
+cat = importr('catR')
+
+class IRT():
+	def __init__(self, Q=None, slip=None, guess=None, prior=None):
+		self.name = 'IRT'
+
+	def training_step(self, train, opt_Q=True, opt_sg=True):
+		nb_students = len(train)
+		raw_data = map(int, reduce(lambda x, y: x + y, train))
+		a = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
+		model = ltm.rasch(a)
+		coeff = ltm.coef_rasch(model)
+		scores = ltm.factor_scores(model).rx('score.dat')[0].rx('z1')[0]
+		r('coeff <- coef(rasch(%s))' % a.r_repr())
+		r('one <- rep(1, 100)')
+		r('itembank <- cbind(coeff[,2:1], 1 - one, one)')
+
+	def load(self, filename):
+		pass
+
+	def init_test(self):
+		r('theta <- 0')
+
+	def next_item(self, replied_so_far, results_so_far):
+		return r('nextItem(itembank, NULL, theta, out = c({}))$item'.format(','.join(map(str, replied_so_far))))[0]
+
+	def estimate_parameters(self, replied_so_far, results_so_far):
+		theta = r('theta <- thetaEst(itembank[c({}),], c({}))'.format(','.join(map(str, replied_so_far)), ','.join(map(str, results_so_far))))
+		pm = r('semTheta(theta, itembank[c({}),])'.format(','.join(map(str, replied_so_far))))
+
+	def predict_performance(self):
+		return tuple(r('round(Pi(theta, itembank)$Pi, 3)'))
