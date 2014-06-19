@@ -6,9 +6,9 @@ from irt import IRT
 
 filename = 'sat'
 n_split = 5
-budget = 20
+budget = 39
 all_student_sampled = True
-models = [IRT()]
+models = [QMatrix()]
 models_names = [model.name for model in models]
 
 def display(results):
@@ -17,7 +17,7 @@ def display(results):
 
 def evaluate(performance, truth, replied_so_far):
 	nb_questions = len(performance)
-	return logloss([performance[i] for i in range(nb_questions) if i not in replied_so_far], [truth[i] for i in range(nb_questions) if i not in replied_so_far]) / (nb_questions - len(replied_so_far))
+	return logloss([performance[i] for i in range(nb_questions) if i not in replied_so_far], [truth[i] for i in range(nb_questions) if i not in replied_so_far])
 
 def get_results(log):
 	results = {}
@@ -37,6 +37,7 @@ def main():
 			if all_student_sampled:
 				student_sample = range(nb_students) # All students
 			for student_id in student_sample:
+				# print 'Student', student_id
 				error_log.append([0] * budget)
 				model.init_test()
 				replied_so_far = []
@@ -47,7 +48,11 @@ def main():
 					results_so_far.append(test_data[student_id][question_id])
 					model.estimate_parameters(replied_so_far, results_so_far)
 					performance = model.predict_performance()
-					error_log[-1][t] = evaluate(performance, train_data[student_id], replied_so_far)
+					error_log[-1][t] = evaluate(performance, test_data[student_id], replied_so_far)
+					"""if t == 38:
+						print t, error_log[-1][t]
+						print [performance[i] for i in range(len(performance)) if i not in replied_so_far]
+						print [test_data[student_id][i] for i in range(len(performance)) if i not in replied_so_far]"""
 		log[model.name] = error_log
 	get_results(log)
 	io.backup('log-%s-%s' % (filename, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)

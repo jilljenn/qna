@@ -3,6 +3,7 @@ import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from calc import logloss
 import io
+import random
 
 r = robjects.r
 ltm = importr('ltm')
@@ -31,7 +32,9 @@ class IRT():
 		r('theta <- 0')
 
 	def next_item(self, replied_so_far, results_so_far):
-		next = r('nextItem(itembank, NULL, theta, out = c({}))$item'.format(','.join(map(lambda x: str(x + 1), replied_so_far))))[0]
+		next = r('nextItem(itembank, NULL, theta, out = c({}), criterion = "MEPV")$item'.format(','.join(map(lambda x: str(x + 1), replied_so_far))))[0]
+		# nb_questions = r('dim(itembank)[1]')[0]
+		# next = random.choice(list(set(range(nb_questions)) - set(replied_so_far)))
 		return next - 1
 
 	def estimate_parameters(self, replied_so_far, results_so_far):

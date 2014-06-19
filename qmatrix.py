@@ -3,6 +3,7 @@ import random
 from calc import logloss, derivative_logloss, normalize, entropy
 from itertools import product
 import io
+from datetime import datetime
 
 def bool2int(l):
 	return int(''.join(map(str, map(int, l))), 2)
@@ -10,7 +11,7 @@ def bool2int(l):
 DEFAULT_SLIP = 0.2
 DEFAULT_GUESS = 0.2
 K = 6
-LOOP_TIMEOUT = 10
+LOOP_TIMEOUT = 1
 SLIP_GUESS_PRECISION = 1e-2
 
 class QMatrix():
@@ -32,7 +33,7 @@ class QMatrix():
 		# self.prior = data['prior']
 
 	def save(self, filename):
-		io.backup('stuff', {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior})
+		io.backup(filename, {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior})
 
 	def match(self, question, state):
 		return bool2int(question) & ((1 << self.nb_competences) - 1 - state) == 0
@@ -56,6 +57,7 @@ class QMatrix():
 			self.infer_prior()
 			print self.model_error(train)
 			loop_limit += 1
+		self.save('qmatrix-%s' % datetime.now().strftime('%d%m%Y%H%M%S'))
 
 	def init_test(self):
 		self.p_test = self.prior
@@ -131,7 +133,7 @@ class QMatrix():
 				if not error_min or question_error < error_min:
 					error_min = question_error
 					best_line = line
-			self.Q[i] = best_line
+			self.Q[question_id] = best_line
 
 	def infer_prior(self):
 		nb_students = len(self.p_states)
