@@ -343,23 +343,22 @@ We are using SAT Subject Test data (like~\citep{Winters2005, Desmarais2011}) pro
 
 In our experiments we \alert{wanted} to analyze the effect of three parameters: the length of the training dataset, the number of questions of the test and the number of skills of the q-matrices.
 
-\subsection{Q-matrix extraction}
+\subsection{Parameters extraction}
 
-In order to extract a q-matrix, we need to estimate three kind of parameters: the binary entries of the q-matrix, the slip and guess parameters for each question, and a distribution of probabilities for all possible states of each student. Fixing any two we aim to compute the best third parameter, thus our method can be seen as a variant of the EM algorithm. We would like to emphasize here on the fact that we did not want to achieve. We just needed a suitable q-matrix for our experiments.
+The main difference with psychometrics work is that there is no need here to run the algorithm for a specific q-matrix given by experts. Indeed, the purpose of q-matrix in the psychometric field is to get an intelligible feedback, therefore the skills has to correspond to intelligible skills and so the q-matrix. For our purpose, as the q-matrix is only a tool designed to predict the probability of correct answer, we can learn this q-matrix from datas. 
 
-\subsubsection{Estimating the possible states}
+The q-matrix extraction is still an open field of research. Methods aiming at finding best q-matrix involve \alert{TODO}. Also the q-matrix is not the only one parameter as both the students skill and for each question the couple (slip, guess) have to be optimize as well. Fixing any two, it is easy to optimize the third parameter leading us to the following procedure: until convergence, sequentially optimize each parameters. 
 
-We simulate Bayesian updates by asking every question, using the training dataset.
+The estimation of the probability distribution on the states is done by bayesian updates, asking every question to each students. The optimization of the slip and the guess is easy as well and we chose to implement a zero binary search on the derivative function. For the q-matrix we need first to notice that all lines (each line corresponding to a question) are independent as long as you fix the students skill and the slip/guess parameters. It follows that the optimization can be done separately on each line. In our case, the q-matrix dimension is quite low, between 3 and 6 skills ; all the possible line can be tried ($2^{\text{skills number}}$ possibility, 64 in the 6 skills case). 
 
-\subsubsection{Estimating the slip and guess parameters}
-
-We estimate the slip and guess parameters using binary search on the derivative function. \alert{TODO}
-
-\subsubsection{Estimating the q-matrix entries}
-
-As the number of skills is at most 6, there are $2^6$ possible lines for each question. As all questions are supposed to be independent \alert{two by two}, we can pick the best possible line, i.e. the line achieving the minimum log loss.
-
-We estimate best distribution on states, best slip / guess parameters, best q-matrix randomly, supposing all questions are independent.
+%In order to extract a q-matrix, we need to estimate three kind of parameters: the binary entries of the q-matrix, the slip and guess parameters for each question, and a distribution of probabilities for all possible states of each student. , thus our method can be seen as a variant of the EM algorithm. We would like to emphasize here on the fact that we did not want to achieve. We just needed a suitable q-matrix for our experiments.
+%\subsubsection{Estimating the possible states}
+%We simulate Bayesian updates by asking every question, using the training dataset.
+%\subsubsection{Estimating the slip and guess parameters}
+%We estimate the slip and guess parameters using binary search on the derivative function. \alert{TODO}
+%\subsubsection{Estimating the q-matrix entries}
+%As the number of skills is at most 6, there are $2^6$ possible lines for each question. As all questions are supposed to be independent \alert{two by two}, we can pick the best possible line, i.e. the line achieving the minimum log loss.
+%We estimate best distribution on states, best slip / guess parameters, best q-matrix randomly, supposing all questions are independent.
 
 \subsection{Evaluation}
 
