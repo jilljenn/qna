@@ -49,7 +49,8 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{algorithm,caption,algpseudocode}
-\usepackage{xcolor}
+\usepackage{xcolor} % TODO remove
+\usepackage[round]{natbib}
 
 \newcommand\alert[1]{\textcolor{red}{#1}}
 \newcommand\note[1]{\textcolor{blue}{#1}}
@@ -175,15 +176,15 @@ We found that q-matrices perform better on both simulated data and real data.
 \keywords{Adaptive assessment}
 
 \section{Introduction}
-Automated assessment has been developed with the help of online initiatives such as the GMAT~\cite{Rudner2010}, or more recently with the introduction of massive online open courses (MOOCs). The fact of ranking thousands of students automatically in evaluating or recruiting purposes or providing personal feedback to thousand of students automatically in formative purposes has been of growing interest.
+Automated assessment has been developed with the help of online initiatives such as the GMAT~\citep{Rudner2010}, or more recently with the introduction of massive online open courses (MOOCs). The fact of ranking thousands of students automatically in evaluating or recruiting purposes or providing personal feedback to thousand of students automatically in formative purposes has been of growing interest.
 
 If we already have for a certain test a large-scale database of item responses, it is natural to wonder which questions bring the most information about an examinee, i.e. if there is a ``best'' sequence according to which the questions should be asked. In oral examinations, the examiner usually picks the next question to ask according to the past performance of the examinee. Computerized adaptive testing can be seen as an automated version of this process: keep asking the best possible questions until enough information has been gathered. Indeed, if the examinee behaves typically, a subset of carefully chosen results may be enough to guess how she will perform on the rest of the questions.
 
-In order to address this purpose, Item Response Theory (IRT) is of great help. Although the purpose IRT was first to provide a framework for evaluating how well individual items on assessments work~\cite{Hambleton1991} by establishing a link between difficulty of items and ability of contestants, it gained interest for computerized adaptive testing and several methods were proposed and implemented. According to her performance, an examinee gets a score. The simplicity of the IRT models allowed a strong theoretical analysis~\cite{Baker2004} while increasing its popularity.
+In order to address this purpose, Item Response Theory (IRT) is of great help. Although the purpose IRT was first to provide a framework for evaluating how well individual items on assessments work~\citep{Hambleton1991} by establishing a link between difficulty of items and ability of contestants, it gained interest for computerized adaptive testing and several methods were proposed and implemented. According to her performance, an examinee gets a score. The simplicity of the IRT models allowed a strong theoretical analysis~\citep{Baker2004} while increasing its popularity.
 
-More recently, the No Child Left Behind Act of 2001 called for more formative assessments, in order to detect early students with cognitive disabilities and urged the need of cognitive diagnosis models. Instead of a summative score, examinees would receive a detailed feedback, specifying which skills are mastered and which ones are not~\cite{Cheng2009}. These models allow researchers to reveal possible misconceptions of the examinee in order to suggest her appropriate exercises. Most of these models rely on an q-matrix specifying for each question the different skills required to solve it. For example, a fraction test may require 1) converting a whole number to a fraction, 2) separating a whole number from a fraction, 3) simplifying before subtracting, and so on~\cite{DeLaTorreDouglas2004}. Recently, adaptive tests have been designed in order to guess the skills of the examinee effectively~\cite{Huebner2010}.
+More recently, the No Child Left Behind Act of 2001 called for more formative assessments, in order to detect early students with cognitive disabilities and urged the need of cognitive diagnosis models. Instead of a summative score, examinees would receive a detailed feedback, specifying which skills are mastered and which ones are not~\citep{Cheng2009}. These models allow researchers to reveal possible misconceptions of the examinee in order to suggest her appropriate exercises. Most of these models rely on an q-matrix specifying for each question the different skills required to solve it. For example, a fraction test may require 1) converting a whole number to a fraction, 2) separating a whole number from a fraction, 3) simplifying before subtracting, and so on~\citep{DeLaTorreDouglas2004}. Recently, adaptive tests have been designed in order to guess the skills of the examinee effectively~\citep{Huebner2010}.
 
-Originally, q-matrices were specified by experts, but recent work in the educational data mining field tend to infer such q-matrices directly from student data, using hill-climbing techniques~\cite{Barnes2005}, non-negative matrix factorization~\cite{Desmarais2011} or the EM algorithm~\cite{Huebner2010}. The skills extracted by data mining algorithms are therefore implicit, but have proven to produce better inference~\cite{Barnes2003}.
+Originally, q-matrices were specified by experts, but recent work in the educational data mining field tend to infer such q-matrices directly from student data, using hill-climbing techniques~\citep{Barnes2005}, non-negative matrix factorization~\citep{Desmarais2011} or the EM algorithm~\citep{Huebner2010}. The skills extracted by data mining algorithms are therefore implicit, but have proven to produce better inference~\citep{Barnes2003}.
 
 \subsection{Our contribution}
 
@@ -225,23 +226,23 @@ For our needs, IRT features a commonly used model allowing to compute the probab
 Knowing the ability $\theta$ of a given student and both the difficulty $d$ and the discrimination parameter $\delta$ of a given question, the model allows us to compute the probability of the event “student answers correctly a question of difficulty $d$ and discrimination $\delta$”, there denoted by \emph{success}:
 \[ \Pr\{success|\theta\} = \frac1{1+e^{-\delta(\theta - d)}} \]
 
-The challenge is to determine the parameters that fit the most the student data. We maintain a probability distribution of $\theta$ and each question answered allows to refine the confidence interval around $\theta$ using the Bayes rule. This simple model is commonly used in computerized adaptive testing, and many methods are implemented for next item selection~\cite{MagisRaiche2012}. From the probability distribution over $\theta$, it is possible to compute the expected probability of answering every question of the bank. \alert{TODO}
+The challenge is to determine the parameters that fit the most the student data. We maintain a probability distribution of $\theta$ and each question answered allows to refine the confidence interval around $\theta$ using the Bayes rule. This simple model is commonly used in computerized adaptive testing, and many methods are implemented for next item selection~\citep{MagisRaiche2012}. From the probability distribution over $\theta$, it is possible to compute the expected probability of answering every question of the bank. \alert{TODO}
 
 \subsection{Cognitive Diagnosis Model}
 
 Let us assume there are $K$ different skills. A user can be modeled by a vector of binary values $(a_1, \ldots, a_K)$, called \emph{state}, representing her master of the different skills. Thus, there are $2^K$ possible states.
 
-A q-matrix \cite{Tatsuoka1983} represents, for each question, the different skills involved in answering the question. $Q_{ij}$ is equal to 1 if the skill $j$ is involved in the resolution of the question $i$, 0 otherwise. If all involved skills are necessary to succeed the corresponding item, the model is considered part of the \emph{conjunctive} class. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question, skills 1 and 3 are required for the second question and mastering skill 3 is sufficient to solve last question.
+A q-matrix \citep{Tatsuoka1983} represents, for each question, the different skills involved in answering the question. $Q_{ij}$ is equal to 1 if the skill $j$ is involved in the resolution of the question $i$, 0 otherwise. If all involved skills are necessary to succeed the corresponding item, the model is considered part of the \emph{conjunctive} class. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question, skills 1 and 3 are required for the second question and mastering skill 3 is sufficient to solve last question.
 \[ Q = \left(\begin{array}{lll}
 1 & 1 & 0\\
 1 & 0 & 1\\
 0 & 0 & 1
 \end{array}\right) \]
-If the mastery of one single skill is sufficient to succeed the item, it will be considered part of the \emph{compensatory} class. We consider here the NIDA conjunctive model~\cite{Desmarais2012}: the probability of a correct response at item $i$ is $1 - s_i$ if all skills involved are mastered, $g_i$ if any skill is not mastered. $s_i$ and $g_i$ are respectively called the \emph{slip} and \emph{guess} parameters of item $i$.
+If the mastery of one single skill is sufficient to succeed the item, it will be considered part of the \emph{compensatory} class. We consider here the NIDA conjunctive model~\citep{Desmarais2012}: the probability of a correct response at item $i$ is $1 - s_i$ if all skills involved are mastered, $g_i$ if any skill is not mastered. $s_i$ and $g_i$ are respectively called the \emph{slip} and \emph{guess} parameters of item $i$.
 
-Determining the best q-matrix that fits a given student data set is currently an open field of research, as well as the best number of attributes $K$~\cite{Huebner2010} \alert{(maladroit)}, the most known methods being non-negative matrix factorization or EM algorithm~\cite{Huebner2010}. 
+Determining the best q-matrix that fits a given student data set is currently an open field of research, as well as the best number of attributes $K$~\citep{Huebner2010} \alert{(maladroit)}, the most known methods being non-negative matrix factorization or EM algorithm~\citep{Huebner2010}. 
 
-In order to compute the state of an examinee effectively, the method is similar to the IRT model: we maintain a probability distribution over the $2^K$ possible states~\cite{Huebner2010} and each question answered allows to update this distribution using the Bayes rule. Several methods for next item selection have been compared, such as Shannon entropy~\cite{Xu2003}.
+In order to compute the state of an examinee effectively, the method is similar to the IRT model: we maintain a probability distribution over the $2^K$ possible states~\citep{Huebner2010} and each question answered allows to update this distribution using the Bayes rule. Several methods for next item selection have been compared, such as Shannon entropy~\citep{Xu2003}.
 
 From this probability distribution over all possible states, we can get the probability for our examinee to get skill $j$ by summing the probabilities of all states having the $j$-th bit at 1. Thus, we can derive the probability for her to answer correctly every question in the bank, with the help of our q-matrix.
 
@@ -288,7 +289,7 @@ We used the following cross-validation based method:
 
 \subsection{Our Evaluation Framework}
 
-After the probability of correct answers of the student are computed, we need to compare them to actual response and deduce a performance indicator from it. Among all proper scoring rule (i.e. scoring rule for which the maximum value is reach for the actual probabilities) we chose the logarithmic score being the most common. \alert{we tried with the quadratic score, an other proper scoring rule, leading us to similar results}~\cite{Gneiting2007}.
+After the probability of correct answers of the student are computed, we need to compare them to actual response and deduce a performance indicator from it. Among all proper scoring rule (i.e. scoring rule for which the maximum value is reach for the actual probabilities) we chose the logarithmic score being the most common. \alert{we tried with the quadratic score, an other proper scoring rule, leading us to similar results}~\citep{Gneiting2007}.
 
 The logarithmic score is easy to both define and compute. Let $(p_i)$ be the probabilities of correct answer and $(a_i)$ be 1 if the answer was actually correct, 0 otherwise, the logarithmic score is: 
 
@@ -296,7 +297,7 @@ The logarithmic score is easy to both define and compute. Let $(p_i)$ be the pro
 
 \subsection{Item Response Theory Design}
 
-We used the R packages ltm~\cite{Rizopoulos2006} and catR~\cite{MagisRaiche2012} for this part of our experiments.
+We used the R packages ltm~\citep{Rizopoulos2006} and catR~\citep{MagisRaiche2012} for this part of our experiments.
 
 \subsubsection{Training Step}
 
@@ -324,7 +325,7 @@ We want to compute the q-matrix along with a guess and a slip parameters which m
 
 \subsubsection{Item Selection Rule}
 
-As an item selection rule, we choose the question minimizing the Shannon entropy of the distribution over the possible states. Please note that this is the same logic that the MEPV criterion used in the IRT design~\cite{Cheng2009}.
+As an item selection rule, we choose the question minimizing the Shannon entropy of the distribution over the possible states. Please note that this is the same logic that the MEPV criterion used in the IRT design~\citep{Cheng2009}.
 
 \subsubsection{Parameters Estimation}
 
@@ -338,17 +339,31 @@ otherwise
 
 \subsection{Real data}
 
-We are using SAT Subject Test data (like~\cite{Winters2005, Desmarais2011}) provided by Titus. This student data is a $296 \times 40$ matrix, 296 students from an unknown profile answering 40 questions from the 4 following topics: Mathematics, Biology, World History and French. These topics makes the data suitable for clustering.
+We are using SAT Subject Test data (like~\citep{Winters2005, Desmarais2011}) provided by Titus. This student data is a $296 \times 40$ matrix, 296 students from an unknown profile answering 40 questions from the 4 following topics: Mathematics, Biology, World History and French. These topics are relatively independent, thus the data is suitable for clustering.
 
-For convenience we also trained on a subset $50 \times 20$ of this data.
+In our experiments we \alert{wanted} to analyze the effect of three parameters: the length of the training dataset, the number of questions of the test and the number of skills of the q-matrices.
 
 \subsection{Q-matrix extraction}
+
+In order to extract a q-matrix, we need to estimate three kind of parameters: the binary entries of the q-matrix, the slip and guess parameters for each question, and a distribution of probabilities for all possible states of each student. Fixing any two we aim to compute the best third parameter, thus our method can be seen as a variant of the EM algorithm. We would like to emphasize here on the fact that we did not want to achieve. We just needed a suitable q-matrix for our experiments.
+
+\subsubsection{Estimating the possible states}
+
+We simulate Bayesian updates by asking every question, using the training dataset.
+
+\subsubsection{Estimating the slip and guess parameters}
+
+We estimate the slip and guess parameters using binary search on the derivative function. \alert{TODO}
+
+\subsubsection{Estimating the q-matrix entries}
+
+As the number of skills is at most 6, there are $2^6$ possible lines for each question. As all questions are supposed to be independent \alert{two by two}, we can pick the best possible line, i.e. the line achieving the minimum log loss.
 
 We estimate best distribution on states, best slip / guess parameters, best q-matrix randomly, supposing all questions are independent.
 
 \subsection{Evaluation}
 
-For both models, we trained them using 80\% of the student data, and tried to infer the 20\% remaining data. We then compute the average log-loss.
+For both models, our test dataset was composed of the same 136 students, the last rows of the student data. The training dataset could be composed of the first 20, 40, 80 or 160 students, the number of questions of the test could be a random subset of 10, 20 or 40 questions picked from the dataset for each experiment. For the cognitive diagnosis model, the number of skills could be any integer from 3 to 6.
 
 \subsection{Results}
 
@@ -366,8 +381,6 @@ Add a last column to q-matrix
 
 No study has been done yet over the number of skills.
 
-\section{Conclusions}
-
 Outperforms on both simulated data and real data.
 
 %\section{Acknowledgments}
@@ -377,7 +390,8 @@ Outperforms on both simulated data and real data.
 % The following two commands are all you need in the
 % initial runs of your .tex file to
 % produce the bibliography for the citations in your paper.
-\bibliographystyle{abbrv}
+%\bibliographystyle{abbrv}
+\bibliographystyle{plainnat}
 \bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
 % You must have a proper ".bib" file
 %  and remember to run:
