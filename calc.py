@@ -18,8 +18,11 @@ def normalize2(p, e):
 def multientropy(l):
 	return sum(map(entropy1, l))
 
+def kindlog(x):
+	return -15 if x < 1e-6 else math.log(x)
+
 def logloss(estimated, real):
-	return -sum(math.log(estimated[i]) if real[i] else math.log(1 - estimated[i]) for i in range(len(real))) / len(real)		
+	return -sum(kindlog(estimated[i]) if real[i] else kindlog(1 - estimated[i]) for i in range(len(real))) / len(real)		
 
 def derivative_logloss(estimated, real, coefficients):
 	return -sum(coefficients[i] / estimated[i] if real[i] else -coefficients[i] / (1 - estimated[i]) for i in range(len(real))) / len(real)

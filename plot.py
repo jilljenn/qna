@@ -30,6 +30,10 @@ irt = json.load(open('data/' + os.listdir('data')[-1]))['IRT']['mean']
 # qmatrix = json.load(open('data/stats-sat-19062014164957.json'))['QMatrix']['mean']
 # irt = json.load(open('data/stats-sat-19062014164957.json'))['IRT']['mean']
 
+# Big data K = 6
+qmatrix = json.load(open('data/stats-sat-19062014190158.arf.5-comp.json'))['QMatrix']['mean']
+irt = json.load(open('data/stats-sat-19062014190158.arf.5-comp.json'))['IRT']['mean']
+
 fig, ax = plt.subplots()
 ax.plot(range(len(irt)), irt, color='blue')
 ax.plot(range(len(qmatrix)), qmatrix, color='red')

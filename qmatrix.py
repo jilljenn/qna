@@ -10,8 +10,8 @@ def bool2int(l):
 
 DEFAULT_SLIP = 0.2
 DEFAULT_GUESS = 0.2
-K = 5
-LOOP_TIMEOUT = 10
+K = 4
+LOOP_TIMEOUT = 20
 SLIP_GUESS_PRECISION = 1e-2
 
 class QMatrix():
@@ -114,6 +114,10 @@ class QMatrix():
 				a, b = 0., 1.
 				while b - a > SLIP_GUESS_PRECISION:
 					sg = (a + b) / 2
+					if mode == 'slip':
+						self.slip[question_id] = sg
+					else:
+						self.guess[question_id] = sg
 					coefficients = [self.compute_proba_question(question_id, self.p_states[student_id], mode=mode) for student_id in range(nb_students)]
 					derivative = self.evaluate_error(question_id, train, coefficients=coefficients, sg=sg)
 					if derivative > 0:

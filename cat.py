@@ -4,11 +4,11 @@ import io
 from qmatrix import QMatrix
 from irt import IRT
 
-filename = 'sat.light'
+filename = 'sat'
 n_split = 5
-budget = 19
+budget = 20
 all_student_sampled = True
-models = [IRT(), QMatrix()]
+models = [QMatrix()]
 models_names = [model.name for model in models]
 
 def display(results):

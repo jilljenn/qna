@@ -334,23 +334,37 @@ Knowing the student answer, the update of $\pi$ is done according to the Bayes r
 otherwise
 \[ \pi_{n+1}(x) = \pi_n(x) \cdot [r\cdot g + (1-r)\cdot(1-g)] \]
 
-\section{Results}
+\section{Simulation Design}
 
-\subsection{Simulated data}
+\subsection{Real data}
 
-Here we first generate a random q-matrix and guessing and slipping parameters, then we determine the student data accordingly. Therefore our q-matrix is perfectly calibrated.
+We are using SAT Subject Test data (like~\cite{Winters2005, Desmarais2011}) provided by Titus. This student data is a $296 \times 40$ matrix, 296 students from an unknown profile answering 40 questions from the 4 following topics: Mathematics, Biology, World History and French. These topics makes the data suitable for clustering.
 
-\subsection{True data}
+For convenience we also trained on a subset $50 \times 20$ of this data.
 
-LSAT.
+\subsection{Q-matrix extraction}
 
-\alert{Peut-être mettre plus que deux algorithmes (IRT et q-matrix) sur le graphe ?}
+We estimate best distribution on states, best slip / guess parameters, best q-matrix randomly, supposing all questions are independent.
+
+\subsection{Evaluation}
+
+For both models, we trained them using 80\% of the student data, and tried to infer the 20\% remaining data. We then compute the average log-loss.
+
+\subsection{Results}
+
+\subsubsection{Small dataset}
+
+
+
+\subsubsection{Complete dataset}
+
+
 
 \section{Discussion and Future Work}
 
 Add a last column to q-matrix
 
-No study has been done yet over the number of skills
+No study has been done yet over the number of skills.
 
 \section{Conclusions}
 
