@@ -5,7 +5,7 @@ from qmatrix import QMatrix
 from irt import IRT
 
 filename = 'sat'
-n_split = 5
+n_split = 2
 budget = 39
 all_student_sampled = True
 models = [QMatrix()]
@@ -31,6 +31,8 @@ def main():
 	for model in models:
 		error_log = []
 		for dataset_id, (train_data, test_data) in enumerate(io.split(filename, n_split)):
+			if dataset_id == 1:
+				break
 			model.training_step(train_data)
 			# model.load('sat-qmatrix.0.385625187144')
 			nb_students = len(test_data)
