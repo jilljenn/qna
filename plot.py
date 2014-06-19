@@ -1,5 +1,5 @@
 # coding=utf8
-import os, json
+import os, re, json
 import matplotlib.pyplot as plt
 
 """
@@ -13,6 +13,34 @@ ax.set_title('Log loss')
 plt.show()
 """
 
+graphs = {'20': {}, '40': {}, '80': {}, '160': {}}
+
+for filename in os.listdir('eden'):
+	if filename.startswith('stats'):
+		name, nb_questions, train_power = re.match('stats-sat-([a-z0-9-]+)-([0-9]+)-([0-9]+)-', filename).groups()
+		nb_questions = int(nb_questions)
+		data = json.load(open('eden/%s' % filename))['QMatrix' if len(name) == 1 else 'IRT']['mean']
+		print name, nb_questions, train_power
+		if name not in graphs[train_power]:
+			graphs[train_power][name] = {nb_questions: data[nb_questions / 2 - 1]}
+		else:
+			graphs[train_power][name][nb_questions] = data[nb_questions / 2 - 1]
+
+colors = {'3': 'red', '4': 'orangered', '5': 'orange', '6': 'yellow', 'irt': 'blue', 'mepv-irt': 'darkblue'}
+
+for train_power in graphs:
+	fig, ax = plt.subplots()
+	for name in graphs[train_power]:
+		x, y = [], []
+		for i in [10, 20, 40]:
+			if i in graphs[train_power][name]:
+				x.append(i)
+				y.append(graphs[train_power][name][i])
+		ax.plot(x, y, color=colors[name])
+	ax.set_title('train_power : %s' % train_power)
+	plt.show()
+
+"""
 qmatrix = json.load(open('data/' + os.listdir('data')[-1]))['QMatrix']['mean']
 irt = json.load(open('data/' + os.listdir('data')[-1]))['IRT']['mean']
 #irt = json.load(open('data/stats-sat-19062014153953.moyenne-irt-30-80.json'))['IRT']['mean']
@@ -62,3 +90,4 @@ ax.plot(range(len(qmatrix)), qmatrix_old, color='purple')
 ax.plot(range(len(qmatrix)), qmatrix_zero, color='orange')
 ax.set_title('Log loss, improved')
 plt.show()
+"""
