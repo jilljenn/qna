@@ -4,9 +4,9 @@ import io
 from qmatrix import QMatrix
 from irt import IRT
 
-filename = 'sat.light'
+filename = 'sat'
 n_split = 5
-budget = 39
+budget = 20
 all_student_sampled = True
 models = [IRT(), QMatrix()]
 models_names = [model.name for model in models]
@@ -28,15 +28,17 @@ def get_results(log):
 		results[model.name] = {'mean': [sum(log[model.name][i][t] for i in range(nb_students)) / nb_students for t in range(budget)]}
 	io.backup('stats-%s-%s' % (filename, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
-def simulate(train_data, test_data, error_log):
-	model.training_step(train_data)
-	# model.load('qmatrix-19062014141433')
-	# model.load('qmatrix-19062014144231')
+def simulate(model, train_data, test_data, error_log):
+	if model.name == 'IRT':
+		model.training_step(train_data)
+	else:
+		model.load('old-qmatrix-2')
+		# print 'Erreur', model.model_error(train_data)
 	nb_students = len(test_data)
 	if all_student_sampled:
-		student_sample = range(30) #range(nb_students) # All students
+		student_sample = range(nb_students) # All students
 	for student_id in student_sample:
-		print 'Student', student_id
+		#print 'Student', student_id
 		error_log.append([0] * budget)
 		model.init_test()
 		replied_so_far = []
@@ -48,8 +50,8 @@ def simulate(train_data, test_data, error_log):
 			results_so_far.append(test_data[student_id][question_id])
 			model.estimate_parameters(replied_so_far, results_so_far)
 			performance = model.predict_performance()
-			#print ''.join(map(lambda x: str(int(round(x))), performance))
 			#print surround(performance)
+			#print ''.join(map(lambda x: str(int(round(x))), performance))
 			#print ''.join(map(lambda x: str(int(x)), test_data[student_id]))
 			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], replied_so_far)
 			#print error_log[-1][t - 1]
@@ -62,8 +64,10 @@ def main():
 	log = {}
 	dataset = io.load(filename)['student_data']
 	for model in models:
+		print model.name
 		error_log = []
-		simulate(dataset, dataset, error_log)
+		simulate(model, dataset, dataset, error_log)
+		print 'Done'
 		log[model.name] = error_log
 	get_results(log)
 	io.backup('log-%s-%s' % (filename, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)

@@ -10,7 +10,7 @@ def bool2int(l):
 
 DEFAULT_SLIP = 0.2
 DEFAULT_GUESS = 0.2
-K = 6
+K = 5
 LOOP_TIMEOUT = 5
 SLIP_GUESS_PRECISION = 1e-2
 
@@ -19,7 +19,7 @@ class QMatrix():
 		self.name = 'QMatrix'
 		self.nb_competences = nb_competences
 		self.Q = Q
-		self.prior = prior if prior else [1 / 1 << nb_competences] * (1 << nb_competences)
+		self.prior = prior if prior else [1. / (1 << nb_competences)] * (1 << nb_competences)
 		self.p_states = None
 		self.p_test = None
 		self.slip = slip
@@ -30,7 +30,7 @@ class QMatrix():
 		self.Q = data['Q']
 		self.slip = data['slip']
 		self.guess = data['guess']
-		self.prior = data['prior']
+		# self.prior = data['prior'] # TODO
 
 	def save(self, filename):
 		io.backup(filename, {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior})
@@ -57,6 +57,8 @@ class QMatrix():
 			self.infer_prior()
 			print self.model_error(train)
 			loop_limit += 1
+		if timeout == 0:
+			self.generate_student_data(50)
 		self.save('qmatrix-%s' % datetime.now().strftime('%d%m%Y%H%M%S'))
 
 	def init_test(self):
@@ -167,4 +169,5 @@ class QMatrix():
 			for question_id in range(nb_questions):
 				is_skilled = self.match(self.Q[question_id], states[student_id])
 				student_data[student_id].append((is_skilled and random.random() > self.slip[question_id]) or (not is_skilled and random.random() <= self.guess[question_id]))
-		return student_data
+		io.backup('fake_data', {'student_data': student_data})
+		# return student_data

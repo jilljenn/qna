@@ -16,7 +16,6 @@ class IRT():
 	def training_step(self, train, opt_Q=True, opt_sg=True):
 		nb_students = len(train)
 		nb_questions = len(train[0])
-		print nb_students, nb_questions
 		raw_data = map(int, reduce(lambda x, y: x + y, train))
 		a = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
 		model = ltm.rasch(a)
