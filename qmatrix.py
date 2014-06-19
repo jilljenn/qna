@@ -11,7 +11,7 @@ def bool2int(l):
 DEFAULT_SLIP = 0.2
 DEFAULT_GUESS = 0.2
 K = 5
-LOOP_TIMEOUT = 5
+LOOP_TIMEOUT = 10
 SLIP_GUESS_PRECISION = 1e-2
 
 class QMatrix():

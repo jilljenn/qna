@@ -4,9 +4,9 @@ import io
 from qmatrix import QMatrix
 from irt import IRT
 
-filename = 'sat'
+filename = 'sat.light'
 n_split = 5
-budget = 20
+budget = 19
 all_student_sampled = True
 models = [IRT(), QMatrix()]
 models_names = [model.name for model in models]
@@ -29,11 +29,7 @@ def get_results(log):
 	io.backup('stats-%s-%s' % (filename, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
 def simulate(model, train_data, test_data, error_log):
-	if model.name == 'IRT':
-		model.training_step(train_data)
-	else:
-		model.load('old-qmatrix-2')
-		# print 'Erreur', model.model_error(train_data)
+	model.training_step(train_data)
 	nb_students = len(test_data)
 	if all_student_sampled:
 		student_sample = range(nb_students) # All students
@@ -66,7 +62,7 @@ def main():
 	for model in models:
 		print model.name
 		error_log = []
-		simulate(model, dataset, dataset, error_log)
+		simulate(model, dataset[:40], dataset[40:], error_log)
 		print 'Done'
 		log[model.name] = error_log
 	get_results(log)

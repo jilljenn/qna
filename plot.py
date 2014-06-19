@@ -12,8 +12,8 @@ ax.set_title('Log loss')
 plt.show()
 """
 
-#qmatrix = json.load(open('data/' + os.listdir('data')[-1]))['QMatrix']['mean']
-#irt = json.load(open('data/' + os.listdir('data')[-1]))['IRT']['mean']
+qmatrix = json.load(open('data/' + os.listdir('data')[-1]))['QMatrix']['mean']
+irt = json.load(open('data/' + os.listdir('data')[-1]))['IRT']['mean']
 #irt = json.load(open('data/stats-sat-19062014153953.moyenne-irt-30-80.json'))['IRT']['mean']
 #qmatrix_bad = json.load(open('data/stats-sat-19062014150413.moyenne-qmatrix.json'))['QMatrix']['mean']
 #qmatrix = json.load(open('data/stats-sat-19062014153507.moyenne-qmatrix-30-80.json'))['QMatrix']['mean']
