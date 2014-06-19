@@ -1,12 +1,12 @@
 from datetime import datetime
 from calc import logloss, surround
-import io
+import io, random
 from qmatrix import QMatrix
 from irt import IRT
 
 filename = 'sat'
 n_split = 5
-budget = 20
+# budget = 20
 all_student_sampled = True
 models = [QMatrix()]
 models_names = [model.name for model in models]
@@ -21,16 +21,19 @@ def evaluate(performance, truth, replied_so_far):
 	# return logloss([performance[i] for i in range(nb_questions) if i not in replied_so_far], [truth[i] for i in range(nb_questions) if i not in replied_so_far])
 	return logloss(performance, truth)
 
-def get_results(log):
+def get_results(log, god_prefix):
 	results = {}
 	nb_students = len(log.values()[0])
+	budget = len(log.values()[0][0])
 	for model in models:
 		results[model.name] = {'mean': [sum(log[model.name][i][t] for i in range(nb_students)) / nb_students for t in range(budget)]}
-	io.backup('stats-%s-%s' % (filename, datetime.now().strftime('%d%m%Y%H%M%S')), results)
+	io.backup('stats-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
 def simulate(model, train_data, test_data, error_log):
 	model.training_step(train_data)
 	nb_students = len(test_data)
+	nb_questions = len(test_data[0])
+	budget = nb_questions - 1
 	if all_student_sampled:
 		student_sample = range(nb_students) # All students
 	for student_id in student_sample:
@@ -57,16 +60,21 @@ def simulate(model, train_data, test_data, error_log):
 				print [test_data[student_id][i] for i in range(len(performance)) if i not in replied_so_far]"""
 
 def main():
-	log = {}
-	dataset = io.load(filename)['student_data']
-	for model in models:
-		print model.name
-		error_log = []
-		simulate(model, dataset[:40], dataset[40:], error_log)
-		print 'Done'
-		log[model.name] = error_log
-	get_results(log)
-	io.backup('log-%s-%s' % (filename, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
+	full_dataset = io.load(filename)['student_data']
+	for nb_competences in [4, 6]:
+		for nb_questions in [10, 20, 40]:
+			for train_power in [20, 40, 80, 160]:
+				log = {}
+				god_prefix = '%s-%s-%s' % (nb_competences, nb_questions, train_power)
+				model = QMatrix(nb_competences=nb_competences)
+				question_subset = sorted(random.sample(range(len(full_dataset[0])), nb_questions))
+				dataset = [[full_dataset[i][j] for j in question_subset] for i in range(len(full_dataset))]
+				error_log = []
+				simulate(model, dataset[:train_power], dataset[160:], error_log)
+				print god_prefix
+				log[model.name] = error_log
+				get_results(log, god_prefix)
+				io.backup('log-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
 
 if __name__ == '__main__':
 	main()

@@ -10,9 +10,10 @@ def bool2int(l):
 
 DEFAULT_SLIP = 0.2
 DEFAULT_GUESS = 0.2
-K = 4
-LOOP_TIMEOUT = 20
-SLIP_GUESS_PRECISION = 1e-2
+K = 5
+LOOP_TIMEOUT = 5
+SLIP_GUESS_PRECISION = 1e-3
+ALPHA = 2e-3
 
 class QMatrix():
 	def __init__(self, nb_competences=K, Q=None, slip=None, guess=None, prior=None):
@@ -55,7 +56,7 @@ class QMatrix():
 			if opt_Q:
 				self.infer_qmatrix(train)
 			self.infer_prior()
-			print self.model_error(train)
+			# print self.model_error(train)
 			loop_limit += 1
 		if timeout == 0:
 			self.generate_student_data(50)
@@ -98,7 +99,7 @@ class QMatrix():
 		estimated_column = [self.compute_proba_question(question_id, self.p_states[student_id]) for student_id in range(nb_students)]
 		real_column = [train[student_id][question_id] for student_id in range(nb_students)]
 		if coefficients:
-			return derivative_logloss(estimated_column, real_column, coefficients) - 0.05 * (1 / sg - 1 / (1 - sg)) # Ahem
+			return derivative_logloss(estimated_column, real_column, coefficients) - ALPHA * (1 / sg - 1 / (1 - sg)) # Ahem
 		else:
 			return logloss(estimated_column, real_column)
 

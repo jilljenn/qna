@@ -1,7 +1,7 @@
 import math
 
 def entr(x):
-	return x if x < 1e-6 else (-x) * math.log(x, 2)
+	return (-1e-16) * math.log(1e-16, 2) if x < 1e-16 else (-x) * math.log(x, 2)
 
 def entropy(l):
 	return sum(entr(x) for x in l)
@@ -19,7 +19,7 @@ def multientropy(l):
 	return sum(map(entropy1, l))
 
 def kindlog(x):
-	return -15 if x < 1e-6 else math.log(x)
+	return math.log(1e-16) if x < 1e-16 else math.log(x)
 
 def logloss(estimated, real):
 	return -sum(kindlog(estimated[i]) if real[i] else kindlog(1 - estimated[i]) for i in range(len(real))) / len(real)		

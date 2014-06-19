@@ -16,7 +16,7 @@ def split(filename, n):
 	return bundle
 
 def backup(filename, data):
-	with open('data/%s.json' % filename, 'w') as f:
+	with open('eden/%s.json' % filename, 'w') as f:
 		f.write(json.dumps(data))
 
 def load(filename):

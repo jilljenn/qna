@@ -1,3 +1,4 @@
+# coding=utf8
 import os, json
 import matplotlib.pyplot as plt
 
@@ -23,20 +24,41 @@ irt = json.load(open('data/' + os.listdir('data')[-1]))['IRT']['mean']
 # irt = json.load(open('data/stats-fake_data-19062014163005.json'))['IRT']['mean']
 
 # Old data
-# qmatrix = json.load(open('data/stats-sat-19062014164114.json'))['QMatrix']['mean']
-# irt = json.load(open('data/stats-sat-19062014164114.json'))['IRT']['mean']
+# qmatrix_old = json.load(open('data/stats-sat-19062014164114.OMG.json'))['QMatrix']['mean']
+# irt_old = json.load(open('data/stats-sat-19062014164114.OMG.json'))['IRT']['mean']
 
 # Old data 2
 # qmatrix = json.load(open('data/stats-sat-19062014164957.json'))['QMatrix']['mean']
 # irt = json.load(open('data/stats-sat-19062014164957.json'))['IRT']['mean']
 
-# Big data K = 6
-qmatrix = json.load(open('data/stats-sat-19062014190158.arf.5-comp.json'))['QMatrix']['mean']
-irt = json.load(open('data/stats-sat-19062014190158.arf.5-comp.json'))['IRT']['mean']
+# Big data K = 5
+# qmatrix = json.load(open('data/stats-sat-19062014190158.arf.5-comp.json'))['QMatrix']['mean']
+# irt = json.load(open('data/stats-sat-19062014190158.arf.5-comp.json'))['IRT']['mean']
+
+# Big data K = 4
+# data = json.load(open('data/stats-sat-19062014191840.json'))
+
+# Big data K = 4 α = 0.01
+# data = json.load(open('data/stats-sat-19062014192051.json'))
+
+# Big data K = 5 α = 0.01
+# data = json.load(open('data/stats-sat-19062014192621.json'))
+
+# Big data K = 5 α = 0.001
+data = json.load(open('data/stats-sat-19062014195517.json'))
+qmatrix = data['QMatrix']['mean']
+
+# Big data K = 5 α = 0.000
+data = json.load(open('data/stats-sat-19062014200009.json'))
+
+qmatrix_zero = data['QMatrix']['mean']
+irt = json.load(open('data/stats-sat-19062014192621.json'))['IRT']['mean']
+qmatrix_old = json.load(open('data/stats-sat-19062014192621.json'))['QMatrix']['mean']
 
 fig, ax = plt.subplots()
 ax.plot(range(len(irt)), irt, color='blue')
 ax.plot(range(len(qmatrix)), qmatrix, color='red')
-#ax.plot(range(len(qmatrix_bad)), qmatrix_bad, color='green')
+ax.plot(range(len(qmatrix)), qmatrix_old, color='purple')
+ax.plot(range(len(qmatrix)), qmatrix_zero, color='orange')
 ax.set_title('Log loss, improved')
 plt.show()
