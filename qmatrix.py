@@ -11,7 +11,7 @@ def bool2int(l):
 DEFAULT_SLIP = 0.2
 DEFAULT_GUESS = 0.2
 K = 6
-LOOP_TIMEOUT = 1
+LOOP_TIMEOUT = 5
 SLIP_GUESS_PRECISION = 1e-2
 
 class QMatrix():
@@ -30,7 +30,7 @@ class QMatrix():
 		self.Q = data['Q']
 		self.slip = data['slip']
 		self.guess = data['guess']
-		# self.prior = data['prior']
+		self.prior = data['prior']
 
 	def save(self, filename):
 		io.backup(filename, {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior})

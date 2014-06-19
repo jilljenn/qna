@@ -16,6 +16,7 @@ class IRT():
 	def training_step(self, train, opt_Q=True, opt_sg=True):
 		nb_students = len(train)
 		nb_questions = len(train[0])
+		print nb_students, nb_questions
 		raw_data = map(int, reduce(lambda x, y: x + y, train))
 		a = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
 		model = ltm.rasch(a)
@@ -32,7 +33,7 @@ class IRT():
 		r('theta <- 0')
 
 	def next_item(self, replied_so_far, results_so_far):
-		next = r('nextItem(itembank, NULL, theta, out = c({}), criterion = "MEPV")$item'.format(','.join(map(lambda x: str(x + 1), replied_so_far))))[0]
+		next = r('nextItem(itembank, NULL, theta, out = c({}))$item'.format(','.join(map(lambda x: str(x + 1), replied_so_far))))[0]
 		# nb_questions = r('dim(itembank)[1]')[0]
 		# next = random.choice(list(set(range(nb_questions)) - set(replied_so_far)))
 		return next - 1
