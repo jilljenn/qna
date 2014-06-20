@@ -335,13 +335,13 @@ In order to extract a q-matrix, we need to estimate three kind of parameters: th
 
 The estimation of the probability distribution on the states is done by Bayesian updates, asking all questions to each student. Slip and guess parameters are optimized by bisection method on the derivative function, as it is convex. Finally, for the q-matrix entries we can notice that any two questions are independent when the students skills and the slip/guess parameters are fixed. It follows that the optimization can be done line by line. In our case, the q-matrix dimension is quite low, between 3 and 6 skills ; therefore the best possible line can be found by simple exhaustive search.
 
-\alert{Cet algol converge vers un minimum local + minimum local peut être mauvais en particulier dans le cas K=6 (relancer depuis une autre matrice random)}
+%\alert{Cet algol converge vers un minimum local + minimum local peut être mauvais en particulier dans le cas K=6 (relancer depuis une autre matrice random)}
 
-We would like to emphasize here that the purpose of this article is not to provide a more efficient algorithm for extracting q-matrices from real data. Nevertheless, our implementation is sufficient to provide results in a reasonable time. % TODO
+We would like to emphasize here that the purpose of this article is not to provide a more efficient algorithm for extracting q-matrices from real data. Nevertheless, our implementation is sufficient to provide results in a reasonable time. Indeed, we achieve a complexity of $O(N_Q N_S K 4^K)$ at each iteration where $N_Q$ and $N_S$ denote respectively the number of questions and the number of students, and $K$ is at most 6.
 
 \subsubsection{Item Selection Rule}
 
-As an item selection rule, we choose the question minimizing the Shannon entropy of the distribution over the possible states. Please note that this is the same logic that the MEPV criterion used in the IRT design~\citep{Cheng2009}.
+As an item selection rule, we choose the question minimizing the Shannon entropy of the distribution over the possible states.
 
 \subsubsection{Parameters Update}
 
@@ -353,37 +353,48 @@ otherwise
 
 \section{Evaluation}
 
-\subsection{Data and Simulation Design}
+\subsection{Data and Simulation Design} % and provided by Titus\footnote{\url{http://alumni.cs.ucr.edu/~titus/}}
 
-We are using SAT Subject Test data, also featured in~\citep{Winters2005, Desmarais2011} and provided by Titus\footnote{\url{http://alumni.cs.ucr.edu/~titus/}}. This student data is a $296 \times 40$ matrix representing the results from 296 students on 40 questions from the 4 following topics: Mathematics, Biology, World History and French. These topics are relatively independent, which makes the data is suitable for clustering. % TODO
+We are using SAT Subject Test data, also featured in~\citep{Winters2005, Desmarais2011}. This student data is a $296 \times 40$ matrix representing the results from 296 students on 40 questions from the 4 following topics: Mathematics, Biology, World History and French. % These topics are a priori largely independent, which makes the data suitable for clustering. % TODO
 
-In our experiments we wanted to analyze the effect of three parameters: the length of the training dataset, the number of questions of the test and the number of skills of the q-matrices.
+In our experiments we wanted to analyze the effect of three parameters: the length of the training dataset, the number of questions of the test and the number of skills of the q-matrices. For both models considered, IRT and q-matrix, our test dataset was composed of the same 136 students, the last rows of the student data. The training dataset could be composed of the first 20, 40, 80 or 160 students, the number of questions of the test could be a random subset of 10, 20 or 40 questions picked from the dataset for each experiment. The number of skills $K$ of the q-matrix could be any integer from 3 to 6.
 
-For both models, our test dataset was composed of the same 136 students, the last rows of the student data. The training dataset could be composed of the first 20, 40, 80 or 160 students, the number of questions of the test could be a random subset of 10, 20 or 40 questions picked from the dataset for each experiment. For the cognitive diagnosis model, the number of skills could be any integer from 3 to 6.
+To evaluate the different models throughout the CAT process, we compute at each step $t$ the mean logarithmic score of the whole vector of predicted answers for all students of the test dataset, according to the ground truth.
 
-The whole code is written in Python with RPy bindings~\citep{Gautier2008} and available on Bitbucket\footnote{\url{http://bitbucket.org/jilljenn/qna/}}.
+The whole code is written in R and Python with RPy bindings~\citep{Gautier2008} and available on Bitbucket\footnote{\url{http://bitbucket.org/jilljenn/qna/}}. The whole simulation process ran for 6 hours on a 1.3 GHz Intel Core i5.
 
 \subsection{Results}
 
-%\subsubsection{Small dataset}
+We compared different algorithms, the IRT-based algorithm and our implementation of the NIDA q-matrix model for values of the parameter $K$, the width of the q-matrix.
 
-%\subsubsection{Complete dataset}
-We compared different algorithms, the IRT based algorithm implemented by R and our implementation of the NIDA q-matrix model for difference value of the parameter K (size of the q-matrix). 
+% For a straightforward analysis of the different set parameters, 
+We will first focus on the values of each algorithm score after 10 questions for the 20-question test. Results are detailed in Table~\ref{tab:20q} where the best performances are shown in bold. Please note 0.693 is the worst possible error, all probabilities being equal to 1/2. On the SAT dataset, for all reasonable choices of $K$, the q-matrix model outperforms IRT, $K = 6$ being globally the best among all tested parameters.
 
-The Table 1 shows what the logarithmic score of the different algorithms looks like for a test with 40 questions depending on the size of the training set. The less the score is the better it is, 0.693 being the worse possible score (all probabilities equal $\frac{1}{2}$) and 0 the best (probabilities are 1 or 0, the algorithm predicting perfectly the student answers). 
+\begin{table}[H]
+\centering\begin{tabular}{cccc}
+\bfseries Train dataset length & 40 & 80 & 160\\
+\hline
+IRT & 0.482 & 0.473 & 0.456\\
+Q-matrix $K = 3$ skills & 0.487 & 0.47 & 0.435\\
+Q-matrix $K = 4$ skills & \textbf{0.455} & 0.434 & 0.424\\
+Q-matrix $K = 5$ skills & 0.481 & \textbf{0.399} & 0.376\\
+Q-matrix $K = 6$ skills & \textbf{0.455} & 0.4 & \textbf{0.361}\\
+\end{tabular}
+\caption{Score for a 20 questions test. Scores are taken at midtest.}
+\label{tab:20q}
+\end{table}
 
-En vrac : \\
-- Q matrix outperform IRT et K=6 est globalement meilleur sur ce jeu de données. \\
-- IRT se fait d'autant plus outperform que la taille du training step est grande. Prévisible étant donné que IRT est un model moins fin il est moint sujet au sur apprentissage sur des petites taille de training set. Donner chiffre pour K=3 vs IRT TrainingSet $\in$ \{40,160\}\\
-- Le résultat précédent est aussi vrai pour les petites valeurs de K vs les grandes valeurs de K et était attendu pour les mêmes raison. Un modèle pauvre se comporte mieux qu'un modèle riche pour des tailles de training set petites et inversement. 
-- Sensibilité à la valeur de K pas trop élevé : résultats proche pour $K \in \{4,5,6\}$. 
+When the training set is composed of 160 students, IRT performs the worst among all tested algorithms, particularly for $K = 6$. However, when the training set is composed of only 40 students, IRT performs slightly better than the q-matrix for $K = 3$. Also, the performance of the q-matrix for $K = 6$ improves drastically when the size of the training set increases, contrary to IRT or q-matrix with a low value of $K$.
 
-The Table 2 shows what the logarithmic score of the different algorithms looks like for a test with this time only 20 questions. 
-En vrac : \\
-- résultats similaires : q-matrix outperform encore IRT. \\
-- Le faible nombre de question met d'autant en avant le phénomène suivant : l'algorithme s'améliore très nettement pour K=6 avec l'augmentation de la taille du training step. Cette amélioration est plus modéré pour $K \in \{3,4,5\}$. 
+For a deeper understanding, instead of computing only the mean error at mid-test, we compute it at each step of the CAT process. Results are shown in Figure~\ref{fig:1}. As we can see, IRT is not only performing worse at mid-test but even in the early questions of the test. Also, the greater $K$, the longer the corresponding model takes to achieve its best performance. 
 
-\begin{table}
+\begin{figure}
+\includegraphics[width=\linewidth]{20-80.pdf}
+\caption{Evolution of the logarithmic score throughout the test. The dashed curve denotes the IRT model, while the curves of growing thickness denote q-matrices of growing widths.}
+\label{fig:1}
+\end{figure}
+
+\begin{table}[H]
 \begin{tabular}{cccc}
 \bfseries Train dataset length & 40 & 80 & 160\\
 \hline
@@ -393,33 +404,37 @@ Q-matrix 4 skills & 0.494 & 0.459 & 0.417\\
 Q-matrix 5 skills & \textbf{0.474} & 0.433 & 0.415\\
 Q-matrix 6 skills & 0.482 & \textbf{0.425} & \textbf{0.403}\\
 \end{tabular}
-\caption{Score for a 40 questions test}
-
-\begin{tabular}{cccc}
-\bfseries Train dataset length & 40 & 80 & 160\\
-\hline
-IRT & 0.482 & 0.473 & 0.456\\
-Q-matrix 3 skills & 0.487 & 0.47 & 0.435\\
-Q-matrix 4 skills & \textbf{0.455} & 0.434 & 0.424\\
-Q-matrix 5 skills & 0.481 & \textbf{0.399} & 0.376\\
-Q-matrix 6 skills & \textbf{0.455} & 0.4 & \textbf{0.361}\\
-\end{tabular}
-\caption{Score for a 20 questions test}
+\caption{Score for a 40 questions test.}
+\label{tab:40q}
 \end{table}
 
-\includegraphics[width=\linewidth]{20-80.pdf}
-\includegraphics[width=\linewidth]{20-160.pdf}
-\includegraphics[width=\linewidth]{40-160.pdf}
-
 \section{Discussion and Future Work}
-Results are produce from one relatively small dataset. Interesting to try with other student datas (only one domain student dataset, bigger student dataset, ...). 
 
-Interesting to study the K optimal depending on the number of students in the training set and the number of questions. There is a tradeoff to solve between big K potentially leading to over fitting and smaller ones which could not provide a rich enough model. Our results suggest that q-matrix is not very sensitive to the choice of K as long as this K parameters keep being reasonable given the train dataset. 
+Our simulation studies suggest the q-matrix model, first designed for cognitive diagnosis, can be successfully used in a context of large-scale assessments. Indeed, our item selection allows a fast estimation of the student skills, which induces a good and early prediction of her answers on the whole set of questions. % Can be linked to the prior.
 
-The results show that the interdependencies between question is important enough to be worth taking into account, the main difference between IRT and q-matrix being the fact that q-matrix capture these interdependencies. Other models taking into accounts these interdependence exists such as fusion models [explain]. We wouldn't be surprise if these kind of fusion model perform better than the NIDA q-matrix model presented here. 
+Although, q-matrix being a richer model, it can be prone to overfitting, particularly for greater values of $K$, as highlighted by our results. In addition, the longer convergence time for high values of $K$ can be explained by the fact that guessing a larger skill vector requires more information, therefore more questions. Thus, there is a tradeoff between a large value of $K$ potentially leading to overfitting and smaller ones which could not provide a rich enough model. The optimal value of $K$ may depend on the size of the training set along with the number of questions of the test. Nevertheless, as pointed out in~\cite{Huebner2010}, there have been no systematic studies for cognitive diagnosis models investigating the most suitable number of skills $K$ for representing the students.
 
-One important aspect is the training step. It appear that our implementation of q-matrix was limited by the approximation of the q-matrix done during the training step and amelioration can be done in this direction, particularly for bigger q-matrix ($K \ge 6$). 
+% Finally, while the optimization of the $K$ parameter is important, the sensibility of the results to this parameter is tempered. Indeed, the results for q-matrix with $K = 5$ and $K = 6$ are actually pretty close. % K
 
+% Our results suggest that q-matrix is not very sensitive to the choice of K as long as this K parameters keep being reasonable given the train dataset.
+
+Due to limited resources, our simulation was limited to $K \leqslant 6$. Indeed, the most costly part of the process is the training step of the q-matrix, which requires at each iteration a cost of $O(K 4^K)$ and a number of iterations increasing with $K$ to obtain convergence towards a local minimum. Anyway, progress can be made in the extraction of the q-matrix. A better computation of q-matrix could have lead to even better results.
+
+%Our results can extended to other cognitive diagnosis models from the compensatory classes (DINA, etc.~\cite{Desmarais2011}).
+
+%A new direction could be to 
+
+%Please also note that, our item exposure rate is very high as the same first questions are asked. Thus low stakes high stakes
+
+Our results are produced from a dataset over 4 knowledge fields. It would be interesting to try our implementation on other real data such as bigger datasets or ones including only one knowledge field.
+
+Finally, we showed that links between questions are worth taking into account, the main difference between IRT and q-matrix being the fact that q-matrix capture these links. Other models taking into account these interdependences exist such as fusion models~\citep{McGlohen2008}, that may perform better than the NIDA q-matrix model presented here.
+
+% MIRT
+
+% As a finish we would like to draw a link between Elo systems and IRT because the probability of winning only depends on the difference between Elo values while the probability of answering correctly. 
+
+% Chess stuff.
 
 %Add a last column to q-matrix
 

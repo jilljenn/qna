@@ -34,7 +34,7 @@ for filename in os.listdir(folder):
 			graphs2[nb_questions][name] = {train_power: value}
 		else:
 			graphs2[nb_questions][name][train_power] = value
-		if nb_questions == 40: # TODO mettre ça à 40
+		if nb_questions == 20: # TODO mettre ça à 40
 			filenames[(name, train_power)] = '%s/%s' % (folder, filename)
 
 colors = {'3': 'red', '4': 'orangered', '5': 'orange', '6': 'yellow', 'irt': 'blue', 'mepv-irt': 'darkblue'}

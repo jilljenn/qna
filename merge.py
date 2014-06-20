@@ -41,13 +41,16 @@ with open('graph-80.R', 'w') as f:
 	f.write('qmatrix5 <- c(%s)\n' % ','.join(map(str, eden['qmatrix5-80'])))
 	f.write('qmatrix6 <- c(%s)\n' % ','.join(map(str, eden['qmatrix6-80'])))
 	f.write('irt <- c(%s)\n' % ','.join(map(str, eden['irt-80'])))
-	f.write('plot(qmatrix6, type="l", lwd=3)\n')
+	f.write('plot(qmatrix6, type="l", lwd=5, ann=F)\n')
 	# f.write('lines(qmatrix3, type="l")\n')
 	f.write('lines(qmatrix4, type="l", lwd=1)\n')
-	f.write('lines(qmatrix5, type="l", lwd=2)\n')
+	f.write('lines(qmatrix5, type="l", lwd=3)\n')
 	f.write('lines(irt, type="l", xlab="dat", lty="dashed")\n')
-	f.write('legend("topright", c("qmatrix3", "qmatrix4", "qmatrix5", "qmatrix6"))\n')
+	f.write('legend("topright", c("irt", "qmatrix4", "qmatrix5", "qmatrix6"), lty=c(2, 1, 1, 1), lwd=c(1, 1, 3, 5))\n')
+	f.write('title(xlab="Number of asked questions")\n')
+	f.write('title(ylab="Mean error")\n')
 
+"""
 with open('graph-160.R', 'w') as f:
 	f.write('qmatrix3 <- c(%s)\n' % ','.join(map(str, eden['qmatrix3-160'])))
 	f.write('qmatrix4 <- c(%s)\n' % ','.join(map(str, eden['qmatrix4-160'])))
@@ -60,3 +63,4 @@ with open('graph-160.R', 'w') as f:
 	f.write('lines(qmatrix5, type="l", lwd=2)\n')
 	f.write('lines(irt, type="l", xlab="dat", lty="dashed")\n')
 	f.write('legend("topright", c("qmatrix3", "qmatrix4", "qmatrix5", "qmatrix6"))\n')
+"""
