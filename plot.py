@@ -34,7 +34,7 @@ for filename in os.listdir(folder):
 			graphs2[nb_questions][name] = {train_power: value}
 		else:
 			graphs2[nb_questions][name][train_power] = value
-		if nb_questions == 10:
+		if nb_questions == 40:
 			filenames[(name, train_power)] = '%s/%s' % (folder, filename)
 
 colors = {'3': 'red', '4': 'orangered', '5': 'orange', '6': 'yellow', 'irt': 'blue', 'mepv-irt': 'darkblue'}
@@ -65,6 +65,10 @@ for nb_questions in [10, 15, 20, 30, 40]:
 	plt.show()
 """
 
+bundle = {}
+bundle['nbq-20'] = graphs2[20]
+bundle['nbq-40'] = graphs2[40]
+
 for train_power in ['80', '160']:
 	print train_power
 	fig, ax = plt.subplots()
@@ -73,7 +77,9 @@ for train_power in ['80', '160']:
 	qmatrix4 = json.load(open(filenames[('4', train_power)]))['QMatrix']['mean']
 	qmatrix5 = json.load(open(filenames[('5', train_power)]))['QMatrix']['mean']
 	qmatrix6 = json.load(open(filenames[('6', train_power)]))['QMatrix']['mean']
-	print irt
+	bundle['irt-%s' % train_power] = irt
+	bundle['qmatrix4-%s' % train_power] = qmatrix4
+	bundle['qmatrix6-%s' % train_power] = qmatrix6
 	print qmatrix6
 	ax.plot(range(1, len(irt) + 1), irt, color='blue')
 	ax.plot(range(1, len(qmatrix3) + 1), qmatrix3, color='yellow')
@@ -81,7 +87,10 @@ for train_power in ['80', '160']:
 	ax.plot(range(1, len(qmatrix5) + 1), qmatrix5, color='red')
 	ax.plot(range(1, len(qmatrix6) + 1), qmatrix6, color='black')
 	ax.set_title('IRT VS q-matrix K = 3-4-6, train_power %s' % train_power)
-	plt.show()
+	# plt.show()
+
+with open('bundle-%s.json' % folder, 'w') as f:
+	f.write(json.dumps(bundle))
 
 # nb_questions : 10, train_power : (80, 160)
 # nb_questions : 40, train_power : (80, 160)

@@ -363,7 +363,33 @@ The whole code is written in Python with RPy bindings~\citep{Gautier2008} and av
 
 \subsection{Results}
 
+%\subsubsection{Small dataset}
 
+%\subsubsection{Complete dataset}
+
+20 questions
+
+\begin{tabular}{cccc}
+\bfseries Train dataset length & 40 & 80 & 160\\
+\hline
+IRT & 0.482 & 0.473 & 0.456\\
+Q-matrix 3 skills & 0.487 & 0.47 & 0.435\\
+Q-matrix 4 skills & \textbf{0.455} & 0.434 & 0.424\\
+Q-matrix 5 skills & 0.481 & \textbf{0.399} & 0.376\\
+Q-matrix 6 skills & \textbf{0.455} & 0.4 & \textbf{0.361}\\
+\end{tabular}
+
+40 questions
+
+\begin{tabular}{cccc}
+\bfseries Train dataset length & 40 & 80 & 160\\
+\hline
+IRT & 0.499 & 0.469 & 0.446\\
+Q-matrix 3 skills & 0.517 & 0.47 & 0.444\\
+Q-matrix 4 skills & 0.494 & 0.459 & 0.417\\
+Q-matrix 5 skills & \textbf{0.474} & 0.433 & 0.415\\
+Q-matrix 6 skills & 0.482 & \textbf{0.425} & \textbf{0.403}\\
+\end{tabular}
 
 \section{Discussion and Future Work}
 Results are produce from one relatively small dataset. Interesting to try with other student datas (only one domain student dataset, bigger student dataset, ...). 
