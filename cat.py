@@ -2,7 +2,7 @@ from datetime import datetime
 from calc import logloss, surround
 import io, random
 from qmatrix import QMatrix
-from irt import IRT
+#from irt import IRT
 
 filename = 'sat'
 n_split = 5
@@ -60,10 +60,10 @@ def simulate(model, train_data, test_data, error_log):
 				print [test_data[student_id][i] for i in range(len(performance)) if i not in replied_so_far]"""
 
 def main():
-	full_dataset = io.load(filename)['student_data']
-	for nb_competences in [3, 6]:
-		for nb_questions in [15, 30]:
-			for train_power in [20, 40, 80, 160]:
+	full_dataset = io.load(filename)['student_data'][::-1]
+	for nb_competences in [4, 5]:
+		for nb_questions in [10, 15, 20, 30, 40]:
+			for train_power in [40, 80, 160]:
 				log = {}
 				god_prefix = '%s-%s-%s' % (nb_competences, nb_questions, train_power)
 				model = QMatrix(nb_competences=nb_competences)
