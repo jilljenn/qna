@@ -24,7 +24,7 @@ for filename in os.listdir(folder):
 		name, nb_questions, train_power = re.match('stats-sat-([a-z0-9-]+)-([0-9]+)-([0-9]+)-', filename).groups()
 		nb_questions = int(nb_questions)
 		data = json.load(open('%s/%s' % (folder, filename)))['QMatrix' if len(name) == 1 else 'IRT']['mean']
-		print name, nb_questions, train_power
+		# print name, nb_questions, train_power
 		value = data[nb_questions / 2 - 1]
 		if name not in graphs[train_power]:
 			graphs[train_power][name] = {nb_questions: value}
@@ -34,7 +34,7 @@ for filename in os.listdir(folder):
 			graphs2[nb_questions][name] = {train_power: value}
 		else:
 			graphs2[nb_questions][name][train_power] = value
-		if nb_questions == 40:
+		if nb_questions == 40: # TODO mettre ça à 40
 			filenames[(name, train_power)] = '%s/%s' % (folder, filename)
 
 colors = {'3': 'red', '4': 'orangered', '5': 'orange', '6': 'yellow', 'irt': 'blue', 'mepv-irt': 'darkblue'}
@@ -78,9 +78,11 @@ for train_power in ['80', '160']:
 	qmatrix5 = json.load(open(filenames[('5', train_power)]))['QMatrix']['mean']
 	qmatrix6 = json.load(open(filenames[('6', train_power)]))['QMatrix']['mean']
 	bundle['irt-%s' % train_power] = irt
+	bundle['qmatrix3-%s' % train_power] = qmatrix3
 	bundle['qmatrix4-%s' % train_power] = qmatrix4
+	bundle['qmatrix5-%s' % train_power] = qmatrix5
 	bundle['qmatrix6-%s' % train_power] = qmatrix6
-	print qmatrix6
+	# print qmatrix6
 	ax.plot(range(1, len(irt) + 1), irt, color='blue')
 	ax.plot(range(1, len(qmatrix3) + 1), qmatrix3, color='yellow')
 	ax.plot(range(1, len(qmatrix4) + 1), qmatrix4, color='orange')
