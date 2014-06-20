@@ -51,6 +51,7 @@
 \usepackage{algorithm,caption,algpseudocode}
 \usepackage{xcolor} % TODO remove
 \usepackage[round]{natbib}
+\usepackage{hyperref}
 
 \newcommand\alert[1]{\textcolor{red}{#1}}
 \newcommand\note[1]{\textcolor{blue}{#1}}
@@ -257,7 +258,7 @@ Several methods for next item selection have been compared, such as Shannon entr
 %\caption{Example for $K = 3$.}
 %\end{table}
 
-\section{Our Test Framework}
+\section{Test Framework}
 
 Our student data is a binary matrix students $\times$ questions where $c_{ij}$ is 1 if student $i$ answered the question $j$ correctly, 0 otherwise. 
 
@@ -328,7 +329,13 @@ Note that for a normal or a logistic prior, the posterior distribution is no lon
 
 \subsubsection{Training Step}
 
-We want to compute the q-matrix along with a guess and a slip parameters which minimize the likelihood. The computation of q-matrix is still an open field of research. Recent work of Desmarais \alert{cite} makes use of Non-negative Matrix Factorization. \alert{to be continued}
+Within the psychometrics field, q-matrix are usually specified by experts, in order to get a feedback relying on intelligible skills. For our purpose, as q-matrices are a tool designed to predict the probability of a correct answer, we can learn this q-matrix from data. Thus we want to compute the q-matrix along with a guess and a slip parameters which minimize the likelihood.
+
+In order to extract a q-matrix, we need to estimate three kind of parameters: the binary entries of the q-matrix, the slip and guess parameters for each question, and a distribution of probabilities for all possible states of each student. Fixing any two, it is easy to optimize the third parameter leading us to the following procedure: until convergence, sequentially optimize each parameter.
+
+The estimation of the probability distribution on the states is done by Bayesian updates, asking all questions to each student. Slip and guess parameters are optimized by bisection method on the derivative function, as it is convex. Finally, for the q-matrix entries we can notice that any two questions are independent when the students skills and the slip/guess parameters are fixed. It follows that the optimization can be done line by line. In our case, the q-matrix dimension is quite low, between 3 and 6 skills ; therefore the best possible line can be found by simple exhaustive search.
+
+We would like to emphasize here that the purpose of this article is not to provide a more efficient algorithm for extracting q-matrices from real data. Nevertheless, our implementation is sufficient to provide results in a reasonable time. % TODO
 
 \subsubsection{Item Selection Rule}
 
@@ -342,52 +349,35 @@ Knowing the student answer, the update of $\pi$ is done according to the Bayes r
 otherwise
 \[ \pi_{n+1}(x) = \pi_n(x) \cdot [r\cdot g + (1-r)\cdot(1-g)] \]
 
-\section{Simulation Design}
+\section{Evaluation}
 
-\subsection{Real data}
+\subsection{Data and Simulation Design}
 
-We are using SAT Subject Test data (like~\citep{Winters2005, Desmarais2011}) provided by Titus. This student data is a $296 \times 40$ matrix, 296 students from an unknown profile answering 40 questions from the 4 following topics: Mathematics, Biology, World History and French. These topics are relatively independent, thus the data is suitable for clustering.
+We are using SAT Subject Test data, also featured in~\citep{Winters2005, Desmarais2011} and provided by Titus\footnote{\url{http://alumni.cs.ucr.edu/~titus/}}. This student data is a $296 \times 40$ matrix representing the results from 296 students on 40 questions from the 4 following topics: Mathematics, Biology, World History and French. These topics are relatively independent, which makes the data is suitable for clustering. % TODO
 
-In our experiments we \alert{wanted} to analyze the effect of three parameters: the length of the training dataset, the number of questions of the test and the number of skills of the q-matrices.
-
-\subsection{Parameters extraction}
-
-The main difference with psychometrics work is that there is no need here to run the algorithm for a specific q-matrix given by experts. Indeed, the purpose of q-matrix in the psychometric field is to get an intelligible feedback, therefore the skills has to correspond to intelligible skills and so the q-matrix. For our purpose, as the q-matrix is only a tool designed to predict the probability of correct answer, we can learn this q-matrix from datas. 
-
-The q-matrix extraction is still an open field of research. Methods aiming at finding best q-matrix involve \alert{TODO}. Also the q-matrix is not the only one parameter as both the students skill and for each question the couple (slip, guess) have to be optimize as well. Fixing any two, it is easy to optimize the third parameter leading us to the following procedure: until convergence, sequentially optimize each parameters. 
-
-The estimation of the probability distribution on the states is done by bayesian updates, asking every question to each students. The optimization of the slip and the guess is easy as well and we chose to implement a zero binary search on the derivative function. For the q-matrix we need first to notice that all lines (each line corresponding to a question) are independent as long as you fix the students skill and the slip/guess parameters. It follows that the optimization can be done separately on each line. In our case, the q-matrix dimension is quite low, between 3 and 6 skills ; all the possible line can be tried ($2^{\text{skills number}}$ possibility, 64 in the 6 skills case). 
-
-%In order to extract a q-matrix, we need to estimate three kind of parameters: the binary entries of the q-matrix, the slip and guess parameters for each question, and a distribution of probabilities for all possible states of each student. , thus our method can be seen as a variant of the EM algorithm. We would like to emphasize here on the fact that we did not want to achieve. We just needed a suitable q-matrix for our experiments.
-%\subsubsection{Estimating the possible states}
-%We simulate Bayesian updates by asking every question, using the training dataset.
-%\subsubsection{Estimating the slip and guess parameters}
-%We estimate the slip and guess parameters using binary search on the derivative function. \alert{TODO}
-%\subsubsection{Estimating the q-matrix entries}
-%As the number of skills is at most 6, there are $2^6$ possible lines for each question. As all questions are supposed to be independent \alert{two by two}, we can pick the best possible line, i.e. the line achieving the minimum log loss.
-%We estimate best distribution on states, best slip / guess parameters, best q-matrix randomly, supposing all questions are independent.
-
-\subsection{Evaluation}
+In our experiments we wanted to analyze the effect of three parameters: the length of the training dataset, the number of questions of the test and the number of skills of the q-matrices.
 
 For both models, our test dataset was composed of the same 136 students, the last rows of the student data. The training dataset could be composed of the first 20, 40, 80 or 160 students, the number of questions of the test could be a random subset of 10, 20 or 40 questions picked from the dataset for each experiment. For the cognitive diagnosis model, the number of skills could be any integer from 3 to 6.
 
+The whole code is written in Python with RPy bindings~\citep{Gautier2008} and available on Bitbucket\footnote{\url{http://bitbucket.org/jilljenn/qna/}}.
+
 \subsection{Results}
 
-\subsubsection{Small dataset}
+%\subsubsection{Small dataset}
 
 
 
-\subsubsection{Complete dataset}
+%\subsubsection{Complete dataset}
 
 
 
 \section{Discussion and Future Work}
 
-Add a last column to q-matrix
+%Add a last column to q-matrix
 
-No study has been done yet over the number of skills.
+%No study has been done yet over the number of skills.
 
-Outperforms on both simulated data and real data.
+%Outperforms on both simulated data and real data.
 
 %\section{Acknowledgments}
 %

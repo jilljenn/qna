@@ -1,5 +1,5 @@
 # coding=utf8
-import os, re, json
+import sys, os, re, json
 import matplotlib.pyplot as plt
 
 """
@@ -14,31 +14,79 @@ plt.show()
 """
 
 graphs = {'20': {}, '40': {}, '80': {}, '160': {}}
+graphs2 = {10: {}, 15: {}, 20: {}, 30: {}, 40: {}}
+filenames = {}
 
-for filename in os.listdir('eden'):
+folder = sys.argv[1]
+
+for filename in os.listdir(folder):
 	if filename.startswith('stats'):
 		name, nb_questions, train_power = re.match('stats-sat-([a-z0-9-]+)-([0-9]+)-([0-9]+)-', filename).groups()
 		nb_questions = int(nb_questions)
-		data = json.load(open('eden/%s' % filename))['QMatrix' if len(name) == 1 else 'IRT']['mean']
+		data = json.load(open('%s/%s' % (folder, filename)))['QMatrix' if len(name) == 1 else 'IRT']['mean']
 		print name, nb_questions, train_power
+		value = data[nb_questions / 2 - 1]
 		if name not in graphs[train_power]:
-			graphs[train_power][name] = {nb_questions: data[nb_questions / 2 - 1]}
+			graphs[train_power][name] = {nb_questions: value}
 		else:
-			graphs[train_power][name][nb_questions] = data[nb_questions / 2 - 1]
+			graphs[train_power][name][nb_questions] = value
+		if name not in graphs2[nb_questions]:
+			graphs2[nb_questions][name] = {train_power: value}
+		else:
+			graphs2[nb_questions][name][train_power] = value
+		if nb_questions == 10:
+			filenames[(name, train_power)] = '%s/%s' % (folder, filename)
 
 colors = {'3': 'red', '4': 'orangered', '5': 'orange', '6': 'yellow', 'irt': 'blue', 'mepv-irt': 'darkblue'}
 
-for train_power in graphs:
+"""
+for train_power in ['40', '80', '160']:
 	fig, ax = plt.subplots()
 	for name in graphs[train_power]:
 		x, y = [], []
-		for i in [10, 20, 40]:
+		for i in [10, 15, 20, 30, 40]:
 			if i in graphs[train_power][name]:
 				x.append(i)
 				y.append(graphs[train_power][name][i])
 		ax.plot(x, y, color=colors[name])
 	ax.set_title('train_power : %s' % train_power)
 	plt.show()
+
+for nb_questions in [10, 15, 20, 30, 40]:
+	fig, ax = plt.subplots()
+	for name in graphs2[nb_questions]:
+		x, y = [], []
+		for i in ['40', '80', '160']:
+			if i in graphs2[nb_questions][name]:
+				x.append(i)
+				y.append(graphs2[nb_questions][name][i])
+		ax.plot(x, y, color=colors[name])
+	ax.set_title('nb_questions : %d' % nb_questions)
+	plt.show()
+"""
+
+for train_power in ['80', '160']:
+	print train_power
+	fig, ax = plt.subplots()
+	irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
+	qmatrix3 = json.load(open(filenames[('3', train_power)]))['QMatrix']['mean']
+	qmatrix4 = json.load(open(filenames[('4', train_power)]))['QMatrix']['mean']
+	qmatrix5 = json.load(open(filenames[('5', train_power)]))['QMatrix']['mean']
+	qmatrix6 = json.load(open(filenames[('6', train_power)]))['QMatrix']['mean']
+	print irt
+	print qmatrix6
+	ax.plot(range(1, len(irt) + 1), irt, color='blue')
+	ax.plot(range(1, len(qmatrix3) + 1), qmatrix3, color='yellow')
+	ax.plot(range(1, len(qmatrix4) + 1), qmatrix4, color='orange')
+	ax.plot(range(1, len(qmatrix5) + 1), qmatrix5, color='red')
+	ax.plot(range(1, len(qmatrix6) + 1), qmatrix6, color='black')
+	ax.set_title('IRT VS q-matrix K = 3-4-6, train_power %s' % train_power)
+	plt.show()
+
+# nb_questions : 10, train_power : (80, 160)
+# nb_questions : 40, train_power : (80, 160)
+
+# train_power : (80, 160), courbes : 4, 6
 
 """
 qmatrix = json.load(open('data/' + os.listdir('data')[-1]))['QMatrix']['mean']
