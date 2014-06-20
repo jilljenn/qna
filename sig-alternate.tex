@@ -335,6 +335,8 @@ In order to extract a q-matrix, we need to estimate three kind of parameters: th
 
 The estimation of the probability distribution on the states is done by Bayesian updates, asking all questions to each student. Slip and guess parameters are optimized by bisection method on the derivative function, as it is convex. Finally, for the q-matrix entries we can notice that any two questions are independent when the students skills and the slip/guess parameters are fixed. It follows that the optimization can be done line by line. In our case, the q-matrix dimension is quite low, between 3 and 6 skills ; therefore the best possible line can be found by simple exhaustive search.
 
+\alert{Cet algol converge vers un minimum local + minimum local peut être mauvais en particulier dans le cas K=6 (relancer depuis une autre matrice random)}
+
 We would like to emphasize here that the purpose of this article is not to provide a more efficient algorithm for extracting q-matrices from real data. Nevertheless, our implementation is sufficient to provide results in a reasonable time. % TODO
 
 \subsubsection{Item Selection Rule}
@@ -366,8 +368,32 @@ The whole code is written in Python with RPy bindings~\citep{Gautier2008} and av
 %\subsubsection{Small dataset}
 
 %\subsubsection{Complete dataset}
+We compared different algorithms, the IRT based algorithm implemented by R and our implementation of the NIDA q-matrix model for difference value of the parameter K (size of the q-matrix). 
 
-20 questions
+The Table 1 shows what the logarithmic score of the different algorithms looks like for a test with 40 questions depending on the size of the training set. The less the score is the better it is, 0.693 being the worse possible score (all probabilities equal $\frac{1}{2}$) and 0 the best (probabilities are 1 or 0, the algorithm predicting perfectly the student answers). 
+
+En vrac : \\
+- Q matrix outperform IRT et K=6 est globalement meilleur sur ce jeu de données. \\
+- IRT se fait d'autant plus outperform que la taille du training step est grande. Prévisible étant donné que IRT est un model moins fin il est moint sujet au sur apprentissage sur des petites taille de training set. Donner chiffre pour K=3 vs IRT TrainingSet $\in$ \{40,160\}\\
+- Le résultat précédent est aussi vrai pour les petites valeurs de K vs les grandes valeurs de K et était attendu pour les mêmes raison. Un modèle pauvre se comporte mieux qu'un modèle riche pour des tailles de training set petites et inversement. 
+- Sensibilité à la valeur de K pas trop élevé : résultats proche pour $K \in \{4,5,6\}$. 
+
+The Table 2 shows what the logarithmic score of the different algorithms looks like for a test with this time only 20 questions. 
+En vrac : \\
+- résultats similaires : q-matrix outperform encore IRT. \\
+- Le faible nombre de question met d'autant en avant le phénomène suivant : l'algorithme s'améliore très nettement pour K=6 avec l'augmentation de la taille du training step. Cette amélioration est plus modéré pour $K \in \{3,4,5\}$. 
+
+\begin{table}
+\begin{tabular}{cccc}
+\bfseries Train dataset length & 40 & 80 & 160\\
+\hline
+IRT & 0.499 & 0.469 & 0.446\\
+Q-matrix 3 skills & 0.517 & 0.47 & 0.444\\
+Q-matrix 4 skills & 0.494 & 0.459 & 0.417\\
+Q-matrix 5 skills & \textbf{0.474} & 0.433 & 0.415\\
+Q-matrix 6 skills & 0.482 & \textbf{0.425} & \textbf{0.403}\\
+\end{tabular}
+\caption{Score for a 40 questions test}
 
 \begin{tabular}{cccc}
 \bfseries Train dataset length & 40 & 80 & 160\\
@@ -378,18 +404,10 @@ Q-matrix 4 skills & \textbf{0.455} & 0.434 & 0.424\\
 Q-matrix 5 skills & 0.481 & \textbf{0.399} & 0.376\\
 Q-matrix 6 skills & \textbf{0.455} & 0.4 & \textbf{0.361}\\
 \end{tabular}
+\caption{Score for a 20 questions test}
+\end{table}
 
-40 questions
 
-\begin{tabular}{cccc}
-\bfseries Train dataset length & 40 & 80 & 160\\
-\hline
-IRT & 0.499 & 0.469 & 0.446\\
-Q-matrix 3 skills & 0.517 & 0.47 & 0.444\\
-Q-matrix 4 skills & 0.494 & 0.459 & 0.417\\
-Q-matrix 5 skills & \textbf{0.474} & 0.433 & 0.415\\
-Q-matrix 6 skills & 0.482 & \textbf{0.425} & \textbf{0.403}\\
-\end{tabular}
 
 \section{Discussion and Future Work}
 Results are produce from one relatively small dataset. Interesting to try with other student datas (only one domain student dataset, bigger student dataset, ...). 
