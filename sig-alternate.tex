@@ -265,7 +265,7 @@ Our student data is a binary matrix students $\times$ questions where $c_{ij}$ i
 We used the following cross-validation based method: 
 
 \begin{itemize}
-\item \textsc{TrainingStep} : Train the model with all the student but one in order to produces questions parameters. In the case of an IRT based model questions difficulties are computed, in the case of CDM based model the q-matrix along with a slip and guessing parameters for each question are computed. 
+\item \textsc{TrainingStep} : Train the model in order to produces questions parameters. In the case of an IRT based model questions difficulties are computed, in the case of CDM based model the q-matrix along with a slip and guessing parameters for each question are computed. 
 \item \textsc{PriorInitialisation} : Initialize the prior on the student parameters.  These parameters are the distribution on the skills in the case of CDM based model and the distribution on the ability for IRT based model. 
 \item \textsc{NextItem} : Choose the best question to ask according to a certain criterion given all previous questions and answers. 
 \item \textsc{UpdateParameters} : Given the question just asked and the answer given, update the student parameters.
@@ -277,11 +277,11 @@ We used the following cross-validation based method:
 \begin{algorithm}
 \caption*{\textbf{Computerized Adaptive Testing Framework}}
 \begin{algorithmic}
-\Procedure{Test}{}
-\For{all students s}
-	\State $\alpha \gets \Call{TrainingStep}{\text{all students except s}}$
-	\State $\beta \gets \Call{PriorInitialisation}$
-	\State $i \gets 0$
+\Procedure{Test}{Training Set, Testing Set}
+\State $\alpha \gets \Call{TrainingStep}{\text{Training Set}}$
+\State $\beta \gets \Call{PriorInitialisation}$
+\State $i \gets 0$
+\For{all students in Testing Set}
 	\While{\textsc{TerminationRule} is not satisfied}
 		\State $q_{i + 1} \gets \Call{NextItem}{q_1, r_1, \ldots, q_i, r_i, \alpha, \beta}$
 		\State Ask question $q_{i + 1}$ to the examinee $s$
@@ -319,7 +319,7 @@ There are different way of maximizing the log-likelihood and the R package uses 
 
 The R package minimize the expected variance of the posterior distribution (MEPV criterion) which is actually equivalent as minimizing the differential Shannon entropy in the normal and logistic case. Indeed, these two distribution present a linear link between the logarithm of the variance and the Shannon entropy.  % TODO non pas MEPV
 
-\subsubsection{Parameters Estimation}
+\subsubsection{Parameters Update}
 
 After each student's answer, we can recompute the posterior distribution over the student ability. The R package uses a variant of the EM algorithm. 
 
@@ -341,7 +341,7 @@ We would like to emphasize here that the purpose of this article is not to provi
 
 As an item selection rule, we choose the question minimizing the Shannon entropy of the distribution over the possible states. Please note that this is the same logic that the MEPV criterion used in the IRT design~\citep{Cheng2009}.
 
-\subsubsection{Parameters Estimation}
+\subsubsection{Parameters Update}
 
 As the distribution of skill is on a finite support, we can at each step maintain the whole probability distribution $\pi$ over the possible states, initialized at the uniform distribution.
 Knowing the student answer, the update of $\pi$ is done according to the Bayes rule. Let $x$ be skills, $s$ the question slip and $g$ the question guessing, if the skills $x$ are enough to answer correctly to the question
@@ -363,15 +363,17 @@ The whole code is written in Python with RPy bindings~\citep{Gautier2008} and av
 
 \subsection{Results}
 
-%\subsubsection{Small dataset}
-
-
-
-%\subsubsection{Complete dataset}
-
 
 
 \section{Discussion and Future Work}
+Results are produce from one relatively small dataset. Interesting to try with other student datas (only one domain student dataset, bigger student dataset, ...). 
+
+Interesting to study the K optimal depending on the number of students in the training set and the number of questions. There is a tradeoff to solve between big K potentially leading to over fitting and smaller ones which could not provide a rich enough model. Our results suggest that q-matrix is not very sensitive to the choice of K as long as this K parameters keep being reasonable given the train dataset. 
+
+The results show that the interdependencies between question is important enough to be worth taking into account, the main difference between IRT and q-matrix being the fact that q-matrix capture these interdependencies. Other models taking into accounts these interdependence exists such as fusion models [explain]. We wouldn't be surprise if these kind of fusion model perform better than the NIDA q-matrix model presented here. 
+
+One important aspect is the training step. It appear that our implementation of q-matrix was limited by the approximation of the q-matrix done during the training step and amelioration can be done in this direction, particularly for bigger q-matrix ($K \ge 6$). 
+
 
 %Add a last column to q-matrix
 
@@ -380,8 +382,6 @@ The whole code is written in Python with RPy bindings~\citep{Gautier2008} and av
 %Outperforms on both simulated data and real data.
 
 %\section{Acknowledgments}
-%
-%We wish to thank JBG for his valuable comments.
 
 % The following two commands are all you need in the
 % initial runs of your .tex file to
