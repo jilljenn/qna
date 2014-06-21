@@ -46,7 +46,7 @@ with open('graph-80.R', 'w') as f:
 	f.write('lines(qmatrix4, type="l", lwd=1)\n')
 	f.write('lines(qmatrix5, type="l", lwd=3)\n')
 	f.write('lines(irt, type="l", xlab="dat", lty="dashed")\n')
-	f.write('legend("topright", c("irt", "qmatrix4", "qmatrix5", "qmatrix6"), lty=c(2, 1, 1, 1), lwd=c(1, 1, 3, 5))\n')
+	f.write('legend("topright", c("IRT", "Q-matrix K = 4", "Q-matrix K = 5", "Q-matrix K = 6"), lty=c(2, 1, 1, 1), lwd=c(1, 1, 3, 5))\n')
 	f.write('title(xlab="Number of asked questions")\n')
 	f.write('title(ylab="Mean error")\n')
 
