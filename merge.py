@@ -12,7 +12,6 @@ for stuff in eden:
 		for i in range(len(eden[stuff])):
 			eden[stuff][i] = (eden[stuff][i] + eden2[stuff][i]) / 2
 
-"""
 for stuff in ['nbq-20', 'nbq-40']:
 	print '%s questions\n' % stuff[-2:]
 	print r'\begin{tabular}{cccc}'
@@ -25,7 +24,6 @@ for stuff in ['nbq-20', 'nbq-40']:
 			line.append(str(round(eden[stuff][name][train_power], 3)))
 		print ' & '.join(line) + r'\\'
 	print r'\end{tabular}' + '\n'
-"""
 
 """
 print eden['nbq-40']['4']['80']
@@ -47,7 +45,7 @@ with open('graph-80.R', 'w') as f:
 	f.write('lines(qmatrix5, type="l", lwd=3)\n')
 	f.write('lines(irt, type="l", xlab="dat", lty="dashed")\n')
 	f.write('legend("topright", c("IRT", "Q-matrix K = 4", "Q-matrix K = 5", "Q-matrix K = 6"), lty=c(2, 1, 1, 1), lwd=c(1, 1, 3, 5))\n')
-	f.write('title(xlab="Number of asked questions")\n')
+	f.write('title(xlab="Number of questions asked")\n')
 	f.write('title(ylab="Mean error")\n')
 
 """

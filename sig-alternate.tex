@@ -49,7 +49,6 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{algorithm,caption,algpseudocode}
-\usepackage{xcolor} % TODO remove
 \usepackage[round]{natbib}
 \usepackage{hyperref}
 
@@ -129,11 +128,11 @@
        \email{\phantom{grill@clipper.ens.fr}}
 \and
 % 4th. author
-\alignauthor Éric Bruillard\\
-       \affaddr{ENS Cachan -- Bât. Cournot}\\
-       \affaddr{61 av. du Président Wilson}\\
-       \affaddr{94235 Cachan, France}\\
-       \email{eric.bruillard@ens-cachan.fr}
+\alignauthor \phantom{Éric Bruillard}
+       \affaddr{\phantom{ENS Cachan -- Bât. Cournot}}
+       \affaddr{\phantom{61 av. du Président Wilson}}
+       \affaddr{\phantom{94235 Cachan, France}}
+       \email{\phantom{eric.bruillard@ens-cachan.fr}}
 % 5th. author
 \alignauthor
 \phantom{Yolaine Bourda}
@@ -178,13 +177,13 @@ Automated assessment of student answers has recently gained popularity in the co
 
 If we already have a large-scale database of item responses for a certain test, it is natural to wonder which questions yield the most information about an examinee, i.e. if there is a ``best'' order in which the questions should be asked. In oral examinations, the examiner usually picks the next question to ask according to the previous answers of the examinee. Computerized adaptive testing (CAT) can be seen as an automated version of this process: keep asking the best possible questions until enough information has been gathered. Indeed, if the examinee behaves typically, a subset of carefully chosen results may be enough to guess how she will perform on the rest of the questions.
 
-In order to fulfill this need, item response theory (IRT) is of great help. The initial purpose of IRT was to provide a framework to evaluate the performance of individual questions, called \emph{items}, on assessments~\citep{Hambleton1991}. It has been successfully applied to computerized adaptive testing and several methods has been proposed and implemented. According to her performance, an examinee gets a summative score, making it possible to predict her future answers. The simplicity of the IRT models both made it amenable to theoretical analysis~\citep{Baker2004} and further increased its popularity.
+In order to fulfill this need, item response theory (IRT) is of great help. The initial purpose of IRT was to provide a framework to evaluate the performance of individual questions, called \emph{items}, on assessments~\citep{Hambleton1991}. It has been successfully applied to computerized adaptive testing and several methods have been proposed and implemented. According to her performance, an examinee gets a summative score, making it possible to predict her future answers. The simplicity of the IRT models both made it amenable to theoretical analysis~\citep{Baker2004} and further increased its popularity.
 
 More recently, the No Child Left Behind Act of 2001 called for more formative assessments, putting emphasis on the early detection of students with cognitive disabilities and urged the need of cognitive diagnosis models. Instead of a summative score, examinees would receive a detailed feedback, specifying which skills are mastered and which ones are not~\citep{Cheng2009}. These models allow researchers to reveal possible misconceptions of the examinee in order to propose appropriate exercises. Most of these models rely on a q-matrix specifying for each question the different skills required to solve it. For example, a fraction test may require 1) converting a whole number to a fraction, 2) separating a whole number from a fraction, 3) simplifying before subtracting, and so on~\citep{DeLaTorreDouglas2004}. Cognitive diagnosis adaptive tests have been designed in order to guess the skills of the examinee effectively~\citep{Huebner2010}.
 
 One could wonder why we compare a model designed for assessment with a model designed for feedback. We show that although q-matrices were first designed for formative assessments, it is also possible to use them in the context of large-scale assessments. Indeed, this model evaluates the skills of an examinee according to her previous answers. Given those computed skills and the q-matrix, we can predict her probability of correctly answering the remaining questions. This enables us to propose a framework for comparison that captures both models.
 
-Originally, q-matrices were specified by experts, but recent work in the educational data mining field attempts to infer q-matrices directly from student data~\cite{Huebner2010}. The corresponding skills are therefore implicit, but such automatically extracted q-matrices have proven to produce better inference~\citep{Barnes2003}.
+Originally, q-matrices were specified by experts, but recent work in the educational data mining field attempts to infer q-matrices directly from student data~\citep{Huebner2010}. The corresponding skills are therefore implicit, but such automatically extracted q-matrices have proven to produce better inference~\citep{Barnes2003}.
 
 \subsection{Our contribution}
 
@@ -232,7 +231,7 @@ This simple model is used in computerized adaptive testing, where many methods a
 
 The IRT model we just described uses a single parameter to represent students. We now develop a model that tries to be more informative about the student skills. Every student is modeled by a vector of binary values $(a_1, \ldots, a_K)$, called \emph{skill vector}, representing her mastery of $K$ different skills, thus leading to $2^K$ possible skill vectors. 
 
-A q-matrix $Q$ \citep{Tatsuoka1983} represents the different skills involved in answering every question. More precisely, $Q_{ij}$ is equal to 1 if the skill $j$ is involved in the resolution of question $i$, 0 otherwise. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question, skills 1 and 3 are required for the second question and mastering skill 3 is sufficient to solve the last question.
+A q-matrix $Q$ \citep{Tatsuoka1983} represents the different skills involved in answering every question. Formally, $Q_{ij}$ is equal to 1 if the skill $j$ is involved in the resolution of question $i$, 0 otherwise. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question, skills 1 and 3 are required for the second question and mastering skill 3 is sufficient to solve the last question.
 \[ Q = \left(\begin{array}{lll}
 1 & 1 & 0\\
 1 & 0 & 1\\
@@ -257,7 +256,7 @@ From this probability distribution over all possible skill vectors, with the hel
 
 \section{Our Test Framework}
 
-We now precise the different parts of the CAT process used in the simulation that will allow us to compare both presented models.
+We now develop the different parts of the CAT process used in the simulation that will allow us to compare both presented models.
 
 Our student data is a binary matrix of order $N_S \times N_Q$ where $N_S$ and $N_Q$ denote respectively the number of students and the number of questions, and $c_{ij}$ equals 1 if student $i$ answered the question $j$ correctly, 0 otherwise. 
 
@@ -356,47 +355,49 @@ In our experiments we analyze the effect of three parameters: the length of the 
 
 To evaluate the different models throughout the CAT process, we compute the mean error of the whole vector of predicted answers for all students of the test dataset, according to the ground truth.
 
-Our implementation is written in Python and R using the packages \texttt{RPy}~\citep{Gautier2008}, \texttt{ltm}~\citep{Rizopoulos2006} and\linebreak \texttt{catR}~\citep{MagisRaiche2012}. The code is available on Bitbucket\footnote{\url{http://bitbucket.org/no-suitable-for-blind-review/}}. The whole simulation process ran for 6 hours on a 1.3 GHz Intel Core i5.
+Our implementation is written in Python and R using the packages \texttt{rpy2}~\citep{Gautier2008}, \texttt{ltm}~\citep{Rizopoulos2006} and\linebreak \texttt{catR}~\citep{MagisRaiche2012}. The code is available on Bitbucket\footnote{\url{http://bitbucket.org/no-suitable-for-blind-review/}}. The whole simulation process ran for 6 hours on a 1.3 GHz Intel Core i5.
 
 \subsection{Results}
 
 We compared the two presented algorithms, the IRT-based algorithm and our implementation of the NIDA q-matrix model for different values of the parameter $K$, the number of columns of the q-matrix.
 
-We will first focus on the error of each algorithm after 10 questions for the 20-question test. Results are detailed in Table~\ref{tab:20q} where the best performances are shown in bold. As a reference, please note 0.693 is the error obtained by the trivial algorithm affecting every probability to 1/2. On the SAT dataset, for all reasonable choices of $K$, the q-matrix model outperforms IRT, the q-matrix of $K = 6$ skills being globally the best among all tested ones.
+We will first focus on the error of each algorithm after 10 questions for the 20-question test, for different sizes of the train dataset. Results are detailed in Table~\ref{tab:20q} where the best performances are shown in bold. As a reference, please note 0.693 is the error obtained by the trivial algorithm affecting every probability to 1/2. On the SAT dataset, for all reasonable choices of $K$, the q-matrix model outperforms IRT, the q-matrix of $K = 6$ skills being globally the best among all tested ones.
 
 \begin{table}[H]
-\centering\begin{tabular}{cccc}
-Train dataset length & 40 & 80 & 160\\
+\small\centering\begin{tabular}{@{}cccc@{}}
+$|train|$ & 40 & 80 & 160\\
 \hline
-IRT & 0.482 & 0.473 & 0.456\\
-Q-matrix $K = 3$ skills & 0.487 & 0.47 & 0.435\\
-Q-matrix $K = 4$ skills & \textbf{0.455} & 0.434 & 0.424\\
-Q-matrix $K = 5$ skills & 0.481 & \textbf{0.399} & 0.376\\
-Q-matrix $K = 6$ skills & \textbf{0.455} & 0.4 & \textbf{0.361}\\
+IRT & 0.482 $\pm$ 0.022 & 0.473 $\pm$ 0.017 & 0.456 $\pm$ 0.019\\
+Q $K = 3$ & 0.487 $\pm$ 0.016 & 0.470 $\pm$ 0.017 & 0.435 $\pm$ 0.012\\
+Q $K = 4$ & \textbf{0.455 $\pm$ 0.017} & 0.434 $\pm$ 0.016 & 0.424 $\pm$ 0.016\\
+Q $K = 5$ & 0.481 $\pm$ 0.022 & \textbf{0.399 $\pm$ 0.015} & 0.376 $\pm$ 0.013\\
+Q $K = 6$ & \textbf{0.455 $\pm$ 0.023} & 0.400 $\pm$ 0.015 & \textbf{0.361 $\pm$ 0.015}\\
 \end{tabular}
 \caption{Mean error for a 20-question test, taken at mid-test.}
 \label{tab:20q}
 \end{table}
 
-When the training set is composed of 160 students, IRT performs the worst among all tested algorithms, particularly for $K = 6$. However, when the training set is composed of only 40 students, IRT performs slightly better than the q-matrix for $K = 3$. Also, the performance of the q-matrix for $K = 6$ improves drastically when the size of the training set increases, contrary to IRT or q-matrices with a low $K$ value.
+When the training set is composed of 160 students, IRT performs the worst among all tested algorithms, particularly when compared to the q-matrix model for $K = 6$. However, when the training set is composed of only 40 students, IRT performs slightly better than the q-matrix for $K = 3$. Also, the performance of the q-matrix for $K = 6$ improves drastically when the size of the training set increases, contrary to IRT or q-matrices with a low $K$ value.
 
-For a deeper understanding, instead of computing the mean error only at mid-test, we compute it at each step of the CAT process. Results are shown in Figure~\ref{fig:1}. As we can see, IRT is not only performing the worst at mid-test but even in the early questions. Also, the greater $K$, the longer the corresponding model takes to achieve its best performance. 
+For a deeper understanding, instead of computing the mean error only at mid-test, we compute it at each step of the CAT process for a train dataset of size 80 and a 20-question test. Results are shown in Figure~\ref{fig:1}. As we can see, IRT is not only performing the worst at mid-test but even in the early questions. Also, the greater $K$, the longer the corresponding q-matrix model takes to achieve its best performance.
+
+We also computed the mean error of each algorithm after 20 questions of the 40-question test. Results are detailed in Table 2.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{20-80.pdf}
-\caption{Evolution of the mean error throughout the test. The dashed curve denotes the IRT model, while the curves of growing thickness denote q-matrices of growing number of columns.}
+\caption{Evolution of the mean error throughout the test, for a train dataset of size 80 and a 20-question test. The dashed curve denotes the IRT model, while the curves of growing thickness denote q-matrices of growing number of columns.}
 \label{fig:1}
 \end{figure}
 
 \begin{table}[H]
-\centering\begin{tabular}{cccc}
-Train dataset length & 40 & 80 & 160\\
+\small\centering\begin{tabular}{@{}cccc@{}}
+$|train|$ & 40 & 80 & 160\\
 \hline
-IRT & 0.499 & 0.469 & 0.446\\
-Q-matrix $K = 3$ skills & 0.517 & 0.47 & 0.444\\
-Q-matrix $K = 4$ skills & 0.494 & 0.459 & 0.417\\
-Q-matrix $K = 5$ skills & \textbf{0.474} & 0.433 & 0.415\\
-Q-matrix $K = 6$ skills & 0.482 & \textbf{0.425} & \textbf{0.403}\\
+IRT & 0.499 $\pm$ 0.024 & 0.469 $\pm$ 0.020 & 0.446 $\pm$ 0.015\\
+Q $K = 3$ & 0.517 $\pm$ 0.016 & 0.470 $\pm$ 0.012 & 0.444 $\pm$ 0.012\\
+Q $K = 4$ & 0.494 $\pm$ 0.015 & 0.459 $\pm$ 0.011 & 0.417 $\pm$ 0.011\\
+Q $K = 5$ & \textbf{0.474 $\pm$ 0.014} & 0.433 $\pm$ 0.011 & 0.415 $\pm$ 0.011\\
+Q $K = 6$ & 0.482 $\pm$ 0.015 & \textbf{0.425 $\pm$ 0.012} & \textbf{0.403 $\pm$ 0.011}\\
 \end{tabular}
 \caption{Mean error for the whole 40-question test.}
 \label{tab:40q}
@@ -404,15 +405,17 @@ Q-matrix $K = 6$ skills & 0.482 & \textbf{0.425} & \textbf{0.403}\\
 
 \section{Discussion and Future Work}
 
-Our studies suggest that the q-matrix model, first designed for cognitive diagnosis, can successfully be used in a context of assessments. Indeed, the fast and accurate estimation of the student skills enabled by our item selection induced a good prediction after few questions. % Can be linked to the prior.
+Our studies suggest that the q-matrix model, first designed for cognitive diagnosis, can successfully be used in a context of assessments. Indeed, the fast and accurate estimation of the student skills enabled by our item selection induced a good prediction after few questions. This makes this model suitable for placement tests, where very few questions should be enough to explore at best the examinee's skills. More globally, it can be used for low-stakes testing, but not high-stakes testing, as the first questions chosen by the item selection rule are often the same. This high item exposure rate was already pointed out in~\citep{Cheng2009}.
 
-However, q-matrix being a richer model, it can be prone to overfitting, particularly for greater values of $K$, as highlighted by our results. In addition, the longer convergence time for high values of $K$ can be explained by the fact that guessing a larger skill vector requires more information, therefore more questions. Thus, there is a tradeoff between a large value of $K$ potentially leading to overfitting and smaller ones which could not provide a rich enough model. The optimal value of $K$ may depend on the size of the training set along with the number of questions of the test. Nevertheless, as pointed out in~\cite{Huebner2010}, there have been no systematic studies for cognitive diagnosis models investigating the most suitable number of skills $K$ for a given dataset.
+Pay attention to the fact that although the training step is longer for the q-matrix model than the IRT chosen model, the next-item step is several times longer for the IRT model with minimum expected posterior variance criterion than the q-matrix model. Thus, for a given test, once a good q-matrix has been computed in a preprocessing step, the test can be administered in a reasonable time. % Can be linked to the prior.
+
+However, q-matrix being a richer model, it can be prone to overfitting, particularly for greater values of $K$, as highlighted by our results. In addition, the longer convergence time for high values of $K$ can be explained by the fact that guessing a larger skill vector requires more information, therefore more questions. Thus, there is a tradeoff between a large value of $K$ potentially leading to overfitting and smaller ones which could not provide a rich enough model. The optimal value of $K$ may depend on the size of the training set along with the number of questions of the test. Nevertheless, as pointed out in~\citep{Huebner2010}, there have been no systematic studies for cognitive diagnosis models investigating the most suitable number of skills $K$ for a given dataset.
 
 % Finally, while the optimization of the $K$ parameter is important, the sensibility of the results to this parameter is tempered. Indeed, the results for q-matrix with $K = 5$ and $K = 6$ are actually pretty close. % K
 
 % Our results suggest that q-matrix is not very sensitive to the choice of K as long as this K parameters keep being reasonable given the train dataset.
 
-Due to limited resources, our simulation was limited to $K \leqslant 6$. Indeed, the most costly part of the process is the training step of the q-matrix, which requires at each iteration a cost exponential in $K$ and a number of iterations increasing with $K$ to obtain convergence towards a local minimum. Anyway, progress can be made in the extraction of the q-matrix in terms of error and time complexity. A better computation of q-matrix could have lead to even better results.
+Due to limited resources, our simulation was limited to $K \leqslant 6$. Indeed, the most costly part of the process is the training step of the q-matrix, which requires at each iteration a cost exponential in $K$ and a number of iterations increasing with $K$ to obtain convergence towards a local minimum. A better computation of q-matrix using more cutting-edge techniques could have lead to even better results.
 
 %Our results can extended to other cognitive diagnosis models from the compensatory classes (DINA, etc.~\cite{Desmarais2011}).
 
@@ -422,7 +425,9 @@ Due to limited resources, our simulation was limited to $K \leqslant 6$. Indeed,
 
 % On another note, our results are produced from a dataset over 4 knowledge fields. It would be interesting to compare IRT-based models and q-matrix models on other real data such as bigger datasets or ones including only one knowledge field.
 
-Finally, we showed that links between questions are worth taking into account, something q-matrices do whereas IRT does not. Other models taking into account these links exist such as fusion models~\citep{McGlohen2008}, that may perform even better than the NIDA q-matrix model presented here.
+
+
+We showed that links between questions are worth taking into account, something q-matrices do and IRT does not. For our evaluation, we chose the simplest models from item response theory and cognitive diagnosis, but more complex models such as multidimensional item response theory~\citep{Desmarais2012} or fusion models~\citep{McGlohen2008} should be compared to the NIDA q-matrix model presented here.
 
 % MIRT
 
@@ -436,11 +441,10 @@ Finally, we showed that links between questions are worth taking into account, s
 
 %Outperforms on both simulated data and real data.
 
-%\section{Acknowledgments}
+\section{Acknowledgements}
 
-% The following two commands are all you need in the
-% initial runs of your .tex file to
-% produce the bibliography for the citations in your paper.
+We thank \phantom{Chia-Tche Chang, Le Thanh Dung Nguyen and especially Antoine Amarilli} for their valuable comments.
+
 %\bibliographystyle{abbrv}
 \bibliographystyle{plainnat}
 \bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
