@@ -2,7 +2,7 @@
 import random
 from calc import logloss, derivative_logloss, normalize, entropy
 from itertools import product
-import io
+import _io
 from datetime import datetime
 
 def bool2int(l):

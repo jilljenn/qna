@@ -1,6 +1,6 @@
 from datetime import datetime
 from calc import logloss, surround
-import io, random
+import _io, random
 from qmatrix import QMatrix
 #from irt import IRT
 
