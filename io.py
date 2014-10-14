@@ -1,5 +1,7 @@
 import json
 
+PREFIX = 'new'
+
 def split(filename, n):
 	"""Creates files and returns filenames."""
 	dataset = load(filename)['student_data']
@@ -16,8 +18,8 @@ def split(filename, n):
 	return bundle
 
 def backup(filename, data):
-	with open('eden2/%s.json' % filename, 'w') as f:
+	with open('%s/%s.json' % (PREFIX, filename), 'w') as f:
 		f.write(json.dumps(data))
 
-def load(filename):
-	return json.load(open('data/%s.json' % filename))
+def load(filename, prefix=PREFIX):
+	return json.load(open('%s/%s.json' % (prefix, filename)))

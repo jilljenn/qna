@@ -10,10 +10,10 @@ def bool2int(l):
 
 DEFAULT_SLIP = 0.2
 DEFAULT_GUESS = 0.2
-K = 5
-LOOP_TIMEOUT = 5
-SLIP_GUESS_PRECISION = 1e-3
-ALPHA = 2e-3
+K = 3
+LOOP_TIMEOUT = 10
+SLIP_GUESS_PRECISION = 1e-2
+ALPHA = 0.#2e-3
 
 class QMatrix():
 	def __init__(self, nb_competences=K, Q=None, slip=None, guess=None, prior=None):
@@ -25,16 +25,18 @@ class QMatrix():
 		self.p_test = None
 		self.slip = slip
 		self.guess = guess
+		self.error = None
 
 	def load(self, filename):
 		data = io.load(filename)
 		self.Q = data['Q']
 		self.slip = data['slip']
 		self.guess = data['guess']
+		self.p_states = data['p_states']
 		# self.prior = data['prior'] # TODO
 
 	def save(self, filename):
-		io.backup(filename, {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior})
+		io.backup(filename, {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior, 'error': self.error, 'p_states': self.p_states})
 
 	def match(self, question, state):
 		return bool2int(question) & ((1 << self.nb_competences) - 1 - state) == 0
@@ -48,16 +50,24 @@ class QMatrix():
 			self.slip = [DEFAULT_SLIP] * nb_questions
 		if not self.guess:
 			self.guess = [DEFAULT_GUESS] * nb_questions
-		loop_limit = 0
-		while loop_limit < timeout: # TODO
-			self.infer_state(train)
-			if opt_sg:
-				self.infer_guess_slip(train)
+		loop = 0
+		self.infer_state(train)
+		while loop < timeout: # TODO
+			# print 'Infer state %d' % loop
+			# self.infer_state(train)hfff
+			#print self.model_error(train)
 			if opt_Q:
-				self.infer_qmatrix(train)
+				#print 'Infer Q-Matrix FAST %d' % loop
+				self.infer_qmatrix_fast(train)
+				#print self.model_error(train)
+			if opt_sg:
+				#print 'Infer guess/slip %d' % loop
+				self.infer_guess_slip(train)
+				#print self.model_error(train)
+			#print 'Infer prior %d' % loop
 			self.infer_prior()
-			# print self.model_error(train)
-			loop_limit += 1
+			#print self.model_error(train)
+			loop += 1
 		if timeout == 0:
 			self.generate_student_data(50)
 		self.save('qmatrix-%s' % datetime.now().strftime('%d%m%Y%H%M%S'))
@@ -91,6 +101,7 @@ class QMatrix():
 		self.p_states = []
 		for student_id in range(nb_students):
 			self.p_states.append(self.prior[:])
+		for _ in range(10):
 			for question_id in range(nb_questions): # Ask her ALL questions!
 				self.p_states[student_id] = self.ask_question(question_id, train[student_id][question_id], self.p_states[student_id])
 
@@ -105,13 +116,16 @@ class QMatrix():
 
 	def model_error(self, train):
 		nb_questions = len(self.Q)
-		return sum(self.evaluate_error(question_id, train) for question_id in range(nb_questions)) / nb_questions
+		self.error = sum(self.evaluate_error(question_id, train) for question_id in range(nb_questions)) / nb_questions
+		return self.error
 
 	def infer_guess_slip(self, train):
 		nb_students = len(train)
 		nb_questions = len(self.Q)
 		for question_id in range(nb_questions):
 			for mode in ['slip', 'guess']:
+				# if mode == 'guess':
+					# print('was', self.guess[question_id], self.model_error(train))
 				a, b = 0., 1.
 				while b - a > SLIP_GUESS_PRECISION:
 					sg = (a + b) / 2
@@ -119,6 +133,7 @@ class QMatrix():
 						self.slip[question_id] = sg
 					else:
 						self.guess[question_id] = sg
+						# print('test', sg, self.model_error(train))
 					coefficients = [self.compute_proba_question(question_id, self.p_states[student_id], mode=mode) for student_id in range(nb_students)]
 					derivative = self.evaluate_error(question_id, train, coefficients=coefficients, sg=sg)
 					if derivative > 0:
@@ -129,18 +144,39 @@ class QMatrix():
 					self.slip[question_id] = (a + b) / 2
 				else:
 					self.guess[question_id] = (a + b) / 2
+					# print('will', (a + b) / 2, self.model_error(train))
+				# print(self.model_error(train))
 
 	def infer_qmatrix(self, train):
 		nb_questions = len(self.Q)
 		for question_id in range(nb_questions):
-			error_min = None
+			error_min = self.evaluate_error(question_id, train)
+			best_line = self.Q[question_id]
 			for line in product([True, False], repeat=self.nb_competences):
 				self.Q[question_id] = line
 				question_error = self.evaluate_error(question_id, train)
-				if not error_min or question_error < error_min:
+				if question_error < error_min:
+					# print question_id, question_error, self.model_error(train)
+					# print error_min, line
 					error_min = question_error
 					best_line = line
-			self.Q[question_id] = best_line
+			self.Q[question_id] = best_line # Put back the best (we once forgot to do so)
+
+	def infer_qmatrix_fast(self, train):
+		nb_questions = len(self.Q)
+		for question_id in range(nb_questions):
+			error_min = self.evaluate_error(question_id, train)
+			best_line = self.Q[question_id]
+			for competence in range(self.nb_competences):
+				self.Q[question_id][competence] = not self.Q[question_id][competence] # Flip
+				question_error = self.evaluate_error(question_id, train)
+				if question_error < error_min:
+					# print question_id, question_error, self.model_error(train)
+					# print error_min, line
+					error_min = question_error
+				else:
+					self.Q[question_id][competence] = not self.Q[question_id][competence] # Backflip
+			# self.Q[question_id] = best_line
 
 	def infer_prior(self):
 		nb_students = len(self.p_states)

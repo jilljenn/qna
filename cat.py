@@ -2,13 +2,13 @@ from datetime import datetime
 from calc import logloss, surround
 import io, random
 from qmatrix import QMatrix
-from irt import IRT
+#from irt import IRT
 
 filename = 'sat'
 n_split = 5
 # budget = 20
 all_student_sampled = True
-models = [IRT()]
+models = [QMatrix()]
 models_names = [model.name for model in models]
 
 def display(results):
@@ -60,23 +60,23 @@ def simulate(model, train_data, test_data, error_log):
 				print [test_data[student_id][i] for i in range(len(performance)) if i not in replied_so_far]"""
 
 def main():
-	full_dataset = io.load(filename)['student_data'][::-1]
-	# for nb_competences in [3, 6]:
-	for nb_questions in [10, 15, 20, 30, 40]:
-		for train_power in [40, 80, 160]:
-			log = {}
-			# god_prefix = '%s-%s-%s' % (nb_competences, nb_questions, train_power)
-			# model = QMatrix(nb_competences=nb_competences)
-			god_prefix = 'irt-%s-%s' % (nb_questions, train_power)
-			model = IRT()
-			question_subset = sorted(random.sample(range(len(full_dataset[0])), nb_questions))
-			dataset = [[full_dataset[i][j] for j in question_subset] for i in range(len(full_dataset))]
-			error_log = []
-			simulate(model, dataset[:train_power], dataset[160:], error_log)
-			print god_prefix
-			log[model.name] = error_log
-			get_results(log, god_prefix)
-			io.backup('log-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
+	full_dataset = io.load(filename, prefix='data')['student_data'][::-1]
+	for nb_competences in [4, 5, 6, 7, 8, 9, 10]:
+		for nb_questions in [20]: # , 30, 40
+			for train_power in [80]: # , 40, 160
+				log = {}
+				god_prefix = '%s-%s-%s' % (nb_competences, nb_questions, train_power)
+				model = QMatrix(nb_competences=nb_competences)
+				#god_prefix = 'irt-%s-%s' % (nb_questions, train_power)
+				#model = IRT()
+				question_subset = sorted(random.sample(range(len(full_dataset[0])), nb_questions))
+				dataset = [[full_dataset[i][j] for j in question_subset] for i in range(len(full_dataset))]
+				error_log = []
+				simulate(model, dataset[:train_power], dataset[160:], error_log)
+				print god_prefix
+				log[model.name] = error_log
+				get_results(log, god_prefix)
+				io.backup('log-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
 
 if __name__ == '__main__':
 	main()
