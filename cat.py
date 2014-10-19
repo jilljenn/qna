@@ -1,6 +1,6 @@
 from datetime import datetime
 from calc import logloss, surround
-import _io, random
+import my_io, random
 from qmatrix import QMatrix
 #from irt import IRT
 
@@ -27,7 +27,7 @@ def get_results(log, god_prefix):
 	budget = len(log.values()[0][0])
 	for model in models:
 		results[model.name] = {'mean': [sum(log[model.name][i][t] for i in range(nb_students)) / nb_students for t in range(budget)]}
-	_io.backup('stats-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), results)
+	my_io.backup('stats-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
 def simulate(model, train_data, test_data, error_log):
 	model.training_step(train_data)
@@ -60,7 +60,7 @@ def simulate(model, train_data, test_data, error_log):
 				print [test_data[student_id][i] for i in range(len(performance)) if i not in replied_so_far]"""
 
 def main():
-	full_dataset = _io.load(filename, prefix='data')['student_data'][::-1]
+	full_dataset = my_io.load(filename, prefix='data')['student_data'][::-1]
 	for nb_competences in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
 		for nb_questions in [20]: # , 30, 40
 			for train_power in [80]: # , 40, 160
@@ -77,7 +77,7 @@ def main():
 				print god_prefix
 				log[model.name] = error_log
 				get_results(log, god_prefix)
-				_io.backup('log-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
+				my_io.backup('log-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
 				print datetime.now() - begin
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 import random
 from calc import logloss, derivative_logloss, normalize, entropy
 from itertools import product
-import _io
+import my_io
 from datetime import datetime
 
 def bool2int(l):
@@ -28,7 +28,7 @@ class QMatrix():
 		self.error = None
 
 	def load(self, filename):
-		data = _io.load(filename)
+		data = my_io.load(filename)
 		self.Q = data['Q']
 		self.slip = data['slip']
 		self.guess = data['guess']
@@ -36,7 +36,7 @@ class QMatrix():
 		# self.prior = data['prior'] # TODO
 
 	def save(self, filename):
-		_io.backup(filename, {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior, 'error': self.error, 'p_states': self.p_states})
+		my_io.backup(filename, {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior, 'error': self.error, 'p_states': self.p_states})
 
 	def match(self, question, state):
 		return bool2int(question) & ((1 << self.nb_competences) - 1 - state) == 0
@@ -210,5 +210,5 @@ class QMatrix():
 			for question_id in range(nb_questions):
 				is_skilled = self.match(self.Q[question_id], states[student_id])
 				student_data[student_id].append((is_skilled and random.random() > self.slip[question_id]) or (not is_skilled and random.random() <= self.guess[question_id]))
-		_io.backup('fake_data', {'student_data': student_data})
+		my_io.backup('fake_data', {'student_data': student_data})
 		# return student_data

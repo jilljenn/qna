@@ -1,3 +1,1 @@
-numpy
 rpy2
-git+https://bitbucket.org/pypy/numpy.git
