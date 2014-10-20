@@ -4,14 +4,14 @@ import my_io, random
 from qmatrix import QMatrix
 #from irt import IRT
 
-filename = 'sat'
+filename = 'castor6e' # 17
 n_split = 5
 # budget = 20
 all_student_sampled = True
 models = []
 for nb_competences in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
 	models.append(QMatrix(nb_competences=nb_competences))
-models = [IRT()]
+#models = [IRT()]
 #models = [IRT(criterion='MEPV')]
 models_names = [model.name for model in models]
 
@@ -75,23 +75,28 @@ def simulate(model, train_data, test_data, error_log):
 
 def main():
 	full_dataset = my_io.load(filename, prefix='data')['student_data'][::-1]
-	nb_questions = 20
-	question_subset = [2 * i for i in range(20)] # sorted(random.sample(range(len(full_dataset[0])), nb_questions))
+	# nb_questions = 20
+	if filename == 'sat':
+		question_subset = [2 * i for i in range(20)] # sorted(random.sample(range(len(full_dataset[0])), nb_questions))
+	else:
+		nb_questions = 17
+		question_subset = range(nb_questions)
 	for model in models:
 		error_rate = []
-		for nb_questions in [20]: # , 30, 40
-			for train_power in [80]: # , 40, 160
+		for nb_questions in [17]: # , 30, 40
+			for test_power in [10000]: # , 40, 160
+				train_power = len(full_dataset) - test_power
 				begin = datetime.now()
 				log = {}
 				if model.name == 'QMatrix':
-					god_prefix = '%s-%s-%s' % (nb_competences, nb_questions, train_power)
+					god_prefix = '%s-%s-%s' % (model.nb_competences, nb_questions, train_power)
 				elif model.criterion == 'MFI':
 					god_prefix = 'irt-%s-%s' % (nb_questions, train_power)
 				else:
 					god_prefix = 'mepv-irt-%s-%s' % (nb_questions, train_power)
 				dataset = [[full_dataset[i][j] for j in question_subset] for i in range(len(full_dataset))]
 				error_log = []
-				simulate(model, dataset[:train_power], dataset[160:], error_log)
+				simulate(model, dataset[:train_power], dataset[-test_power:], error_log)
 				print god_prefix
 				log[model.name] = error_log
 				get_results(log, god_prefix)

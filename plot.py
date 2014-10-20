@@ -13,15 +13,17 @@ ax.set_title('Log loss')
 plt.show()
 """
 
-graphs = {'20': {}, '40': {}, '80': {}, '160': {}}
-graphs2 = {10: {}, 15: {}, 20: {}, 30: {}, 40: {}}
+dataset = 'castor6e'
+
+graphs = {'20': {}, '40': {}, '80': {}, '160': {}, '48939': {}}
+graphs2 = {10: {}, 15: {}, 20: {}, 30: {}, 40: {}, 17: {}}
 filenames = {}
 
 folder = sys.argv[1]
 
 for filename in os.listdir(folder):
 	if filename.startswith('stats'):
-		name, nb_questions, train_power = re.match('stats-sat-([a-z0-9-]+)-([0-9]+)-([0-9]+)-', filename).groups()
+		name, nb_questions, train_power = re.match('stats-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset, filename).groups()
 		nb_questions = int(nb_questions)
 		data = json.load(open('%s/%s' % (folder, filename)))['QMatrix' if len(name) <= 2 else 'IRT']['mean']
 		# print name, nb_questions, train_power
@@ -34,8 +36,8 @@ for filename in os.listdir(folder):
 			graphs2[nb_questions][name] = {train_power: value}
 		else:
 			graphs2[nb_questions][name][train_power] = value
-		if nb_questions == 20: # TODO mettre ça à 40
-			filenames[(name, train_power)] = '%s/%s' % (folder, filename)
+		#if nb_questions == 17: # TODO mettre ça à 40
+		filenames[(name, train_power)] = '%s/%s' % (folder, filename)
 
 colors = {'3': 'red', '4': 'orangered', '5': 'orange', '6': 'yellow', 'irt': 'blue', 'mepv-irt': 'darkblue'}
 
@@ -69,19 +71,21 @@ bundle = {}
 bundle['nbq-20'] = graphs2[20]
 bundle['nbq-40'] = graphs2[40]
 
-for train_power in ['80']: # , '160'
+print filenames
+
+for train_power in ['48939']: # , '160'
 	print train_power
 	fig, ax = plt.subplots()
-	irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
-	mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
-	bundle['irt-%s' % train_power] = irt
+	#irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
+	#mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
+	#bundle['irt-%s' % train_power] = irt
 	qmatrix = {}
-	for k in range(1, 13):
+	for k in range(1, 2):
 		qmatrix[k] = json.load(open(filenames[(str(k), train_power)]))['QMatrix']['mean']
-		bundle['qmatrix3-%s' % train_power] = qmatrix[k]
-		ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex(k * 21)[2:], linewidth=13 - k)
-	ax.plot(range(1, len(irt) + 1), irt, color='blue')
-	ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
+		bundle['qmatrix%d-%s' % (k, train_power)] = qmatrix[k]
+		ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex(k * 25)[2:], linewidth=11 - k)
+	#ax.plot(range(1, len(irt) + 1), irt, color='blue')
+	#ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
 	ax.set_title('IRT VS q-matrix K = 1-10, train_power %s' % train_power)
 	plt.show()
 

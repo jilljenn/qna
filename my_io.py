@@ -1,6 +1,6 @@
 import json
 
-PREFIX = 'third'
+PREFIX = 'castor1'
 
 def split(filename, n):
 	"""Creates files and returns filenames."""
