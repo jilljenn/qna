@@ -1,3 +1,4 @@
+# coding=utf-8
 import math
 
 def entr(x):
@@ -23,6 +24,11 @@ def kindlog(x):
 
 def logloss(estimated, real):
 	return -sum(kindlog(estimated[i]) if real[i] else kindlog(1 - estimated[i]) for i in range(len(real))) / len(real)		
-
 def derivative_logloss(estimated, real, coefficients):
 	return -sum(coefficients[i] / estimated[i] if real[i] else -coefficients[i] / (1 - estimated[i]) for i in range(len(real))) / len(real)
+
+def avgstd(l): # Displays mean and variance
+    n = len(l)
+    mean = float(sum(l)) / n
+    var = float(sum(i * i for i in l)) / n - mean * mean
+    return '%.3f ± %.3f' % (round(mean, 3), round(1.96 * math.sqrt(var / n), 3))

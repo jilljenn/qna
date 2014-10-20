@@ -10,8 +10,9 @@ ltm = importr('ltm')
 cat = importr('catR')
 
 class IRT():
-	def __init__(self, Q=None, slip=None, guess=None, prior=None):
+	def __init__(self, Q=None, slip=None, guess=None, prior=None, criterion='MFI'):
 		self.name = 'IRT'
+		self.criterion = criterion
 
 	def training_step(self, train, opt_Q=True, opt_sg=True):
 		nb_students = len(train)
@@ -32,7 +33,7 @@ class IRT():
 		r('theta <- 0')
 
 	def next_item(self, replied_so_far, results_so_far):
-		next = r('nextItem(itembank, NULL, theta, out = c({}))$item'.format(','.join(map(lambda x: str(x + 1), replied_so_far))))[0] # criterion = "MEPV"
+		next = r('nextItem(itembank, NULL, theta, out = c({}), criterion = "{}")$item'.format(','.join(map(lambda x: str(x + 1), replied_so_far))), self.criterion)[0]
 		# nb_questions = r('dim(itembank)[1]')[0]
 		# next = random.choice(list(set(range(nb_questions)) - set(replied_so_far)))
 		return next - 1
