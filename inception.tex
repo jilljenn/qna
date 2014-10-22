@@ -1,0 +1,164 @@
+\documentclass[12pt]{article}
+
+
+\usepackage[utf8]{inputenc}
+
+\usepackage[a4paper,hmargin=2cm,vmargin=3cm]{geometry}
+\usepackage{amssymb,amsmath}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{tocvsec2}
+\usepackage{tikz}
+\usepackage[french]{babel}
+\usepackage{stmaryrd}
+
+\title{Akinator}
+
+\author{\textsc{Tmtc}}
+
+% \date{20 juin 2013}
+
+
+\begin{document}
+\maketitle
+\setcounter{tocdepth}{2}
+\tableofcontents
+\clearpage
+
+\section{Notations}
+\begin{itemize}
+	\item $X \in \{1,.. n\}$ est la variable aléatoire associé à l'item auquel l'individu pense
+	\item $Q_j \in {0,1}$ est la variable aléatoire associé à la réponse de l'individu à la question $j$
+	\item $p_i$ est l'apriori sur X : $p_i = P(X = i)$
+	\item $\hat{p}_i$ est l'aposteriori  : $\hat{p}_i = P(X=i | Q_j)$
+	\item $q = P(Q_j = 1)$, j étant fixé préalablement
+	\item $n_{ij}$ le nombre de personnes ayant répondu à la question j en pensant à l'item i. 
+	\item $q_{ij}$ (ou $q_i$) $= P(Q_j = 1 | X = i, \mathcal{F})$ où $\mathcal{F}$ est l'information dont on dispose (cad les $n_{ij}$ réponses que l'on a). Si $n_{ij} = \infty$ alors $q_i = P(Q_j = 1 | X = i)$. Par la suite je note pas le $\mathcal{F}$ pour pas trop alourdir.. 
+	\item H la fonction entropie : 
+		\begin{itemize}
+			\item Pour un réel $p \in [0,1]$ : H(p) = - [pln(p) + (1-p)ln(1-p)]. 
+			\item Pour un vecteur $(p_i)$ tel que $\sum_i p_i = 1$ : $H(p) = -\sum_i p_i\cdot ln(p_i)$. 
+		\end{itemize}
+\end{itemize}
+
+\section{Gain d'entropie}
+
+\subsection{Calcul de l'aposteriori}
+ 
+ \[P(X = i | Q_j = 1) = \cfrac{P(Q_j = 1 | X = i)P(X = i)}{P(Q_j = 1)} = \cfrac{q_{ij}\cdot p_i}{q}\]
+\[ P(X = i | Q_j = 0) = \cfrac{(1-q_{ij})\cdot p_i}{1-q}\]
+
+\subsection{Entropie de l'aposteriori}
+\subsubsection{Calcul}
+\begin{tabular}{ r c l  p{10cm}}
+$E[H(\hat{p})]$ & = & $E[H(\hat{p}) | Q_j = 1]\cdot P(Q_j = 1) + E[H(\hat{p}) | Q_j = 0]\cdot P(Q_j = 0)$\\
+& = & $q \cdot \sum_i \cfrac{q_ip_i}{q}\text{ln}\cfrac{q_ip_i}{q} \hspace{1mm}+(1-q) \cdot \sum_i \cfrac{(1-q_i)p_i}{1-q}\text{ln}\cfrac{(1-q_i)p_i}{1-q}$\\
+& = & $\sum_i q_ip_i\text{ln}\cfrac{p_iq_i}{q} \hspace{1mm}+\sum_i (1-q_i)p_i\text{ln}\cfrac{p_i(1-q_i)}{1-q}$\\
+& = & $\sum_i q_ip_i[\text{ln}p_i+\text{ln}q_i-\text{ln}q] \hspace{1mm}+\sum_i (1-q_i)p_i[\text{ln}p_i+\text{ln}(1-q_i)-\text{ln}(1-q)]$\\
+& = & $\sum_i (q_i + 1 - q_i)p_i\text{ln}p_i \hspace{1mm}$\\
+&&$+ \sum_i p_i[q_i\text{ln}q_i + (1-q_i)\text{ln}(1-q_i)]$\\
+&&$- \sum_i p_i[q_i\text{ln}q + (1-q_i)\text{ln}(1-q)]$\\
+& = &$\sum_i p_i\text{ln}p_i +\sum_i p_iH(q_i) - [\text{ln}(q)\sum_ip_iq_i + \text{ln}(1-q)\sum_ip_i(1-q_i)]$\\
+\end{tabular}
+
+Finalement : \[E[H(\hat{p})] = H(p) + \sum_i p_iH(q_i) - H(q)\]
+\[E[H(\hat{p})- H(p)] = \sum_i p_iH(q_i) - H(q)\]
+
+Si on note $Q$ la variable aléatoire qui prend pour valeur $q_i$ avec probabilité $p_i$, alors : 
+\[E[H(\hat{p})- H(p)] = E[H(Q)] - H(E[Q])\]
+
+\subsubsection{Signification des termes}
+\begin{itemize}
+	\item $E[H(Q)]$ est l'espérance des entropies. Ca caractérise le fait que pour faire une bonne question il faut que les gens soient unanimes ($q_i$ proches de 0 ou de 1). 
+	\item $H(E[Q])$ est l'entropie de l'espérance. Ca caractérise le fait que pour faire une bonne question il faut que les réponses soient différentes suivant l'item ($q_i$ proches de 1 pour certains i mais proches de 0 pour d'autre. Par exemple une question avec tous les $q_i = 1$ n'apporte rien). 
+\end{itemize}
+
+\subsection{Approximation par la variance}
+Cette dernière forme ressemble formellement à une variance : 
+\[V[X] = E[(X-E[X])^2] = E[X^2] - E[X]^2\]
+
+Il se trouve que la fonction $f : x\rightarrow 2(x-\frac{1}{2})^2$ et $H : x\rightarrow H(x)$ sont assez similaires (approximation à l'ordre 2 en $x = \frac{1}{2}$).  
+\begin{figure}[!h]
+%\centering\includegraphics[width=0.7\linewidth]{Entropie.png}
+\caption{La courbe $\mathcal{C}_H$ au dessus et $\mathcal{C}_f$ au dessous}
+\end{figure}
+
+Pourquoi pas approximer $E[H(Q)] - H(E[Q])$ par : 
+\[E[f(X)] - f(E[X]) = V[X]\]
+
+\section{Le problème}
+
+J'ai aucune solution ! Donc soit pas trop déçu. Mais j'écris ça pour formaliser le truc et bien comprendre qu'est-ce que on cherche à faire, et dissocier les différentes questions. 
+
+\subsection{Cadre (reprend ce qu'on a dit en couro (j'arrive pas à faire des footnotes))}
+
+\subsubsection{L'algorithme} On pose des questions en updatant notre prior au fur et à mesure. Dès que l'entropie du prior dépasse une certaine valeur seuil $H_{seuil}$ l'algorithme retourne :  $\arg \max p(i)$. 
+
+On note $N$ le nombre de questions qui ont été nécessaires et on cherche à minimiser $E[N]$. 
+\subsubsection{La stratégie gloutone}
+La stratégie consiste, à chaque étape, à poser la question qui maximise $E[H(\hat{p})]$. On suppose ici que l'on connait la question qui maximise cette espérance et on espère pouvoir borner $E[N_{opti}] - E[N_{glouton}]$ (ou probablement quelque chose qui ressemble, peut être quelque chose de moins fort). 
+
+\vspace{2mm}
+Tu m'as dit que il y a déjà (au moins) un papier qui traite de ça et ça m'intéresserai d'avoir les références pour voir ce qu'il prouve exactement. Mais le fait de pouvoir avoir des bornes théoriques entre l'algol optimal et l'algol glouton est cool :O
+
+\subsubsection{Determiner la bonne question}
+C'est là où je trouve que ça devient intéressant. Je laisse pour l'instant de coté le problème du temps de calcul. On a donc plusieurs questions à notre disposition dont certaines sont plus pertinentes que d'autres. Si on avait $\forall i,j, n_{ij} = \infty$ on pourrait faire le calcul exact de la meilleure question. Mais en fait on a des $n_{ij} < \infty$ ce qui implique une incertitude sur les $q_ij$. Il y a un dilemme exploitation/exploration : poser des questions dont on sait qu'elle sont bonne ou poser des questions sur lesquelles on a peu de donnés et qui pourraient éventuellement se révéler meilleures. 
+
+Nous cherchons à minimiser $E[N]$. Or $E[N] = \cfrac{H_{seuil} - H_0}{E[\Delta H]}$ (avec $\Delta H$ le gain d'entropie entre l'apriori et l'aposteriori). On peut  écrire ce que l'on cherche à minimiser sous la forme d'un regret : 
+
+\[ R = \frac{1}{E[\Delta H_{opti}]} - \frac{1}{E[\Delta H_{algo}]} \]
+
+Qui revient à maximiser : 
+
+\[R' = E[\Delta H_{opti}] - E[\Delta H_{algo}] \]
+
+Autrement dit : la question $j_{opti}$ permet d'augmenter l'entropie de $\Delta H_{opti}$ mais on ne sait pas laquelle. Pour acquérir de l'information, l'algorithme est obligé de poser des questions $j$ sous optimale en augmentant l'entropie de seulement $\Delta H_{algo}$. Notre but est de choisir le moins souvent possible les $j$ sous optimaux, et d'autant moins souvent qu'ils sont sous optimaux. 
+
+\vspace{2mm}
+Le problème posé en ces termes reprend le formalisme de l'approche optimiste (bandits) !
+
+\subsection{L'approche optimiste} 
+\subsubsection{Problème de dépendance à l'apriori}
+Ce que cache un peu ce que j'ai écrit avant c'est la dépendance de $\Delta H$ à l'apriori $(p_i)$. Donc quel $(p_i)$ utiliser ? Si on suppose que l'on a toujours le même apriori alors effectivement on peut tenter de résoudre le problème avec une approche optimiste en considérant cet apriori là pour $(p_i)$. En vrai on a jamais (ou avec probabilité très faible :o) le même apriori. 
+
+\vspace{2mm}
+Supposons le problème de bandit résolu. Etant donné un certain $(p_i)$ fixé, au bout de n étapes (n questions) on est capable d'obtenir un regret $R_n = \sum_{k=1}^n \Delta H_k$ faible. Le problème maintenant est de savoir si en utilisant la même stratégie mais sur des $(p_i)$ non fixe on obtient toujours un regret faible. 
+
+\vspace{2mm}
+Plus précisément, à chaque étape : 
+\begin{itemize}
+	\item On tire $(p_i) \in \mathbb{R}^m$ (avec m le nombre d'items) suivant une loi que l'on ne connait pas
+	\item On choisit de façon optimiste quelle question on pose
+	\item On update $q_{ij}$ et $n_{ij}$
+\end{itemize}
+(Note : On fait l'approximation que $q$ et $n$ sont updatés à chaque question alors que l'ont doit attendre quelques dizaines de questions avant de savoir à quel item l'individu pensais et de pouvoir update. Mais c'est pas grave car on a un regret quasi identique.)
+
+Le premier problème est de borner $R_n$ en supposant que l'on sait le borner dans le cas où $(p_i)$ est déterministe. 
+
+\subsubsection{Piste}
+Alors j'ai pas vraiment eu le temps de chercher, on aura j'espère l'occasion d'y réfléchir à deux quand on rentrera d'Asie. Mais voila comment je m'y prendrais 
+
+\vspace{3mm}
+\textbf{ATTENTION} : ce qui suit est loin d'être clair mais ça serait vraiment trop long d'essayer de tout écrire bien propre pour que ce soit clair. J'ecris en vrac ce que je pense mais on en parlera j'espère
+\vspace{3mm}
+
+Supposons que l'apriori est $p_1$ mais on utilise $p_2$ dans l'algorithme. On peut chercher à borner le regret que l'on obtient à utiliser $p_2$ au lieu de $p_1$. Un truc du genre : $\hat{R} \le g(d(p_1, p_2))$ avec d une distance à déterminer et g une  fonction à déterminer. 
+
+Lorsque on a un certain apriori $p$, on peut regarder tous les apriori qu'on a déjà traité dans une boule de centre $p$ et de rayon $a$ pour la distance $d$. On note $k(a)$ le nombre de ces apriori dans cette boule. Si on note $R_n$ le regret dans le cas où $p$ est fixe alors on peut majorer le regret par : $\inf_a R_{k(a)} + E[g(a)]$. 
+
+Ca veut dire qu'il faut arriver à minorer k(a) et majorer E[g(a)]. Les deux dépendent de la distribution selon laquelle $p$ est tiré. Je dit pas que c'est simple mais mon intuition me dit que ça peut se faire (évidement.. je peux me tromper... mais j'ai vraiment l'impression qu'on peut tirer des bornes comme ça)
+
+\subsubsection{Problème de bandit}
+On peut supposer maintenant que $p$ est déterministe. 
+
+En gros l'approche optimiste (je sais t'étais en cours de \textsc{Munos} toi aussi mais ça remonte quand même) c'est de dire : je vais regarder la performance de chacune de mes possibilité de façon optimiste. Cad : Je me fixe un certain $t\in[0,1]$ et pour chaque question je regarde avec probabilité $t$ quel $\Delta H$ je peux espérer obtenir. 
+
+Là mon train du coup je peux pas trop détailler, mais  ça m'a pas l'air très dur ça par contre (mais calculatoire peut être). 
+
+Tu as une question et sont $q_i$ associé. Tu prends un $q_i$ et tu le bouges très peu de sorte à améliorer $\Delta H$. Il faut le bouger à l'inverse de $q$. Si $q_i \ge q$ alors il faut augmenter $q_i$ et inversement. Et plus généralement tu maximise $\Delta H$ sur les bords (fonction convexe). 
+\end{document}
+
+
+
+
+
