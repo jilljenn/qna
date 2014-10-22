@@ -50,7 +50,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{algorithm,caption,algpseudocode}
 \usepackage[round]{natbib}
-\usepackage{hyperref}
+\usepackage[colorlinks=true,citecolor=magenta]{hyperref}
 
 \newcommand\alert[1]{\textcolor{red}{#1}}
 \newcommand\note[1]{\textcolor{blue}{#1}}
@@ -347,9 +347,23 @@ otherwise
 
 \section{Evaluation}
 
-\subsection{Data and Simulation Design} % and provided by Titus\footnote{\url{http://alumni.cs.ucr.edu/~titus/}}
+\subsection{Data} % and provided by Titus\footnote{\url{http://alumni.cs.ucr.edu/~titus/}}
+
+\subsubsection{SAT dataset}
 
 We are using SAT Subject Test data, also featured in~\citep{Winters2005, Desmarais2011}. This student data is a $296 \times 40$ matrix representing the results from 296 students on 40 questions from the 4 following topics: Mathematics, Biology, World History and French.
+
+\subsubsection{Castor dataset}
+
+Castor is a contest for youngsters. It comes from Bebras Lithuanian contest. 1st grade high school.
+une pour les 6e/5e (matrice creuse de 59379 équipes $\times$ 17 questions avec 885843 entrées)
+
+\begin{figure}
+\includegraphics[width=\linewidth]{51-calc}
+\caption{Contestants had to make 51 using the fewest buttons possible between $+$1 and $\times$2. A clever way to give an insight to binary representation of numbers.}
+\end{figure}
+
+\subsection{Simulation Design}
 
 In our experiments we analyze the effect of three parameters: the length of the training dataset, the number of questions of the test and the number of skills $K$ of the q-matrices. For both models considered, IRT and q-matrix, our test dataset was composed of the same 136 students, the last rows of the student data. The training dataset could be composed of the first 20, 40, 80 or 160 students, the number of questions of the test could be a random subset of 10, 20 or 40 questions picked from the dataset for each experiment. The number of skills of the q-matrix could be any integer from 3 to 6.
 
