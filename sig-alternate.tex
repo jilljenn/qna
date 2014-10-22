@@ -262,6 +262,8 @@ Our student data is a binary matrix of order $N_S \times N_Q$ where $N_S$ and $N
 
 We detail the cross-validation based method described in Algorithm 1. The dataset is partitioned into two sets, $train$ and $test$, \textsc{Simulate}$(train, test)$ trains our model on the $train$ dataset and evaluates it on the $test$ dataset.
 
+First a model is learnt thanks to the test data set. Then at each step of the CAT procedure a carefully chosen question by the algorithm is asked. Updates are then done according to this answer and a performance indicator at the current step is computed and stored. We more precisely detail the framework in Algorithm 1 *****AJOUTER LE LIEN VERS ALGO 1 JE SAIS PAS COMMENT LE FAIRE :/***
+
 \begin{itemize}
 \item \textsc{TrainingStep}: Train the model in order to calibrate the question parameters $\alpha$. In the case of an IRT model, the difficulty $d_i$ and discrimination $\delta_i$ are computed for each question $i$, while in the case of cognitive diagnosis, the entries of the q-matrix $Q_{ij}$, the slip $s_i$ and guess $g_i$ are computed for each question $i$.
 \item \textsc{PriorInitialization}: Initialize the prior $\pi$ on the student parameters, i.e. the distribution over the skills in the case of the q-matrix model and the distribution over the ability for the IRT model. 
@@ -284,9 +286,9 @@ We detail the cross-validation based method described in Algorithm 1. The datase
 		\State Ask question $q_{i + 1}$ to the student $s$
 		\State Get reply $r_{i + 1}$
 		\State $\pi \gets \Call{EstimateParameters}{q_1, r_1, \ldots, q_i, r_i, \alpha}$
+		\State $p \gets$ \Call{PredictPerformance}{$\alpha, \pi$}
+		\State \Call{Evaluate}{$p$}
 	\EndWhile
-	\State $p \gets$ \Call{PredictPerformance}{$\alpha, \pi$}
-	\State \Call{Evaluate}{$p$}
 \EndFor
 \EndProcedure
 \end{algorithmic}
@@ -295,11 +297,28 @@ We detail the cross-validation based method described in Algorithm 1. The datase
 
 \subsection{Logarithmic Error Function}
 
-After having computed the probability of correct answers of the student, we need to compare them to the actual answers and deduce a performance indicator from it. For this purpose, we choose the popular logarithmic score~\citep{Gneiting2007}, that we will denote from now on by ``error''.
+After having computed the probability of correct answers of the student, we need to compare them to the actual answers and deduce a performance indicator from it. For this purpose, we choose the popular logarithmic score~\citep{Gneiting2007}. 
 
-This quantity is both easy to define and to compute. Let $(p_i)$ be the probabilities of correct answer and $(a_i)$ be 1 if the answer was actually correct, 0 otherwise, the logarithmic score is then given by the following expression: 
+This quantity is both easy to define and to compute. Let $(p_i)$ be the probabilities of correct answer predicted by the algorithm and $(a_i)$ be 1 if the answer was actually correct, 0 otherwise, the logarithmic score is then given by the following expression: 
 
-\[ \sum_i a_i\ln(p_i) + (1-a_i)\ln(1-p_i).\]
+\[ - \sum_i a_i\ln(p_i) + (1-a_i)\ln(1-p_i) = - \sum_i \ln | a_i - p_i | \]
+
+The intuition behind this formula is the following. For each couple ($p_i$, $a_i$) some wants to penalize the algorithm for $p_i$ being different from $a_i$, the more $p_i$ is different the more some penalizes. Among possible penalizing functions, the logarithm is a common choice as it is unbiased (optimizing the logarithmic score of $p$ for a Bernouilli variable of parameter $a$ leads to $p=a$). 
+
+The logarithmic score that we will denote from now on by ``error'' should be read as an indicator of the predictive power. A null value of the error means all answers were exactly predicted (probability of correct answer predicted by the algorithm equals 1 or 0 depending on the actual answer) and an error of $\ln(2) \approx 0.69$ correspond to a non informative algorithm were all the probabilities are set to 1/2. 
+
+\subsection{Algorithm performance}
+
+At the end of the CAT, an error for each step of the procedure is available. One main difference of the algorithm we compare are their expressiveness ; IRT or Q-matrix for low values of K are less expressive than Q-matrix for higher value of K. Each one has their assets, being more or less effective depending on the number of question already asked. We present roughly here the differences between expressive and less expressive algorithm : 
+\begin{itemize}
+\item The initial and final error : The more expressive the model is, the less these errors. Indeed, the initial error is the error associated with the prior which depend on the algorithm ability to express complex prior. Also, in the late steps of the algorithm a lot of information is available which is more profitable to richer algorithm than the less expressive ones. 
+\item The early decrease rate of the error : The less expressive the model is, the bigger this decrease rate. Indeed a poorer model need less parameters to set up, it makes more assumption on the world and then adapt faster. 
+\end{itemize}
+
+%************
+%C'était ce que on observait sur les anciennes données, pas sur que on obtienne ça aussi sur castor. 
+%Aussi la "final" error ne fait plus sens si on est dans le cas d'une erreur finale nulle. Dans ce cas là il faut remplacer par "finalS errorS". 
+%************
 
 \subsection{Item Response Theory Design}
 
