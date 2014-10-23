@@ -1,6 +1,6 @@
 import json
 
-PREFIX = 'castor1'
+PREFIX = 'nice-sat1'
 
 def split(filename, n):
 	"""Creates files and returns filenames."""

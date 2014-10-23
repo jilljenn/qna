@@ -22,10 +22,13 @@ def multientropy(l):
 def kindlog(x):
 	return math.log(1e-16) if x < 1e-16 else math.log(x)
 
-def logloss(estimated, real):
-	return -sum(kindlog(estimated[i]) if real[i] else kindlog(1 - estimated[i]) for i in range(len(real))) / len(real)		
+def logloss(estimated, real, replied_so_far=[]):
+    if len(real) == len(replied_so_far):
+        return 0
+    return -sum(kindlog(estimated[i]) if real[i] else kindlog(1 - estimated[i]) for i in range(len(real)) if i not in replied_so_far) / (len(real) - len(replied_so_far))
+
 def derivative_logloss(estimated, real, coefficients):
-	return -sum(coefficients[i] / estimated[i] if real[i] else -coefficients[i] / (1 - estimated[i]) for i in range(len(real))) / len(real)
+    return -sum(coefficients[i] / estimated[i] if real[i] else -coefficients[i] / (1 - estimated[i]) for i in range(len(real))) / len(real)
 
 def avgstd(l): # Displays mean and variance
     n = len(l)
