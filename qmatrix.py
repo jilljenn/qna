@@ -54,11 +54,11 @@ class QMatrix():
 		self.infer_state(train)
 		while loop < timeout: # TODO
 			# print 'Infer state %d' % loop
-			# self.infer_state(train)hfff
+			#self.infer_state(train)
 			#print self.model_error(train)
 			if opt_Q:
 				#print 'Infer Q-Matrix FAST %d' % loop
-				self.infer_qmatrix_fast(train)
+				self.infer_qmatrix(train)
 				#print self.model_error(train)
 			if opt_sg:
 				#print 'Infer guess/slip %d' % loop
@@ -101,7 +101,6 @@ class QMatrix():
 		self.p_states = []
 		for student_id in range(nb_students):
 			self.p_states.append(self.prior[:])
-		for _ in range(10):
 			for question_id in range(nb_questions): # Ask her ALL questions!
 				self.p_states[student_id] = self.ask_question(question_id, train[student_id][question_id], self.p_states[student_id])
 
@@ -202,9 +201,12 @@ class QMatrix():
 		nb_questions = len(self.Q)
 		return [self.compute_proba_question(question_id, self.p_test) for question_id in range(nb_questions)]
 
-	def generate_student_data(self, nb_students):
+	def generate_student_data(self, nb_students, state_prior):
 		nb_questions = len(self.Q)
-		states = sorted(random.choice(range(1 << self.nb_competences)) for _ in range(nb_students)) # Generate random states
+		states = []
+		for _ in range(nb_students):
+			random_competence_vector = ['1' if random.random() < state_prior[i] else '0' for i in range(self.nb_competences)] # Generate random state
+			states.append(int(''.join(random_competence_vector), 2))
 		student_data = [[] for _ in range(nb_students)]
 		for student_id in range(nb_students):
 			for question_id in range(nb_questions):
