@@ -13,8 +13,8 @@ ax.set_title('Log loss')
 plt.show()
 """
 
-dataset = '3x2b'
-MAX = 3
+dataset = 'sat'
+MAX = 6
 if dataset == 'sat':
 	train_power = '216'
 else:
