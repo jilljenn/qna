@@ -54,11 +54,11 @@ class QMatrix():
 		self.infer_state(train)
 		while loop < timeout: # TODO
 			# print 'Infer state %d' % loop
-			#self.infer_state(train)
+			self.infer_state(train)
 			#print self.model_error(train)
 			if opt_Q:
 				#print 'Infer Q-Matrix FAST %d' % loop
-				self.infer_qmatrix(train)
+				self.infer_qmatrix_fast(train)
 				#print self.model_error(train)
 			if opt_sg:
 				#print 'Infer guess/slip %d' % loop
@@ -66,8 +66,8 @@ class QMatrix():
 				#print self.model_error(train)
 			#print 'Infer prior %d' % loop
 			self.infer_prior()
-			#print self.model_error(train)
 			loop += 1
+		self.model_error(train)
 		if timeout == 0:
 			self.generate_student_data(50)
 		self.save('qmatrix-%s' % datetime.now().strftime('%d%m%Y%H%M%S'))

@@ -45,7 +45,7 @@ def get_results(log, god_prefix):
 	my_io.backup('stats-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
 def simulate(model, train_data, test_data, error_log):
-	model.training_step(train_data, opt_sg=False)
+	model.training_step(train_data)
 	nb_students = len(test_data)
 	nb_questions = len(test_data[0])
 	budget = nb_questions
