@@ -4,17 +4,19 @@ import random
 import my_io
 import sys
 
-filename = '3x2b' # castor6e: 17Q
+filename = 'sat' # castor6e: 17Q
 
 if sys.argv[1] == 'qm':
 	from qmatrix import QMatrix
 	models = []
-	for nb_competences in [2]:
+	for nb_competences in [1, 2, 3]:
 		models.append(QMatrix(nb_competences=nb_competences, slip=[1e-6] * 3, guess=[1e-6] * 3))
-else:
+elif sys.argv[1] == 'irt':
 	from irt import IRT
 	models = [IRT()]
-	#models = [IRT(criterion='MEPV')]
+else:
+	from irt import IRT
+	models = [IRT(criterion='MEPV')]
 
 # n_split = 5
 # budget = 20
@@ -53,19 +55,19 @@ def simulate(model, train_data, test_data, error_log):
 		student_sample = range(nb_students) # All students
 	error_rate = [[] for _ in range(budget)]
 	for student_id in student_sample:
-		print 'Student', student_id, test_data[student_id]
+		# print 'Student', student_id, test_data[student_id]
 		error_log.append([0] * budget)
 		model.init_test()
 		replied_so_far = []
 		results_so_far = []
 		for t in range(1, budget + 1):
 			question_id = model.next_item(replied_so_far, results_so_far)
-			print 'Turn', t, '-> question', question_id
+			# print 'Turn', t, '-> question', question_id
 			replied_so_far.append(question_id)
 			results_so_far.append(test_data[student_id][question_id])
 			model.estimate_parameters(replied_so_far, results_so_far)
 			performance = model.predict_performance()
-			print surround(performance)
+			# print surround(performance)
 			#print ''.join(map(lambda x: str(int(round(x))), performance))
 			#print ''.join(map(lambda x: str(int(x)), test_data[student_id]))
 			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], replied_so_far)
@@ -91,7 +93,7 @@ def main():
 		question_subset = range(nb_questions)
 	elif filename.startswith('3x2'):
 		nb_questions = 3
-		test_power = 1
+		test_power = 10
 		question_subset = range(nb_questions)
 	for model in models:
 		error_rate = []

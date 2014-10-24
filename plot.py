@@ -14,7 +14,7 @@ plt.show()
 """
 
 dataset = '3x2b'
-MAX = 2
+MAX = 3
 if dataset == 'sat':
 	train_power = '216'
 else:
@@ -85,7 +85,7 @@ irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
 #mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
 bundle['irt-%s' % train_power] = irt
 qmatrix = {}
-for k in range(2, MAX + 1):
+for k in range(1, MAX + 1):
 	qmatrix[k] = json.load(open(filenames[(str(k), train_power)]))['QMatrix']['mean']
 	bundle['qmatrix%d-%s' % (k, train_power)] = qmatrix[k]
 	ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex(k * 255 / MAX)[2:], linewidth=MAX + 1 - k)

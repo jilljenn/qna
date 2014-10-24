@@ -67,6 +67,10 @@ class QMatrix():
 			#print 'Infer prior %d' % loop
 			self.infer_prior()
 			loop += 1
+		"""print 'Q-matrice', self.Q
+		print self.guess
+		print self.slip
+		print '->', self.model_error(train)"""
 		self.model_error(train)
 		if timeout == 0:
 			self.generate_student_data(50)
