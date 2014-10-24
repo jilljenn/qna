@@ -15,7 +15,7 @@ plt.show()
 
 dataset = 'sat'
 train_power = '216'
-MAX = 2
+MAX = 10
 
 graphs = {'20': {}, '40': {}, '80': {}, '160': {}, '216': {}, '48939': {}}
 graphs2 = {10: {}, 15: {}, 20: {}, 30: {}, 40: {}, 17: {}}
@@ -78,16 +78,16 @@ print filenames
 #for train_power in ['48939']: # , '160'
 print train_power
 fig, ax = plt.subplots()
-#irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
-#mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
-#bundle['irt-%s' % train_power] = irt
+irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
+mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
+bundle['irt-%s' % train_power] = irt
 qmatrix = {}
 for k in range(1, MAX + 1):
 	qmatrix[k] = json.load(open(filenames[(str(k), train_power)]))['QMatrix']['mean']
 	bundle['qmatrix%d-%s' % (k, train_power)] = qmatrix[k]
-	ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex(k * 255 / 6)[2:], linewidth=MAX + 1 - k)
-#ax.plot(range(1, len(irt) + 1), irt, color='blue')
-#ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
+	ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex(k * 255 / MAX)[2:], linewidth=MAX + 1 - k)
+ax.plot(range(1, len(irt) + 1), irt, color='blue')
+ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
 ax.set_title('IRT VS q-matrix K = 1-10, train_power %s' % train_power)
 plt.show()
 
