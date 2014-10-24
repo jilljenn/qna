@@ -6,5 +6,5 @@ then
 elif [ $1 == "pull" ]
 then
     scp jj@ulminfo.fr:$2.tar.gz .
-    tar xzf $2.tar.gz $1
+    tar xzf $2.tar.gz $2
 fi

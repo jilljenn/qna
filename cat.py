@@ -1,18 +1,24 @@
 from datetime import datetime
 from calc import logloss, surround, avgstd
-import my_io, random
-from qmatrix import QMatrix
-#from irt import IRT
+import random
+import my_io
+import sys
 
-filename = 'sat' # castor6e: 17Q
+filename = '3x2b' # castor6e: 17Q
+
+if sys.argv[1] == 'qm':
+	from qmatrix import QMatrix
+	models = []
+	for nb_competences in [2]:
+		models.append(QMatrix(nb_competences=nb_competences, slip=[1e-6] * 3, guess=[1e-6] * 3))
+else:
+	from irt import IRT
+	models = [IRT()]
+	#models = [IRT(criterion='MEPV')]
+
 # n_split = 5
 # budget = 20
 all_student_sampled = True
-models = []
-for nb_competences in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
-	models.append(QMatrix(nb_competences=nb_competences))
-#models = [IRT()]
-#models = [IRT(criterion='MEPV')]
 models_names = [model.name for model in models]
 
 def display(results):
@@ -39,7 +45,7 @@ def get_results(log, god_prefix):
 	my_io.backup('stats-%s-%s-%s' % (filename, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
 def simulate(model, train_data, test_data, error_log):
-	model.training_step(train_data)
+	model.training_step(train_data, opt_sg=False)
 	nb_students = len(test_data)
 	nb_questions = len(test_data[0])
 	budget = nb_questions
@@ -47,19 +53,19 @@ def simulate(model, train_data, test_data, error_log):
 		student_sample = range(nb_students) # All students
 	error_rate = [[] for _ in range(budget)]
 	for student_id in student_sample:
-		#print 'Student', student_id
+		print 'Student', student_id, test_data[student_id]
 		error_log.append([0] * budget)
 		model.init_test()
 		replied_so_far = []
 		results_so_far = []
 		for t in range(1, budget + 1):
-			#print 'Turn', t
 			question_id = model.next_item(replied_so_far, results_so_far)
+			print 'Turn', t, '-> question', question_id
 			replied_so_far.append(question_id)
 			results_so_far.append(test_data[student_id][question_id])
 			model.estimate_parameters(replied_so_far, results_so_far)
 			performance = model.predict_performance()
-			#print surround(performance)
+			print surround(performance)
 			#print ''.join(map(lambda x: str(int(round(x))), performance))
 			#print ''.join(map(lambda x: str(int(x)), test_data[student_id]))
 			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], replied_so_far)
@@ -74,7 +80,7 @@ def simulate(model, train_data, test_data, error_log):
 		print avgstd(error_rate[t])"""
 
 def main():
-	full_dataset = my_io.load(filename, prefix='data')['student_data'][::-1]
+	full_dataset = my_io.load(filename, prefix='data')['student_data']#[::-1]
 	if filename == 'sat':
 		nb_questions = 20
 		test_power = 80
@@ -82,6 +88,10 @@ def main():
 	elif filename == 'castor6e':
 		nb_questions = 17
 		test_power = 10000
+		question_subset = range(nb_questions)
+	elif filename.startswith('3x2'):
+		nb_questions = 3
+		test_power = 1
 		question_subset = range(nb_questions)
 	for model in models:
 		error_rate = []

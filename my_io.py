@@ -1,6 +1,6 @@
 import json
 
-PREFIX = 'nice-sat1'
+PREFIX = 'dummy'
 
 def split(filename, n):
 	"""Creates files and returns filenames."""
