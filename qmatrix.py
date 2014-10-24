@@ -58,13 +58,14 @@ class QMatrix():
 			#print self.model_error(train)
 			if opt_Q:
 				#print 'Infer Q-Matrix FAST %d' % loop
-				self.infer_qmatrix_fast(train)
+				self.infer_qmatrix(train)
 				#print self.model_error(train)
 			if opt_sg:
 				#print 'Infer guess/slip %d' % loop
 				self.infer_guess_slip(train)
 				#print self.model_error(train)
 			#print 'Infer prior %d' % loop
+			print self.model_error(train)
 			self.infer_prior()
 			loop += 1
 		"""print 'Q-matrice', self.Q
