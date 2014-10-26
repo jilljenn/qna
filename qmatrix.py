@@ -1,6 +1,6 @@
 # coding=utf8
 import random
-from calc import logloss, derivative_logloss, normalize, entropy
+from calc import logloss, derivative_logloss, normalize, entropy, compute_mean_entropy
 from itertools import product
 import my_io
 from datetime import datetime
@@ -13,7 +13,7 @@ DEFAULT_GUESS = 0.2
 K = 3
 LOOP_TIMEOUT = 10
 SLIP_GUESS_PRECISION = 1e-2
-ALPHA = 0.#2e-3
+ALPHA = 0.#2e-6
 
 class QMatrix():
 	def __init__(self, nb_competences=K, Q=None, slip=None, guess=None, prior=None):
@@ -196,15 +196,18 @@ class QMatrix():
 				continue
 			p_answering = self.compute_proba_question(question_id, self.p_test)
 			future_if_incorrect, future_if_correct = self.predict_future(question_id, self.p_test)
-			mean_entropy = p_answering * entropy(future_if_correct) + (1 - p_answering) * entropy(future_if_incorrect)
+			# mean_entropy = p_answering * entropy(future_if_correct) + (1 - p_answering) * entropy(future_if_incorrect)
+			mean_entropy = compute_mean_entropy(p_answering, self.predict_performance(future_if_incorrect), self.predict_performance(future_if_correct), replied_so_far + [question_id])
 			if not min_entropy or mean_entropy < min_entropy:
 				min_entropy = mean_entropy
 				best_question = question_id
 		return best_question
 
-	def predict_performance(self):
+	def predict_performance(self, p_states=None):
 		nb_questions = len(self.Q)
-		return [self.compute_proba_question(question_id, self.p_test) for question_id in range(nb_questions)]
+		if not p_states:
+			p_states = self.p_test
+		return [self.compute_proba_question(question_id, p_states) for question_id in range(nb_questions)]
 
 	def generate_student_data(self, nb_students, state_prior):
 		nb_questions = len(self.Q)

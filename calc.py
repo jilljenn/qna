@@ -16,8 +16,16 @@ def surround(p):
 def normalize2(p, e):
 	return (p * e) / (p * e + (1 - p) * (1 - e))
 
-def multientropy(l):
+def entropy1(x):
+    return entropy([x, 1 - x])
+
+def entropy_sum(l):
 	return sum(map(entropy1, l))
+
+def compute_mean_entropy(p_answering, perf_if_correct, perf_if_incorrect, replied_so_far):
+    perf_if_correct_subset = [p for i, p in enumerate(perf_if_correct) if i not in replied_so_far]
+    perf_if_incorrect_subset = [p for i, p in enumerate(perf_if_incorrect) if i not in replied_so_far]
+    return p_answering * entropy_sum(perf_if_correct_subset) + (1 - p_answering) * entropy_sum(perf_if_incorrect_subset)
 
 def kindlog(x):
 	return math.log(1e-16) if x < 1e-16 else math.log(x)
