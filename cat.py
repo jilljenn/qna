@@ -9,7 +9,7 @@ filename = 'sat' # castor6e: 17Q
 if sys.argv[1] == 'qm':
 	from qmatrix import QMatrix
 	models = []
-	for nb_competences in [1, 2, 3, 4, 5]:
+	for nb_competences in range(1, 11):
 		models.append(QMatrix(nb_competences=nb_competences))
 elif sys.argv[1] == 'irt':
 	from irt import IRT

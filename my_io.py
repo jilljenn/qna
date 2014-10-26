@@ -1,6 +1,6 @@
 import json
 
-PREFIX = 'slow-sat'
+PREFIX = 'newnew'
 
 def split(filename, n):
 	"""Creates files and returns filenames."""
