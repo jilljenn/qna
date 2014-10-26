@@ -37,19 +37,23 @@ class IRT():
 			best_question = r('nextItem(itembank, NULL, theta, out = c({}), criterion = "{}")$item'.format(','.join(map(lambda x: str(x + 1), replied_so_far)), self.criterion))[0]
 			return best_question - 1
 		# next = random.choice(list(set(range(nb_questions)) - set(replied_so_far)))
-		min_entropy = None
+		# min_entropy = None
+		max_info = None
 		best_question = None
 		for question_id in range(self.nb_questions):
 			if question_id in replied_so_far:
 				continue
 			p_answering = self.predict_performance()[question_id]
-			self.estimate_parameters(replied_so_far + [question_id], results_so_far + [True], '1')
-			self.estimate_parameters(replied_so_far + [question_id], results_so_far + [False], '0')
-			performance_if_correct = self.predict_performance('1')
-			performance_if_incorrect = self.predict_performance('0')
-			mean_entropy = compute_mean_entropy(p_answering, performance_if_correct, performance_if_incorrect, replied_so_far + [question_id])
-			if not min_entropy or mean_entropy < min_entropy:
-				min_entropy = mean_entropy
+			info = p_answering * (1 - p_answering)
+			# self.estimate_parameters(replied_so_far + [question_id], results_so_far + [True], '1')
+			# self.estimate_parameters(replied_so_far + [question_id], results_so_far + [False], '0')
+			# performance_if_correct = self.predict_performance('1')
+			# performance_if_incorrect = self.predict_performance('0')
+			# mean_entropy = compute_mean_entropy(p_answering, performance_if_correct, performance_if_incorrect, replied_so_far + [question_id])
+			# if not min_entropy or mean_entropy < min_entropy:
+			if not max_info or info > max_info:
+				# min_entropy = mean_entropy
+				max_info = info
 				best_question = question_id
 		return best_question
 

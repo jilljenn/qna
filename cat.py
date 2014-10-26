@@ -4,12 +4,12 @@ import random
 import my_io
 import sys
 
-filename = 'sat' # castor6e: 17Q
+filename = 'castor6e' # castor6e: 17Q
 
 if sys.argv[1] == 'qm':
 	from qmatrix import QMatrix
 	models = []
-	for nb_competences in range(1, 11):
+	for nb_competences in range(1, 7):
 		models.append(QMatrix(nb_competences=nb_competences))
 elif sys.argv[1] == 'irt':
 	from irt import IRT
@@ -60,6 +60,8 @@ def simulate(model, train_data, test_data, error_log):
 		model.init_test()
 		replied_so_far = []
 		results_so_far = []
+		# print 'Initial', model.predict_performance()
+		# print 'Initial error', logloss(model.predict_performance(), test_data[student_id])
 		for t in range(1, budget + 1):
 			question_id = model.next_item(replied_so_far, results_so_far)
 			# print 'Turn', t, '-> question', question_id
@@ -68,11 +70,11 @@ def simulate(model, train_data, test_data, error_log):
 			model.estimate_parameters(replied_so_far, results_so_far)
 			performance = model.predict_performance()
 			# print surround(performance)
-			#print ''.join(map(lambda x: str(int(round(x))), performance))
-			#print ''.join(map(lambda x: str(int(x)), test_data[student_id]))
+			# print ''.join(map(lambda x: str(int(round(x))), performance))
+			# print ''.join(map(lambda x: str(int(x)), test_data[student_id]))
 			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], replied_so_far)
-			#error_rate[t - 1].append(dummy_count(performance, test_data[student_id], replied_so_far) / (len(performance) - len(replied_so_far)))
-			#print error_log[-1][t - 1]
+			# error_rate[t - 1].append(dummy_count(performance, test_data[student_id], replied_so_far) / (len(performance) - len(replied_so_far)))
+			# print '%2d' % t, error_log[-1][t - 1]
 			"""if t == 38:
 				print t, error_log[-1][t]
 				print [performance[i] for i in range(len(performance)) if i not in replied_so_far]

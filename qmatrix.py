@@ -8,12 +8,12 @@ from datetime import datetime
 def bool2int(l):
 	return int(''.join(map(str, map(int, l))), 2)
 
-DEFAULT_SLIP = 0.2
-DEFAULT_GUESS = 0.2
+DEFAULT_SLIP = 1e-2
+DEFAULT_GUESS = 1e-2
 K = 3
-LOOP_TIMEOUT = 10
+LOOP_TIMEOUT = 5
 SLIP_GUESS_PRECISION = 1e-2
-ALPHA = 0.#2e-6
+ALPHA = 1e-4
 
 class QMatrix():
 	def __init__(self, nb_competences=K, Q=None, slip=None, guess=None, prior=None):
@@ -58,7 +58,7 @@ class QMatrix():
 			#print self.model_error(train)
 			if opt_Q:
 				#print 'Infer Q-Matrix FAST %d' % loop
-				self.infer_qmatrix(train)
+				self.infer_qmatrix_fast(train)
 				#print self.model_error(train)
 			if opt_sg:
 				#print 'Infer guess/slip %d' % loop
@@ -190,16 +190,20 @@ class QMatrix():
 	def next_item(self, replied_so_far, results_so_far):
 		nb_questions = len(self.Q)
 		min_entropy = None
+		max_info = None
 		best_question = None
 		for question_id in range(nb_questions):
 			if question_id in replied_so_far:
 				continue
 			p_answering = self.compute_proba_question(question_id, self.p_test)
-			future_if_incorrect, future_if_correct = self.predict_future(question_id, self.p_test)
+			# future_if_incorrect, future_if_correct = self.predict_future(question_id, self.p_test)
 			# mean_entropy = p_answering * entropy(future_if_correct) + (1 - p_answering) * entropy(future_if_incorrect)
-			mean_entropy = compute_mean_entropy(p_answering, self.predict_performance(future_if_incorrect), self.predict_performance(future_if_correct), replied_so_far + [question_id])
-			if not min_entropy or mean_entropy < min_entropy:
-				min_entropy = mean_entropy
+			# mean_entropy = compute_mean_entropy(p_answering, self.predict_performance(future_if_incorrect), self.predict_performance(future_if_correct), replied_so_far + [question_id])
+			info = p_answering * (1 - p_answering)
+			#if not min_entropy or mean_entropy < min_entropy:
+			if not max_info or info > max_info:
+				#min_entropy = mean_entropy
+				max_info = info
 				best_question = question_id
 		return best_question
 
