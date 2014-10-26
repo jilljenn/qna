@@ -13,14 +13,16 @@ ax.set_title('Log loss')
 plt.show()
 """
 
-dataset = 'sat'
-MAX = 3
+dataset = 'castor6e'
+MAX = 8
 if dataset == 'sat':
 	train_power = '216'
-else:
+elif dataset == 'castor6e':
 	train_power = '48939'
+else:
+	train_power = '90'
 
-graphs = {'20': {}, '40': {}, '80': {}, '90': {}, '160': {}, '216': {}, '48939': {}, '99': {}}
+graphs = {'20': {}, '40': {}, '80': {}, '90': {}, '160': {}, '216': {}, '276': {}, '286': {}, '295': {}, '48939': {}, '99': {}}
 graphs2 = {10: {}, 15: {}, 20: {}, 30: {}, 40: {}, 17: {}, 3: {}}
 filenames = {}
 
@@ -28,6 +30,7 @@ folder = sys.argv[1]
 
 for filename in os.listdir(folder):
 	if filename.startswith('stats'):
+		print filename
 		name, nb_questions, train_power = re.match('stats-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset, filename).groups()
 		nb_questions = int(nb_questions)
 		data = json.load(open('%s/%s' % (folder, filename)))['QMatrix' if len(name) <= 2 else 'IRT']['mean']

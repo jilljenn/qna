@@ -1,6 +1,6 @@
 import json
 
-PREFIX = 'newnew'
+PREFIX = 'lastchance'
 
 def split(filename, n):
 	"""Creates files and returns filenames."""
