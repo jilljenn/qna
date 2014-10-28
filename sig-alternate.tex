@@ -59,12 +59,12 @@
 \begin{document}
 %
 % --- Author Metadata here ---
-\conferenceinfo{ASSESS}{2014 New York City, USA}
+\conferenceinfo{L@S 2015,}{March 14 -- 15 2015, Vancouver, BC, USA}
 %\CopyrightYear{2007} % Allows default copyright year (20XX) to be over-ridden - IF NEED BE.
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{Item Response Theory vs. Q-Matrices for Adaptive Testing}
+\title{\note{Predicting Performance on Binary Questions: Comparing Models for Adaptive Testing}}
 %\subtitle{An exhaustive survey}
 %
 % You need the command \numberofauthors to handle the 'placement
@@ -148,7 +148,7 @@ Yolaine Bourda\\
 % \additionalauthors{Additional authors: John Smith (The Th{\o}rv{\"a}ld Group,
 % email: {\texttt{jsmith@affiliation.org}}) and Julius P.~Kumquat
 % (The Kumquat Consortium, email: {\texttt{jpkumquat@consortium.net}}).}
-\date{June 24, 2014}
+\date{October 29, 2014}
 % Just remember to make sure that the TOTAL number of authors
 % is the number that will appear on the first page PLUS the
 % number that will appear in the \additionalauthors section.
@@ -159,7 +159,7 @@ Computerized adaptive testing (CAT) is a mode of testing which has gained increa
 Traditionally, CAT systems have been relying on item response theory (IRT) in order to provide an effective measure of latent abilities in possibly large-scale assessments.
 More recently, from the perspective of providing useful feedback to examinees, other models have been studied for cognitive diagnosis. One of them is q-matrices, drawing a link between questions and examinee skills.
 In this paper, we define a new framework to evaluate adaptive testing algorithms that enables us to use q-matrices in the context of assessments and to compare them to item response theory.
-Our results suggest that q-matrices are better than IRT at predicting student answers.
+\note{Results made on a real dataset of 58,939 of sixth- and seventh-grade students suggest that although it is a simpler model, IRT is slightly better than q-matrices at predicting student answers.}
 \end{abstract}
 
 % A category with the (minimum) three required fields
@@ -207,7 +207,7 @@ In a computerized adaptive test (CAT), the examinee is presented with adaptively
 
 The framework of a CAT can be represented by the following algorithm: while the termination rule is not satisfied, the algorithm picks the question that maximizes a certain criterion according to the item selection rule.
 
-Common criteria for the item selection rule are minimizing the Shannon entropy of the distribution over the parameters, or maximizing the Kullback-Leibler divergence~\citep{Xu2003}.
+Common criteria for the item selection rule are minimizing the Shannon entropy of the distribution over the parameters, or maximizing the Kullback-Leibler divergence~\citep{Xu2003}. % TOFIX
 
 \subsection{Item Response Theory}
 
@@ -262,7 +262,7 @@ Our student data is a binary matrix of order $N_S \times N_Q$ where $N_S$ and $N
 
 We detail the cross-validation based method described in Algorithm 1. The dataset is partitioned into two sets, $train$ and $test$, \textsc{Simulate}$(train, test)$ trains our model on the $train$ dataset and evaluates it on the $test$ dataset.
 
-First a model is learnt thanks to the test data set. Then at each step of the CAT procedure a carefully chosen question by the algorithm is asked. Updates are then done according to this answer and a performance indicator at the current step is computed and stored. We more precisely detail the framework in Algorithm 1 *****AJOUTER LE LIEN VERS ALGO 1 JE SAIS PAS COMMENT LE FAIRE :/***
+First a model is learnt thanks to the test data set. Then at each step of the CAT procedure a carefully chosen question by the algorithm is asked. Updates are then done according to this answer and a performance indicator at the current step is computed and stored. We more precisely detail the framework in Algorithm~\ref{algo}.
 
 \begin{itemize}
 \item \textsc{TrainingStep}: Train the model in order to calibrate the question parameters $\alpha$. In the case of an IRT model, the difficulty $d_i$ and discrimination $\delta_i$ are computed for each question $i$, while in the case of cognitive diagnosis, the entries of the q-matrix $Q_{ij}$, the slip $s_i$ and guess $g_i$ are computed for each question $i$.
@@ -270,7 +270,7 @@ First a model is learnt thanks to the test data set. Then at each step of the CA
 \item \textsc{NextItem}: Choose the best question to ask according to a certain criterion given all previous questions and answers. 
 \item \textsc{UpdateParameters}: Update the student parameters according to the previous answers.
 \item \textsc{TerminationRule}: In our case, ``There have been $B$ questions asked so far.'' Indeed, as we want to compare different algorithms, we need to put them on an equal footing, i.e. ask the same number of questions in each case.
-\item \textsc{PredictAnswers}: Compute the probability of correct answers of the student on the whole set of questions, i.e. compute for each question $i$ the probability for answering $i$ correctly.
+\item \textsc{Predict\alert{Performance}}: Compute the probability of correct answers of the student on the whole set of questions, i.e. compute for each question $i$ the probability for answering $i$ correctly.
 \item \textsc{Evaluate}: Compare the true answers with the predicted ones in order to produce a performance indicator of the algorithm. 
 \end{itemize}
 
@@ -293,6 +293,7 @@ First a model is learnt thanks to the test data set. Then at each step of the CA
 \EndProcedure
 \end{algorithmic}
 \caption{\textbf{CAT Framework}}
+\label{algo}
 \end{algorithm}
 
 \subsection{Logarithmic Error Function}
@@ -326,11 +327,11 @@ This part of our experiments rely on an existing implementation of IRT. We still
 
 \subsubsection{Training Step}
 
-We compute for each question $j$ its difficulty $d_j$ along with its discrimination $\delta_j$ and also for each student $i$ her ability $\theta_i$ and the variance associated $v_i$ using the maximum likelihood estimator. Let $x_i$ be the unobserved true ability of student $i$, the log-likelihood can be expressed using the Bayes' formula. There are different ways of maximizing the log-likelihood, the chosen one being a variant of the EM algorithm.
+We compute for each question $j$ its difficulty $d_j$ along with its discrimination $\delta_j$ and also for each student $i$ her ability $\theta_i$ and the variance associated $v_i$ using the maximum likelihood estimator. Let $x_i$ be the unobserved true ability of student $i$, the negative log-likelihood can be expressed using the Bayes' formula. There are different ways of maximizing the log-likelihood, the chosen one being a variant of the EM algorithm.
 
 \subsubsection{Item Selection Rule}
 
-We pick at each step the question that maximizes the Fisher information. Similar results were obtained by minimizing the variance of the posterior distribution, but this method resulted in higher time complexity.
+We pick at each step the question that maximizes the Fisher information. It corresponds to the question of estimated probability closest to 0.5. % Similar results were obtained by minimizing the variance of the posterior distribution, but this method resulted in higher time complexity.
 
 \subsubsection{Parameters Update}
 
@@ -344,9 +345,9 @@ Sadly, for a normal or a logistic prior, the posterior distribution is no longer
 
 Within the psychometrics field, q-matrix are usually specified by experts, in order to get a feedback relying on intelligible skills. For our purpose, as q-matrices are a tool designed to predict the probability of a correct answer, we can learn this q-matrix from the data.
 
-In order to extract a q-matrix achieving low likelihood, we need to estimate three kind of parameters: the binary entries of the q-matrix, the slip and guess parameters for each question, and a distribution of probabilities over all possible skill vectors for each student. Fixing any two, it is easy to optimize the third parameter, which suggests the following procedure: until convergence to a local minimum, sequentially optimize each parameter.
+In order to extract a q-matrix achieving \alert{high} likelihood, we need to estimate three kind of parameters: the binary entries of the q-matrix, the slip and guess parameters for each question, and a distribution of probabilities over all possible skill vectors for each student. Fixing any two, it is easy to optimize the third parameter, which suggests the following procedure: until convergence to a local minimum, sequentially optimize each parameter.
 
-The estimation of the probability distribution over the skill vectors is done by Bayesian updates, asking all questions to each student. Also, the log likelihood can be expressed as a sum of convex functions of a single slip or guess parameter, therefore all slip and guess parameters can be independently and easily optimized.  Similarly, when the students skills, the slip and the guess parameters are fixed, the log-likelihood can be expressed as a sum of functions of a single q-matrix line. It follows that the optimization can be done line by line. In our case, the number of columns of the q-matrix is quite low, between 3 and 6 skills. Thus, there are at most $2^6 = 64$ possible lines and the best line can be found by simple exhaustive search.
+The estimation of the probability distribution over the skill vectors is done by Bayesian updates, asking all questions to each student. Also, the negative log-likelihood can be expressed as a sum of convex functions of a single slip or guess parameter, therefore all slip and guess parameters can be independently and easily optimized.  Similarly, when the students skills, the slip and the guess parameters are fixed, the negative log-likelihood can be expressed as a sum of functions of a single q-matrix line. It follows that the optimization can be done line by line. In our case, the number of columns of the q-matrix is quite low, between 3 and 6 skills. Thus, there are at most $2^6 = 64$ possible lines and the best line can be found by simple exhaustive search.
 
 %\alert{Cet algol converge vers un minimum local + minimum local peut être mauvais en particulier dans le cas K=6 (relancer depuis une autre matrice random)}
 
@@ -354,7 +355,8 @@ We would like to emphasize here that the purpose of this article is not to provi
 
 \subsubsection{Item Selection Rule}
 
-As an item selection rule, we choose the question minimizing the Shannon entropy of the distribution over the possible skill vectors.
+\note{As in the IRT model, we pick at each step the question maximizing the Fisher information, i.e. the question of estimated probability closest to 0.5.}
+% As an item selection rule, we choose the question minimizing the Shannon entropy of the distribution over the possible skill vectors.
 
 \subsubsection{Parameters Update}
 
@@ -370,16 +372,18 @@ otherwise
 
 \subsubsection{SAT dataset}
 
-We are using SAT Subject Test data, also featured in~\citep{Winters2005, Desmarais2011}. This student data is a $296 \times 40$ matrix representing the results from 296 students on 40 questions from the 4 following topics: Mathematics, Biology, World History and French.
+We are using SAT Subject Test data, also featured in~\citep{Winters2005, Desmarais2011}. This student data is a $296 \times 40$ binary matrix representing the results from 296 students on 40 questions from the 4 following topics: Mathematics, Biology, World History and French.
 
 \subsubsection{Castor dataset}
 
-Castor is a contest for youngsters. It comes from Bebras Lithuanian contest. 1st grade high school.
-une pour les 6e/5e (matrice creuse de 59379 équipes $\times$ 17 questions avec 885843 entrées)
+\note{Castor is a Computer Science contest for pupils from high school and middle high school. It is the French version of Bebras, a Lithuanian initiative. Contestants have 45 minutes to answer problems that require algorithmic concepts but no coding abilities. An example of exercise is given in Figure~\ref{fig:51}.}
+
+\note{The dataset is focused on the answers of sixth- and seventh-grade of the 2013 edition, aimed to is composed of 17 tasks requiring algorithmic concepts. It is a $58939 \times 17$ binary matrix, where the $(i, j)$ entry is 1 if contestant $i$ got full score on task $j$, 0 otherwise.}
 
 \begin{figure}
 \includegraphics[width=\linewidth]{51-calc}
-\caption{Contestants had to make 51 using the fewest buttons possible between $+$1 and $\times$2. A clever way to give an insight to binary representation of numbers.}
+\caption{\note{An example of exercise of the Castor contest. Contestants had to make 51 using the fewest buttons possible between $+$1 and $\times$2. A clever way to give an insight to binary representation of numbers.}}
+\label{fig:51}
 \end{figure}
 
 \subsection{Simulation Design}
@@ -394,7 +398,7 @@ Our implementation is written in Python and R using the packages \texttt{rpy2}~\
 
 We compared the two presented algorithms, the IRT-based algorithm and our implementation of the NIDA q-matrix model for different values of the parameter $K$, the number of columns of the q-matrix.
 
-We will first focus on the error of each algorithm after 10 questions for the 20-question test, for different sizes of the train dataset. Results are detailed in Table~\ref{tab:20q} where the best performances are shown in bold. As a reference, please note 0.693 is the error obtained by the trivial algorithm affecting every probability to 1/2. On the SAT dataset, for all reasonable choices of $K$, the q-matrix model outperforms IRT, the q-matrix of $K = 6$ skills being globally the best among all tested ones.
+We will first focus on the error of each algorithm after 10 questions for the 20-question test, for different sizes of the train dataset. Results are detailed in Table~\ref{tab:20q} where the best performances are shown in bold. As a reference, please note 0.693 is the error obtained by the trivial algorithm affecting \alert{1/2 to every probability}. On the SAT dataset, for all reasonable choices of $K$, the q-matrix model outperforms IRT, the q-matrix of $K = 6$ skills being globally the best among all tested ones.
 
 \begin{table}[H]
 \small\centering\begin{tabular}{@{}cccc@{}}
@@ -419,6 +423,12 @@ We also computed the mean error of each algorithm after 20 questions of the 40-q
 \begin{figure}
 \includegraphics[width=\linewidth]{20-80.pdf}
 \caption{Evolution of the mean error throughout the test, for a train dataset of size 80 and a 20-question test. The dashed curve denotes the IRT model, while the curves of growing thickness denote q-matrices of growing number of columns.}
+\label{fig:1}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{castor.png}
+\caption{\note{Evolution of the mean error on the remaining questions after a certain number of questions have been asked. IRT performs slightly better.}}
 \label{fig:1}
 \end{figure}
 
