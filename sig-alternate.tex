@@ -64,7 +64,7 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{\note{Predicting Performance on Binary Questions: Comparing Models for Adaptive Testing}}
+\title{\note{Predicting Performance on Binary Questions:\\Comparing Models for Large-Scale Adaptive Testing}}
 %\subtitle{An exhaustive survey}
 %
 % You need the command \numberofauthors to handle the 'placement
@@ -107,39 +107,39 @@
 % e-mail address with \email.
 %
 % 1st. author
-\alignauthor Jill-Jênn Vie\\
-       \affaddr{ENS Cachan -- Bât. Cournot}\\
-       \affaddr{61 av. du Président Wilson}\\
-       \affaddr{94235 Cachan, France}\\
-       \email{vie@jill-jenn.net}
+\alignauthor \phantom{Jill-Jênn Vie}%
+       \affaddr{\phantom{ENS Cachan -- Bât. Cournot}}%
+       \affaddr{\phantom{61 av. du Président Wilson}}%
+       \affaddr{\phantom{94235 Cachan, France}}%
+%       \email{\phantom{vie@jill-jenn.net}}%
 % 2nd. author
 \alignauthor
-Fabrice Popineau\\
-       \affaddr{Supélec -- Dép. informatique}\\
-       \affaddr{3 rue Joliot Curie}\\
-       \affaddr{91192 Gif-sur-Yvette, France}\\
-       \email{fabrice.popineau@supelec.fr}
+\phantom{Fabrice Popineau}
+       \affaddr{\phantom{Supélec -- Dép. informatique}}
+       \affaddr{\phantom{3 rue Joliot Curie}}
+       \affaddr{\phantom{91192 Gif-sur-Yvette, France}}
+%       \email{\phantom{fabrice.popineau@supelec.fr}}
 % 3rd. author
 \alignauthor
-Jean-Bastien Grill\\
-       \affaddr{École normale supérieure}\\
-       \affaddr{45 rue d'Ulm}\\
-       \affaddr{75005 Paris}\\
-       \email{grill@clipper.ens.fr}
+\phantom{Jean-Bastien Grill}
+       \affaddr{\phantom{École normale supérieure}}
+       \affaddr{\phantom{45 rue d'Ulm}}
+       \affaddr{\phantom{75005 Paris}}
+%       \email{\phantom{grill@clipper.ens.fr}}
 \and
 % 4th. author
-\alignauthor Éric Bruillard\\
-       \affaddr{ENS Cachan -- Bât. Cournot}\\
-       \affaddr{61 av. du Président Wilson}\\
-       \affaddr{94235 Cachan, France}\\
-       \email{eric.bruillard@ens-cachan.fr}
+\alignauthor \phantom{Éric Bruillard}
+       \affaddr{\phantom{ENS Cachan -- Bât. Cournot}}
+       \affaddr{\phantom{61 av. du Président Wilson}}
+       \affaddr{\phantom{94235 Cachan, France}}
+       \email{\phantom{eric.bruillard@ens-cachan.fr}}
 % 5th. author
 \alignauthor
-Yolaine Bourda\\
-       \affaddr{Supélec -- Dép. informatique}\\
-       \affaddr{3 rue Joliot Curie}\\
-       \affaddr{91192 Gif-sur-Yvette, France}\\
-       \email{yolaine.bourda@supelec.fr}
+\phantom{Yolaine Bourda}
+       \affaddr{\phantom{Supélec -- Dép. informatique}}
+       \affaddr{\phantom{3 rue Joliot Curie}}
+       \affaddr{\phantom{91192 Gif-sur-Yvette, France}}
+       \email{\phantom{yolaine.bourda@supelec.fr}}
 }
 % There's nothing stopping you putting the seventh, eighth, etc.
 % author on the opening page (as the 'third row') but we ask,
@@ -225,7 +225,7 @@ The aim is first to optimize the parameters $d_j$, $\delta_j$ for each question 
 
 \[ \Pr\{success_{ij}\} = \int \Pr\{success_{ij}|\theta_i\} \Pr\{\theta_i\} \mathrm d\theta_i \]
 
-This simple model is used in computerized adaptive testing, where many methods are implemented for next item selection~\citep{MagisRaiche2012}.
+This simple model is used in computerized adaptive testing, where many methods are implemented for next item selection~\citep{MagisRaiche2012}. \note{For our comparison, we used the most basic version called 1-parameter Rasch model, but extensions exist such as multidimensional item response theory~\citep{Desmarais2012}. The SPARFA model developed in~\citep{Vats2013} is a variant of the MIRT model.}
 
 \subsection{Cognitive Diagnosis Model}
 
