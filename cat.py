@@ -4,12 +4,12 @@ import random
 import my_io
 import sys
 
-filename = 'castor6e' # castor6e: 17Q
+filename = 'sat' # castor6e: 17Q
 
 if sys.argv[1] == 'qm':
 	from qmatrix import QMatrix
 	models = []
-	for nb_competences in range(1, 7):
+	for nb_competences in range(1, 11):
 		models.append(QMatrix(nb_competences=nb_competences))
 elif sys.argv[1] == 'irt':
 	from irt import IRT
