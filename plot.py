@@ -14,7 +14,7 @@ plt.show()
 """
 
 dataset = 'castor6e'
-MAX = 8
+MAX = 6
 if dataset == 'sat':
 	train_power = '216'
 elif dataset == 'castor6e':
