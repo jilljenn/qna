@@ -66,7 +66,7 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{Predicting Performance on Binary Questions:\\Comparing Models for Large-Scale Adaptive Testing}
+\title{Predicting Performance on Dichotomous Questions:\\Comparing Models for Large-Scale Adaptive Testing}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -176,13 +176,13 @@ Results computed on a real dataset of 58,939 of sixth and seventh graders sittin
 \section{Introduction}
 Automated assessment of student answers has recently gained popularity in the context of online initiatives such as the GMAT~\cite{Rudner2010}, or massive online open courses (MOOCs). Such systems must be able to rank thousands of students for evaluation or recruiting purposes and to provide personal feedback automatically for formative purposes.
 
-If we already have a large-scale database of item responses for a certain test, it is natural to wonder which questions yield the most information about an examinee, i.e. if there is a ``best'' order in which the questions should be asked. In oral examinations, the examiner usually picks the next question to ask according to the previous answers of the examinee. Computerized adaptive testing (CAT) can be seen as an automated version of this process: keep asking the most useful questions until enough information has been gathered. Indeed, if the examinee behaves typically, a subset of carefully chosen results may be enough to guess how she will perform on the rest of the questions. \alert{As an application, one could imagine an early adaptive test on every MOOC presentation page in order to give an insight to the concepts developed in the course and help a newcomer decide if she will enroll in or not.}
+If we already have a large-scale database of item responses for a certain test, it is natural to wonder which questions yield the most information about an examinee, i.e. if there is a ``best'' order in which the questions should be asked. In oral examinations, the examiner usually picks the next question to ask according to the previous answers of the examinee. Computerized adaptive testing (CAT) can be seen as an automated version of this process: keep asking the most useful questions until enough information has been gathered. Indeed, if the examinee behaves typically, a subset of carefully chosen results may be enough to guess how she will perform on the rest of the questions. As an application, one could imagine an early adaptive test on every MOOC presentation page in order to give an insight to the concepts developed in the course and help a newcomer decide if she will enroll in or not.
 
 In order to fulfill this need, item response theory (IRT) is of great help. The initial purpose of IRT was to provide a framework to evaluate the performance of individual questions, called \emph{items}, on assessments~\cite{Hambleton1991}. It has been successfully applied to computerized adaptive testing and several methods have been proposed and implemented. According to her performance, an examinee gets a summative score, making it possible to predict her future answers. The simplicity of the IRT models both made it amenable to theoretical analysis~\cite{Baker2004} and further increased its popularity.
 
-More recently, the No Child Left Behind Act of 2001 called for more formative assessments, putting emphasis on the early detection of students with cognitive disabilities and urged the need of cognitive diagnosis models. Instead of a summative score, examinees would receive a detailed feedback, specifying which skills are mastered and which ones are not~\cite{Cheng2009}. These models allow researchers to reveal possible misconceptions of the examinee in order to propose appropriate exercises. Most of these models rely on a q-matrix specifying for each question the different skills required to solve it. For example, a fraction test may require 1) converting a whole number to a fraction, 2) separating a whole number from a fraction, 3) simplifying before subtracting, and so on~\cite{DeLaTorreDouglas2004}. Cognitive diagnosis computerized adaptive tests have been designed in order to guess the skills of the examinee effectively~\cite{Cheng2009} \alert{and other developments have been proposed such as models incorporating the response time of the examinee~\cite{Chang2014}.}
+More recently, the No Child Left Behind Act of 2001 called for more formative assessments, putting emphasis on the early detection of students with cognitive disabilities and urged the need of cognitive diagnosis models. Instead of a summative score, examinees would receive a detailed feedback, specifying which skills are mastered and which ones are not~\cite{Cheng2009}. These models allow researchers to reveal possible misconceptions of the examinee in order to propose appropriate exercises. Most of these models rely on a q-matrix specifying for each question the different skills required to solve it. For example, a fraction test may require 1) converting a whole number to a fraction, 2) separating a whole number from a fraction, 3) simplifying before subtracting, and so on~\cite{DeLaTorreDouglas2004}. Cognitive diagnosis computerized adaptive tests have been designed in order to guess the skills of the examinee effectively~\cite{Cheng2009}. Other extensions of CAT have been proposed such as models incorporating the response time of the examinee~\cite{Chang2014}.
 
-One could wonder why we compare a model designed for evaluation with a model designed for feedback. We show that although the q-matrix model was first designed for formative assessments, it is also possible to use it in a context of \alert{performance prediction}. Indeed, this model evaluates the skills of an examinee according to her previous answers. Given those computed skills and the q-matrix, we can predict her probability of correctly answering the remaining questions. This enables us to propose a protocol for comparison that captures both models.
+One could wonder why we compare a model designed for evaluation with a model designed for feedback. We show that although the q-matrix model was first designed for formative assessments, it is also possible to use it in a context of performance prediction. Indeed, this model evaluates the skills of an examinee according to her previous answers. Given those computed skills and the q-matrix, we can predict her probability of correctly answering the remaining questions. This enables us to propose a protocol for comparison that captures both models.
 
 Originally, q-matrices were specified by experts, but recent work in the educational data mining field attempts to infer q-matrices directly from student data~\cite{Huebner2010}. % The corresponding skills are therefore implicit, but such automatically extracted q-matrices have proven to produce better inference~\cite{Barnes2003}.
 
@@ -367,7 +367,7 @@ otherwise
 
 We used the SAT Subject Test data, also featured in~\cite{Winters2005, Desmarais2011}. This student dataset is a $296 \times 40$ binary matrix representing the results from 296 students on 40 questions from the 4 following topics: Mathematics, Biology, World History and French.
 
-We used a train dataset of 216 students and a test dataset of 80 students. The performance of both models considered \alert{(IRT and q-matrix)} were so close that their confidence intervals were overlapping. Therefore, we could not dissociate properly those models and had to resort to a bigger dataset.
+We used a train dataset of 216 students and a test dataset of 80 students. The performance of both models considered -- IRT and q-matrix -- were so close that their confidence intervals were overlapping. Therefore, we could not dissociate properly those models and had to resort to a bigger dataset.
 
 \subsubsection{Castor dataset}
 
@@ -439,9 +439,9 @@ IRT & \textbf{0.495 $\pm$ 0.003} & \textbf{0.361 $\pm$ 0.005} & \textbf{0.136 $\
 \label{tab:error}
 \end{table}
 
-Q algorithms for different values of $K$ seem to have similar mean error, the $K = 6$ one achieving the highest error. \alert{As a recall, the goal of this model is to derive efficiently a probability distribution over the possible skill vectors. As a longer skill vector is harder to guess, it is natural to think that the $K = 6$ model requires more questions to predict efficiently the performance of an examinee}.
+Q algorithms for different values of $K$ seem to have similar mean error, the $K = 6$ one achieving the highest error. As a recall, the goal of this model is to derive efficiently a probability distribution over the possible skill vectors. As a longer skill vector is harder to guess, it is natural to think that a model of greater $K$ value requires more questions to predict efficiently the performance of an examinee.
 
-Examples of estimated parameters are shown in Table~\ref{tab:example}: item difficulties for IRT, binary matrix entries and slip/guess parameters for Q. The corresponding success rates computed from the student train dataset give an insight to the intrinsic difficulties of the different questions. For example, questions 1 and 13 seem the hardest ones of the test, which is why both of them require all concepts in order to be solved. Thus, to address the fact that question 13 is itself harder than question 1, Q needs to estimate a higher slip parameter. High values of slip/guess parameters slow down the determination of the skill vector of the student, \alert{hence a diminution of prediction quality of her performance.} This may be responsible for the behavior of Q opposed to IRT.
+Examples of estimated parameters are shown in Table~\ref{tab:example}: item difficulties for IRT, binary matrix entries and slip/guess paramete	Fabrs for Q. The corresponding success rates computed from the student train dataset give an insight to the intrinsic difficulties of the different questions. For example, questions 1 and 13 seem the hardest ones of the test, which is why both of them require all concepts in order to be solved. Thus, to address the fact that question 13 is itself harder than question 1, the training step of Q computes a higher slip parameter. High values of slip/guess parameters induce a softer determination of the skill vector of the student, hence a diminution of prediction quality of her performance. This may be responsible for the behavior of Q opposed to IRT.
 
 %\begin{figure}
 %\includegraphics[width=\linewidth]{20-80.pdf}
@@ -505,7 +505,7 @@ We made no hypothesis at all on the links between questions, which is why we got
 
 %A new direction could be to 
 
-We devised a protocol to evaluate adaptive testing models, which enables us to test many more algorithms on large-scale datasets. Our simulation highlighted the role of slip and guess parameters compared to the item difficulty parameter of the Rasch model and reveals two possible directions for future research: add regularisation parameters linked to slip and guess in order to guarantee a fast recovery of the student skills, or examine fusion models that combine item response theory and diagnostic classification models~\cite{McGlohen2008}, \alert{some of which looking after misconceptions instead of skills~\cite{Bradshaw2014}.}
+We devised a protocol to evaluate adaptive testing models, which enables us to test many more algorithms on large-scale datasets. Our simulation highlighted the role of slip and guess parameters compared to the item difficulty parameter of the Rasch model and reveals two possible directions for future research: add regularisation parameters linked to slip and guess in order to guarantee a fast recovery of the student skills, or examine fusion models that combine item response theory and diagnostic classification models~\cite{McGlohen2008,Bradshaw2014}.
 
 %Please also note that, our item exposure rate is very high as the same first questions are asked. Thus low stakes high stakes
 
@@ -527,7 +527,7 @@ We devised a protocol to evaluate adaptive testing models, which enables us to t
 
 \section{Acknowledgements}
 
-We thank Chia-Tche Chang, Le Thanh Dung Nguyen and especially Antoine Amarilli for their valuable comments. We also thank Mathias Hiron for providing the Castor dataset.
+We thank \phantom{Chia-Tche Chang, Le Thanh Dung Nguyen and especially Antoine Amarilli} for their valuable comments. We also thank \phantom{Mathias Hiron} for providing the Castor dataset.
 
 %\bibliographystyle{abbrv}
 \bibliographystyle{plain}
