@@ -465,7 +465,7 @@ IRT & \textbf{0.495 $\pm$ 0.003} & \textbf{0.361 $\pm$ 0.005} & \textbf{0.136 $\
 2 & -1.121 & 	1 & 0 & 0 & \textbf{0.512} & 0.082 & 72 \% \\
 3 & -2.015 & 	0 & 0 & 0 & \textbf{0.504} & 0.152 & 85 \% \\
 4 & -1.260 & 	0 & 0 & 0 & \textbf{0.504} & 0.254 & 74 \% \\
-5 & 0Q2 .932 & 	0 & 0 & 1 & 0.012 & 0.027 & 31 \% \\
+5 & 0.932 & 	0 & 0 & 1 & 0.012 & 0.027 & 31 \% \\
 6 & -0.080 & 	0 & 1 & 0 & 0.324 & 0.027 & 52 \% \\
 7 & 0.111 & 	1 & 1 & 0 & 0.309 & 0.035 & 48 \% \\
 8 & 0.442 & 	1 & 0 & 0 & 0.215 & 0.41 & 41 \% \\
@@ -491,7 +491,7 @@ Our studies suggest that the q-matrix model, first designed for cognitive diagno
 
 % On the first hand, the Rasch model tries to guess a one-dimensional geometry for the question data. On the other hand, the q-matrix model allows a directed-acyclic-graph-like structure to comprehend the question data.
 
-\note{Surprisingly, on the Castor dataset, our implementation of the simplest Rasch model performs slightly better than our q-matrix implementations for $K$ from 1 to 6. In order to address this problem, both models should be compared to a more conventional dataset such as a simple calculus test, requiring fewest competences. Also, a better computation of q-matrix using more cutting-edge techniques could lead to other results.} % TODO pas bon
+\note{Surprisingly, on the Castor dataset, our implementation of the simplest Rasch model performs slightly better than our q-matrix implementations for $K$ from 1 to 6. In order to understand more deeply this behavior, both models should be compared to a more conventional dataset such as a simple calculus test, requiring fewest competences. Also, a better computation of q-matrix using more cutting-edge techniques could lead to other results.} % TODO pas bon
 
 %However, q-matrix being a richer model, it can be prone to overfitting, particularly for greater values of $K$, as highlighted by our results. In addition, the longer convergence time for high values of $K$ can be explained by the fact that guessing a larger skill vector requires more information, therefore more questions. Thus, there is a tradeoff between a large value of $K$ potentially leading to overfitting and smaller ones which could not provide a rich enough model. The optimal value of $K$ may depend on the size of the training set along with the number of questions of the test. Nevertheless, as pointed out in~\cite{Huebner2010}, there have been no systematic studies for cognitive diagnosis models investigating the most suitable number of skills $K$ for a given dataset.
 
@@ -507,13 +507,13 @@ We made no hypothesis at all on the links between questions, \alert{which is why
 
 %A new direction could be to 
 
+We devised a protocol to evaluate adaptive testing models, which enables us to test many more algorithms on large-scale datasets. Our simulation highlighted the role of slip and guess parameters compared to the item difficulty parameter of the Rasch model and reveals two possible directions for future research: add regularisation parameters linked to slip and guess, or examine hybrid models~\cite{McGlohen2008}.
+
 %Please also note that, our item exposure rate is very high as the same first questions are asked. Thus low stakes high stakes
 
 % On another note, our results are produced from a dataset over 4 knowledge fields. It would be interesting to compare IRT-based models and q-matrix models on other real data such as bigger datasets or ones including only one knowledge field.
 
-
-
-%We showed that links between questions are worth taking into account, something q-matrices do and IRT does not. For our evaluation, we chose the simplest models from item response theory and cognitive diagnosis, but more complex models such as multidimensional item response theory~\cite{Desmarais2012} or fusion models~\cite{McGlohen2008} should be compared to the NIDA q-matrix model presented here.
+% We showed that links between questions are worth taking into account, something q-matrices do and IRT does not. For our evaluation, we chose the simplest models from item response theory and cognitive diagnosis, but more complex models such as multidimensional item response theory~\cite{Desmarais2012} or fusion models~\cite{McGlohen2008} should be compared to the NIDA q-matrix model presented here.
 
 % MIRT
 
@@ -529,7 +529,7 @@ We made no hypothesis at all on the links between questions, \alert{which is why
 
 \section{Acknowledgements}
 
-We thank Chia-Tche Chang, Le Thanh Dung Nguyen and especially Antoine Amarilli for their valuable comments.
+We thank Chia-Tche Chang, Le Thanh Dung Nguyen and especially Antoine Amarilli for their valuable comments. We also thank Mathias Hiron for providing the Castor dataset.
 
 %\bibliographystyle{abbrv}
 \bibliographystyle{plain}
