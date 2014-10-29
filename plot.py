@@ -13,8 +13,8 @@ ax.set_title('Log loss')
 plt.show()
 """
 
-dataset = 'castor6e'
-MAX = 6
+dataset = 'sat'
+MAX = 10
 if dataset == 'sat':
 	train_power = '216'
 elif dataset == 'castor6e':
@@ -76,8 +76,8 @@ for nb_questions in [10, 15, 20, 30, 40]:
 """
 
 bundle = {}
-bundle['nbq-20'] = graphs2[20]
-bundle['nbq-40'] = graphs2[40]
+bundle['nbq-17'] = graphs2[17]
+# bundle['nbq-40'] = graphs2[40]
 
 print filenames
 
