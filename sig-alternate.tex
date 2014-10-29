@@ -55,8 +55,8 @@
 \usepackage{multicol}
 
 \newcommand\alert[1]{\textcolor{red}{#1}}
-\newcommand\note[1]{\textcolor{blue}{#1}}
-\newcommand\jb[1]{\textcolor{green!50!black}{#1}}
+%\newcommand\note[1]{\textcolor{blue}{#1}}
+%\newcommand\jb[1]{\textcolor{green!50!black}{#1}}
 
 \begin{document}
 %
@@ -67,7 +67,6 @@
 % --- End of Author Metadata ---
 
 \title{Predicting Performance on Binary Questions:\\Comparing Models for Large-Scale Adaptive Testing}
-%\subtitle{An exhaustive survey}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -157,11 +156,11 @@
 
 \maketitle
 \begin{abstract}
-Computerized adaptive testing (CAT) is a mode of testing which has gained increasing popularity over the past years. It selects the questions asked to the examinee in order to evaluate her level efficiently, by using her answers to the previous questions.
+Computerized adaptive testing (CAT) is a mode of testing which has gained increasing popularity over the past years. It selects the next question to ask to the examinee in order to evaluate her level efficiently, by using her answers to the previous questions.
 Traditionally, CAT systems have been relying on item response theory (IRT) in order to provide an effective measure of latent abilities in possibly large-scale assessments.
-More recently, from the perspective of providing useful feedback to examinees, other models have been studied for cognitive diagnosis. One of them is q-matrices, drawing a link between questions and examinee skills.
+More recently, from the perspective of providing useful feedback to examinees, other models have been studied for cognitive diagnosis. One of them is the q-matrix model, which draws a link between questions and examinee skills.
 In this paper, we define a protocol based on performance prediction to evaluate adaptive testing algorithms. We use it to train q-matrices in the context of assessments and compare their behavior to item response theory.
-Results computed on a real dataset of 58,939 of sixth- and seventh-grade students sitting for an online Computer Science contest suggest that although it is a simpler model, our IRT model is slightly better than q-matrices at predicting student answers.
+Results computed on a real dataset of 58,939 of sixth and seventh graders sitting for an online Computer Science contest suggest that although it is a simpler model, our IRT model is slightly better than q-matrices at predicting student answers.
 \end{abstract}
 
 % A category with the (minimum) three required fields
@@ -177,21 +176,21 @@ Results computed on a real dataset of 58,939 of sixth- and seventh-grade student
 \section{Introduction}
 Automated assessment of student answers has recently gained popularity in the context of online initiatives such as the GMAT~\cite{Rudner2010}, or massive online open courses (MOOCs). Such systems must be able to rank thousands of students for evaluation or recruiting purposes and to provide personal feedback automatically for formative purposes.
 
-If we already have a large-scale database of item responses for a certain test, it is natural to wonder which questions yield the most information about an examinee, i.e. if there is a ``best'' order in which the questions should be asked. In oral examinations, the examiner usually picks the next question to ask according to the previous answers of the examinee. Computerized adaptive testing (CAT) can be seen as an automated version of this process: keep asking the most useful questions until enough information has been gathered. Indeed, if the examinee behaves typically, a subset of carefully chosen results may be enough to guess how she will perform on the rest of the questions.
+If we already have a large-scale database of item responses for a certain test, it is natural to wonder which questions yield the most information about an examinee, i.e. if there is a ``best'' order in which the questions should be asked. In oral examinations, the examiner usually picks the next question to ask according to the previous answers of the examinee. Computerized adaptive testing (CAT) can be seen as an automated version of this process: keep asking the most useful questions until enough information has been gathered. Indeed, if the examinee behaves typically, a subset of carefully chosen results may be enough to guess how she will perform on the rest of the questions. \alert{As an application, one could imagine an early adaptive test on every MOOC presentation page in order to give an insight to the concepts developed in the course and help a newcomer decide if she will enroll in or not.}
 
 In order to fulfill this need, item response theory (IRT) is of great help. The initial purpose of IRT was to provide a framework to evaluate the performance of individual questions, called \emph{items}, on assessments~\cite{Hambleton1991}. It has been successfully applied to computerized adaptive testing and several methods have been proposed and implemented. According to her performance, an examinee gets a summative score, making it possible to predict her future answers. The simplicity of the IRT models both made it amenable to theoretical analysis~\cite{Baker2004} and further increased its popularity.
 
-More recently, the No Child Left Behind Act of 2001 called for more formative assessments, putting emphasis on the early detection of students with cognitive disabilities and urged the need of cognitive diagnosis models. Instead of a summative score, examinees would receive a detailed feedback, specifying which skills are mastered and which ones are not~\cite{Cheng2009}. These models allow researchers to reveal possible misconceptions of the examinee in order to propose appropriate exercises. Most of these models rely on a q-matrix specifying for each question the different skills required to solve it. For example, a fraction test may require 1) converting a whole number to a fraction, 2) separating a whole number from a fraction, 3) simplifying before subtracting, and so on~\cite{DeLaTorreDouglas2004}. Cognitive diagnosis adaptive tests have been designed in order to guess the skills of the examinee effectively~\cite{Huebner2010}.
+More recently, the No Child Left Behind Act of 2001 called for more formative assessments, putting emphasis on the early detection of students with cognitive disabilities and urged the need of cognitive diagnosis models. Instead of a summative score, examinees would receive a detailed feedback, specifying which skills are mastered and which ones are not~\cite{Cheng2009}. These models allow researchers to reveal possible misconceptions of the examinee in order to propose appropriate exercises. Most of these models rely on a q-matrix specifying for each question the different skills required to solve it. For example, a fraction test may require 1) converting a whole number to a fraction, 2) separating a whole number from a fraction, 3) simplifying before subtracting, and so on~\cite{DeLaTorreDouglas2004}. Cognitive diagnosis computerized adaptive tests have been designed in order to guess the skills of the examinee effectively~\cite{Cheng2009} \alert{and other developments have been proposed such as models incorporating the response time of the examinee~\cite{Chang2014}.}
 
-One could wonder why we compare a model designed for evaluation with a model designed for feedback. We show that although the q-matrix model were first designed for formative assessments, it is also possible to use it in the context of large-scale assessments. Indeed, this model evaluates the skills of an examinee according to her previous answers. Given those computed skills and the q-matrix, we can predict her probability of correctly answering the remaining questions. This enables us to propose a protocol for comparison that captures both models.
+One could wonder why we compare a model designed for evaluation with a model designed for feedback. We show that although the q-matrix model was first designed for formative assessments, it is also possible to use it in a context of \alert{performance prediction}. Indeed, this model evaluates the skills of an examinee according to her previous answers. Given those computed skills and the q-matrix, we can predict her probability of correctly answering the remaining questions. This enables us to propose a protocol for comparison that captures both models.
 
-Originally, q-matrices were specified by experts, but recent work in the educational data mining field attempts to infer q-matrices directly from student data~\cite{Huebner2010}. The corresponding skills are therefore implicit, but such automatically extracted q-matrices have proven to produce better inference~\cite{Barnes2003}.
+Originally, q-matrices were specified by experts, but recent work in the educational data mining field attempts to infer q-matrices directly from student data~\cite{Huebner2010}. % The corresponding skills are therefore implicit, but such automatically extracted q-matrices have proven to produce better inference~\cite{Barnes2003}.
 
 \subsection{Our Contribution}
 
-In this paper, we propose a new protocol to evaluate adaptive testing algorithms and use it to compare the performances of both a traditional CAT using the Rasch model from item response theory and a more recent cognitive diagnosis model from the literature in psychometrics using q-matrices. More precisely, we expect to answer the following question: given a budget of $B$ questions asked according to a certain adaptive selection rule, which model performs the best in predicting the answers of the examinee over the remaining questions? To the best of our knowledge, no such comparison has ever been made.
+In this paper, we propose a protocol to evaluate adaptive testing algorithms and use it to compare the performances of both a traditional CAT using the Rasch model from item response theory and a more recent cognitive diagnosis model from the literature in psychometrics using q-matrices. More precisely, we expect to answer the following question: given a budget of questions asked according to a certain adaptive selection rule, which model performs the best at predicting the answers of the examinee over the remaining questions? To the best of our knowledge, no such comparison has ever been made.
 
-Whereas the Rasch model is the most commonly used \alert{model} for adaptive testing, q-matrices are an useful tool for fine-grained cognitive diagnosis. Our results show that the Rasch model is slightly better than our implementation of q-matrix.
+Whereas the Rasch model is the most commonly used model for adaptive testing, q-matrices are a useful tool for fine-grained cognitive diagnosis. Our results show that the Rasch model is slightly better than our implementation of q-matrix.
 
 \subsection{Outline}
 
@@ -204,7 +203,7 @@ We first present the computerized adaptive testing framework and two models chos
 In a computerized adaptive test (CAT), the examinee is presented with adaptively selected questions according to her previous performance. Thus, a CAT framework relies on two main subroutines:
 \begin{itemize}
 \item \textsc{NextItem}: the item selection algorithm, that picks the next question to ask according to the previous answers of the examinee;
-\item \textsc{TerminationRule}: a condition that will end the test, when enough information has been gathered and the competence has been measured satisfyingly.
+\item \textsc{TerminationRule}: a condition that will end the test, when enough information has been gathered and all competences have been measured satisfyingly.
 \end{itemize}
 
 The framework of a CAT can be represented by the following algorithm: while the termination rule is not satisfied, the algorithm picks the question that optimizes a certain criterion according to the item selection rule.
@@ -227,11 +226,11 @@ The aim is first to optimize the parameters $d_j$, $\delta_j$ for each question 
 
 \[ \Pr\{success_{ij}\} = \int \Pr\{success_{ij}|\theta_i\} \Pr\{\theta_i\} \mathrm d\theta_i \]
 
-This simple model is used in computerized adaptive testing, where many methods are implemented for next item selection~\cite{MagisRaiche2012}. Some extensions exist such as multidimensional item response theory but their complexity is much greater~\cite{Desmarais2012} and they are harder to train. The SPARFA model for test-size reduction developed in~\cite{Vats2013} is itself a variant of the MIRT model, where coefficients are limited to nonnegative values.
+This simple model is used in computerized adaptive testing, where many methods are implemented for next item selection~\cite{MagisRaiche2012}. Some extensions exist such as multidimensional item response theory (MIRT)~\cite{Segall1996} but their complexity is much greater~\cite{Desmarais2012}. The SPARFA model for test-size reduction developed in~\cite{Vats2013} is itself a variant of the MIRT model, where coefficients are limited to nonnegative values.
 
 \subsection{Cognitive Diagnosis Model}
 
-The Rasch model we just described uses a single parameter to represent students. We now develop a model that tries to be more informative about the student skills. Every student is modeled by a vector of binary values $(a_1, \ldots, a_K)$, called \emph{skill vector}, representing her mastery of $K$ different skills, thus leading to $2^K$ possible skill vectors. 
+The Rasch model we just described uses a single parameter to represent students. We now develop a model that tries to be more informative about the student skills. Every student is modeled by a vector of binary values $(a_1, \ldots, a_K)$, called \emph{skill vector}, representing her mastery of $K$ distinct skills, thus leading to $2^K$ possible skill vectors. 
 
 A q-matrix $Q$ \cite{Tatsuoka1983} represents the different skills involved in answering every question. Formally, $Q_{ij}$ is equal to 1 if the skill $j$ is involved in the resolution of question $i$, 0 otherwise. For example, in the following q-matrix, skills 1 and 2 are required to answer the first question, skills 1 and 3 are required for the second question and mastering skill 3 is sufficient to solve the last question.
 \[ Q = \left(\begin{array}{lll}
@@ -260,14 +259,14 @@ We now develop the different parts of the CAT process used in the simulation tha
 
 Our student data is a binary matrix of size $N_S \times N_Q$ where $N_S$ and $N_Q$ denote respectively the number of students and the number of questions, and $c_{ij}$ equals 1 if student $i$ answered the question $j$ correctly, 0 otherwise. 
 
-We detail the cross-validation method described in Algorithm~\ref{algo}. The dataset is partitioned into two sets, $train$ and $test$, and a call to \textsc{Simulate}$(train, test)$ trains our model on the $train$ dataset and evaluates it the following way: for each student of the $test$ dataset, a CAT session is simulated. At each step, a question is selected and asked to the student. The student parameters are updated according to this answer and a performance indicator at the current step is computed and stored. We here develop the main methods of the CAT framework:
+We detail the cross-validation method described in Algorithm~\ref{algo}. The dataset is partitioned into two sets, $train$ and $test$, and a call to \textsc{Simulate}$(train, test)$ trains our model on the $train$ dataset and evaluates it the following way: for each student of the $test$ dataset, a CAT session is simulated. At each step, a question is selected and asked to the student. The student parameters are updated according to her answer and a performance indicator at the current step is computed and stored. We here develop the main methods of the CAT framework:
 
 \begin{itemize}
-\item \textsc{TrainingStep}: Train the model in order to calibrate the question parameters $\alpha$. In the Rasch model, the difficulty $d_i$ and discrimination $\delta_i$ are computed for each question $i$, while in the cognitive diagnosis model, the entries of the q-matrix $Q_{ij}$, the slip $s_i$ and guess $g_i$ parameters are computed for each question $i$.
+\item \textsc{TrainingStep}: Train the model in order to calibrate the question parameters. In the Rasch model, $\alpha$ denotes the difficulty $d_i$ and discrimination $\delta_i$ parameters for each question $i$, while in the cognitive diagnosis model, $\alpha$ denotes the entries of the q-matrix $Q_{ij}$ and the slip $s_i$ and guess $g_i$ parameters for each question $i$.
 \item \textsc{PriorInitialization}: Initialize the prior probability distribution $\pi$ over the student parameters, i.e. the skills for the q-matrix model and the latent ability for the Rasch model. 
 \item \textsc{NextItem}: Choose the best question to ask according to a certain criterion given all previous questions and answers. 
 \item \textsc{UpdateParameters}: Update the student parameters according to the previous answers.
-\item \textsc{TerminationRule}: In our case, ``All $N_Q$ questions have been asked.'' \alert{Indeed, as we want to compare different algorithms, we need to put them on an equal footing, i.e. ask the same number of questions in each case.}
+\item \textsc{TerminationRule}: In our case, the termination rule is simple: ``All $N_Q$ questions have been asked.''
 \item \textsc{PredictPerformance}: Compute for each remaining question $i$ the probability that the student will answer it correctly.
 \item \textsc{EvaluatePerformance}: Compare the true answers with the predicted performance in order to evaluate the model. 
 \end{itemize}
@@ -276,14 +275,14 @@ We detail the cross-validation method described in Algorithm~\ref{algo}. The dat
 \begin{algorithmic}
 \Procedure{Simulate}{$train, test$}
 \State $\alpha \gets \Call{TrainingStep}{train}$
-\State $i \gets 0$
+\State $t \gets 0$
 \For{all students $s$ in $test$}
 	\State $\pi \gets \Call{PriorInitialization}$
 	\While{\textsc{TerminationRule} is not satisfied}
-		\State $q_{i + 1} \gets \Call{NextItem}{q_1, r_1, \ldots, q_i, r_i, \alpha, \pi}$
-		\State Ask question $q_{i + 1}$ to the student $s$
-		\State Get reply $r_{i + 1}$
-		\State $\pi \gets \Call{EstimateParameters}{q_1, r_1, \ldots, q_i, r_i, \alpha}$
+		\State $q_{t + 1} \gets \Call{NextItem}{q_1, r_1, \ldots, q_t, r_t, \alpha, \pi}$
+		\State Ask question $q_{t + 1}$ to the student $s$
+		\State Get reply $r_{t + 1}$
+		\State $\pi \gets \Call{EstimateParameters}{q_1, r_1, \ldots, q_t, r_t, \alpha}$
 		\State $p \gets$ \Call{PredictPerformance}{$\alpha, \pi$}
 		\State $\Sigma \gets$ \Call{EvaluatePerformance}{$p$}
 	\EndWhile
@@ -296,15 +295,15 @@ We detail the cross-validation method described in Algorithm~\ref{algo}. The dat
 
 \subsection{Performance Evaluation}
 
-Once we predict the performance of a student, we need to compare it to its actual answers. For this purpose, we choose the popular logarithmic score~\cite{Gneiting2007}. 
+Once we predict the performance of a student, we need to compare it to the ground truth. For this purpose, we choose the popular logarithmic score~\cite{Gneiting2007}. 
 
-This quantity is easy to define and compute. \alert{Let $(p_i)$ be the performance predicted by the algorithm and $(a_i)$ be 1 if the answer is actually correct, 0 otherwise.} The logarithmic score is then given by the following expression, where the sum is computed over the remaining questions: 
+This quantity is easy to define and compute. For each question $i$ not asked to the examinee, let $p_i$ be the estimated probability that the student will answer correctly the question $i$, and let $a_i$ be equal to 1 if the student answer to question $i$ is actually correct, 0 otherwise. The logarithmic score is then given by the following expression, where the sum is computed over all remaining questions: 
 
 \[ - \sum_i a_i \log_2 (1 - p_i) + (1-a_i) \log_2 p_i = - \sum_i \log_2 | a_i - p_i | \]
 
-\alert{The intuition behind this formula is the following. For each couple ($p_i$, $a_i$) we want a penalty proportional to the distance $|p_i - a_i|$.} Among the possible penalty functions, the logarithm is a common choice as it is unbiased (optimizing the logarithmic score of $p$ for a Bernoulli variable of parameter $a$ leads to $p=a$). To get the mean logarithmic score, we divide this quantity by the number of remaining questions of the test.
+Indeed, for each couple $(p_i, a_i)$ we want to get a penalty proportional to the distance $|p_i - a_i|$. Among the possible penalty functions, the logarithm is a common choice as it is unbiased (optimizing the logarithmic score of $p$ for a Bernoulli variable of parameter $a$ leads to $p=a$). To get the mean logarithmic score, we divide this quantity by the number of remaining questions of the test.
 
-The mean logarithmic score that we will denote from now on by ``mean error'' should be read as an indicator of the predictive power. A zero value of the error means all answers were perfectly predicted ($p_i = a_i$ for all $i$) and an error of $\log_2 2 = 1$ corresponds to a non-informative algorithm of which all probabilities equal 1/2. 
+The mean logarithmic score that we will denote from now on by ``mean error'' should be read as an indicator of the predictive power. A zero value of the error means all answers were perfectly predicted ($p_i = a_i$ for every $i$) and an error of $\log_2 2 = 1$ corresponds to a non-informative algorithm of which all probabilities equal 1/2. 
 
 %\subsection{Algorithm performance}
 %
@@ -321,7 +320,7 @@ The mean logarithmic score that we will denote from now on by ``mean error'' sho
 
 \subsection{Item Response Theory Design}
 
-This part of our experiments rely on an existing implementation of the Rasch model~\cite{MagisRaiche2012,Rizopoulos2006}. We provide brief notes regarding their design.
+This part of our experiments relies on an existing implementation of the Rasch model~\cite{Rizopoulos2006}. We provide brief notes regarding its design.
 
 \subsubsection{Training Step}
 
@@ -339,7 +338,7 @@ After each student answer, we can compute the posterior distribution over the st
 
 \subsubsection{Training Step}
 
-\alert{In psychometrics}, q-matrix are usually specified by experts, in order to get a feedback relying on intelligible skills. As we only want to use q-matrices for performance prediction, we can reasonably compute them from student data.
+In psychometrics, q-matrix are usually specified by experts, in order to get a feedback relying on intelligible skills. As we only want to use q-matrices for performance prediction, we can reasonably compute them from student data.
 
 In order to extract a q-matrix achieving high likelihood, we need to estimate three kind of parameters: the binary entries of the q-matrix, the slip and guess parameters for each question, and a distribution of probabilities over all possible skill vectors for each student. Fixing any two, it is easy to optimize the third parameter, which suggests the following procedure: until convergence to a local minimum, sequentially optimize each parameter.
 
@@ -355,7 +354,7 @@ As in the Rasch model, we pick at each step the question maximizing the Fisher i
 \subsubsection{Parameters Update}
 
 As the distribution over skills is on a finite support, we can maintain at each step the whole probability distribution $\pi$ over the possible skill vectors, initialized at some prior distribution inferred during the train phase.
-Knowing the student answer to a certain question $q_i$, the update of $\pi_i$ is done according to Bayes' rule. Let $x$ be a skill vector, $s_i$ and $g_i$ the slip and guess parameters of the question $q_i$ and $a_i$ be 1 if the answer was correct, 0 otherwise. If the skills associated to $x$ are sufficient to answer the question correctly,
+Knowing the student answer to a certain question $i$, the update of $\pi_i$ is done according to Bayes' rule. Let $x$ be a skill vector, $s_i$ and $g_i$ the slip and guess parameters of the question $i$ and $a_i$ be 1 if the answer was correct, 0 otherwise. If the skills associated to $x$ are sufficient to answer the question correctly,
 \[ \pi_{i+1}(x) = \pi_i(x) \cdot [a_i \cdot(1-s_i) + (1-a_i)\cdot s_i] \]
 otherwise
 \[ \pi_{i+1}(x) = \pi_i(x) \cdot [a_i \cdot g_i + (1-a_i)\cdot(1-g_i)]. \]
@@ -366,15 +365,15 @@ otherwise
 
 \subsubsection{SAT dataset}
 
-We used the SAT Subject Test data, also featured in~\cite{Winters2005, Desmarais2011}. This student data is a $296 \times 40$ binary matrix representing the results from 296 students on 40 questions from the 4 following topics: Mathematics, Biology, World History and French.
+We used the SAT Subject Test data, also featured in~\cite{Winters2005, Desmarais2011}. This student dataset is a $296 \times 40$ binary matrix representing the results from 296 students on 40 questions from the 4 following topics: Mathematics, Biology, World History and French.
 
-We used a train dataset of 216 students and a test dataset of 80 students. The performance of both models were so close that their confidence intervals were overlapping. Therefore, we could not dissociate properly those models and had to resort to a bigger dataset.
+We used a train dataset of 216 students and a test dataset of 80 students. The performance of both models considered \alert{(IRT and q-matrix)} were so close that their confidence intervals were overlapping. Therefore, we could not dissociate properly those models and had to resort to a bigger dataset.
 
 \subsubsection{Castor dataset}
 
 Castor is a Computer Science contest for K-12 students. It is the French version of Bebras, a Lithuanian initiative now organized in 21 countries. Contestants have 45 minutes to solve tasks that require algorithmic concepts but no coding abilities. An example of exercise is given in Figure~\ref{fig:51}.
 
-The 2013 edition of Castor attracted around 176,000 students, 46\% of which being girls. The dataset we used for our simulation is focused on the answers of the sixth- and seventh-grade contestants of the 2013 edition. It is a $58939 \times 17$ binary matrix, where the $(i, j)$ entry is 1 if contestant $i$ got full score on task $j$, 0 otherwise.
+The 2013 edition of Castor attracted around 176,000 students, 46\% of which being girls. The dataset we used for our simulation is focused on the answers of 58,939 sixth and seventh graders competing in the 2013 edition which was composed of 17 tasks. It is a $58939 \times 17$ binary matrix, where the $(i, j)$ entry is 1 if contestant $i$ got full score on task $j$, 0 otherwise.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{51-calc}
@@ -386,9 +385,9 @@ The 2013 edition of Castor attracted around 176,000 students, 46\% of which bein
 
 In our experiments, we analyze the effect of two parameters: the number of questions asked and the number of skills $K$ of the q-matrices. For both models considered, Rasch and q-matrix, our Castor train dataset was composed of the same 48,939 students, the test dataset containing the remaining 10,000 students. Several implementations of q-matrix were simulated for $K$ values from 1 to 6.
 
-To evaluate the different models throughout the CAT process, we compute for each student of the test dataset the mean error of its predicted performance over the remaining questions, according to the ground truth, and we take the mean value of this mean error over all test students.
+To evaluate both models throughout the CAT process, we compute for each student of the test dataset the mean error of its predicted performance over the remaining questions, according to the ground truth, and we take the mean value of this mean error over all test students.
 
-Our implementation is written in Python and R using the packages \texttt{rpy2}~\cite{Gautier2008}, \texttt{ltm} for latent trait models of IRT~\cite{Rizopoulos2006} and \texttt{catR} for computerized adaptive testing over the \texttt{ltm} package~\cite{MagisRaiche2012}. The source code is available under the MIT License on Bitbucket\footnote{\phantom{\url{http://bitbucket.org/jilljenn/qmatrix/}}}. The whole simulation process ran for 4 hours on a 3.4 GHz Intel Core i7. % TODO Athena
+Our implementation is written in Python and R using the packages \texttt{rpy2}~\cite{Gautier2008}, \texttt{ltm} for latent trait models of IRT~\cite{Rizopoulos2006} and \texttt{catR} for computerized adaptive testing over the \texttt{ltm} package~\cite{MagisRaiche2012}. The source code is available under the MIT License on Bitbucket\footnote{\phantom{\url{http://bitbucket.org/jilljenn/qmatrix/}}}. The whole simulation process ran for 4 hours on a 3.4 GHz Intel Core i7.
 
 \subsection{Results}
 
@@ -396,10 +395,10 @@ We compared the R implementation of the Rasch model and our implementation of th
 
 \subsubsection{Algorithm Speed}
 
-Process time of train and test phases is depicted in Table~\ref{tab:time}. IRT has the fastest train phase and the slowest test phase, which is still reasonable given that the values for the test phase were computed over 10,000 students. As expected by our estimation of complexity, the simulation time for Q grows exponentially with $K$; nevertheless, the fact that most time of the simulation is spent on the train phase makes the q-matrix model suitable for adaptive testing.
+Process time of train and test phases is depicted in Table~\ref{tab:time}. IRT has the fastest train phase and the slowest test phase, which is still reasonable given that the values for the test phase were computed over 10,000 students. As expected by our estimation of complexity, the simulation time for Q grows exponentially with $K$. Yet, the fact that most time of the simulation is spent on the train phase makes the q-matrix model suitable for adaptive testing, after a costly preprocessing step.
 
 \begin{table}[H]
-\small\centering\begin{tabular}{@{}ccc@{}}
+\centering\begin{tabular}{@{}c|cc@{}}
 & Train phase & Test phase\\
 \hline
 IRT & 1 min 49 s & 4 min 20 s\\%0.499 $\pm$ 0.024 & 0.469 $\pm$ 0.020 & 0.446 $\pm$ 0.015\\
@@ -416,11 +415,12 @@ Q $K = 6$ & 1 h 45 min 3 s & 3 min 14 s %0.482 $\pm$ 0.015 & \textbf{0.425 $\pm$
 
 \subsubsection{Performance Evaluation}
 
- Results are presented in Figure~\ref{fig:castor} and Table~\ref{tab:error} where the best performances are shown in bold. As a reference, 1.0 is the error obtained by the trivial algorithm affecting 1/2 to every probability. The tightness of the confidence intervals allows us to state that IRT performs slightly better than Q for any value of $K$. % On the SAT dataset, for all reasonable choices of $K$, the q-matrix model outperforms IRT, the q-matrix of $K = 6$ skills being globally the best among all tested ones.
+Results are presented in Figure~\ref{fig:castor} and Table~\ref{tab:error} where the best performances are shown in bold. As a reference, 1.0 is the error obtained by the trivial algorithm affecting 1/2 to every probability. The tightness of the confidence intervals allows us to state that IRT performs slightly better than Q for any value of $K$. % On the SAT dataset, for all reasonable choices of $K$, the q-matrix model outperforms IRT, the q-matrix of $K = 6$ skills being globally the best among all tested ones.
 
 \begin{table}
-\small\centering\begin{tabular}{@{}cccc@{}}
-& 4 & 10 & 16\\
+\small\centering\begin{tabular}{@{}c|ccc@{}}
+%& \multicolumn{3}{c}{Number of questions asked}\\
+& After 4 q. & After 10 q. & After 16 q.\\
 \hline
 %IRT & 0.482 $\pm$ 0.022 & 0.473 $\pm$ 0.017 & 0.456 $\pm$ 0.019\\
 %Q $K = 3$ & 0.487 $\pm$ 0.016 & 0.470 $\pm$ 0.017 & 0.435 $\pm$ 0.012\\
@@ -439,9 +439,9 @@ IRT & \textbf{0.495 $\pm$ 0.003} & \textbf{0.361 $\pm$ 0.005} & \textbf{0.136 $\
 \label{tab:error}
 \end{table}
 
-Q algorithms for different values of $K$ seem to have similar mean error, the $K = 6$ one achieving the highest error. \alert{A longer skill vector is harder to guess, thus requires more questions.}
+Q algorithms for different values of $K$ seem to have similar mean error, the $K = 6$ one achieving the highest error. \alert{As a recall, the goal of this model is to derive efficiently a probability distribution over the possible skill vectors. As a longer skill vector is harder to guess, it is natural to think that the $K = 6$ model requires more questions to predict efficiently the performance of an examinee}.
 
-Examples of estimated parameters are shown in Figure~\ref{tab:example}: item difficulties for IRT, binary matrix entries and slip/guess parameters for Q. The corresponding success rates computed from the student data give an insight to the intrinsic difficulties of the different questions. For example, questions 1 and 13 seem the hardest ones of the test, which is why both of them require all concepts in order to be solved. But question 13 is itself harder than question 1, therefore this results in a higher slip parameter. But high values of slip/guess parameters slow down the determination of the skill vector of the student. This may be responsible for the behavior of Q opposed to IRT.
+Examples of estimated parameters are shown in Table~\ref{tab:example}: item difficulties for IRT, binary matrix entries and slip/guess parameters for Q. The corresponding success rates computed from the student train dataset give an insight to the intrinsic difficulties of the different questions. For example, questions 1 and 13 seem the hardest ones of the test, which is why both of them require all concepts in order to be solved. Thus, to address the fact that question 13 is itself harder than question 1, Q needs to estimate a higher slip parameter. High values of slip/guess parameters slow down the determination of the skill vector of the student, \alert{hence a diminution of prediction quality of her performance.} This may be responsible for the behavior of Q opposed to IRT.
 
 %\begin{figure}
 %\includegraphics[width=\linewidth]{20-80.pdf}
@@ -457,7 +457,7 @@ Examples of estimated parameters are shown in Figure~\ref{tab:example}: item dif
 
 \begin{table}
 \small\centering\begin{tabular}{c|c|ccccc|c}
-\# & IRT difficulty & 	\multicolumn{3}{c}{Q-Matrix} & Guess & Slip & Success\\
+\# & IRT difficulty & 	\multicolumn{3}{c}{Q-matrix} & Guess & Slip & Success\\
 \hline
 1 & 2.454 & 	1 & 1 & 1 & 0.059 & \textbf{0.645} & 11 \% \\
 2 & -1.121 & 	1 & 0 & 0 & \textbf{0.512} & 0.082 & 72 \% \\
@@ -477,7 +477,7 @@ Examples of estimated parameters are shown in Figure~\ref{tab:example}: item dif
 16 & 0.063 & 	1 & 0 & 1 & 0.387 & 0.176 & 49 \% \\
 17 & 1.803 & 	1 & 1 & 1 & 0.113 & 0.496 & 18 \%
 \end{tabular}
-\caption{Example of question parameters for the Rasch model vs. q-matrix $K = 3$ and success rate in the train dataset. The q-matrix model compensates the lack of a difficulty parameter with high values of the slip and guess parameters. Values greater than 0.5 are denoted in bold.}
+\caption{Example of question parameters for the Rasch model vs. q-matrix $K = 3$ and success rate in the train dataset. The q-matrix model counterbalances the lack of a difficulty parameter with high values of the slip and guess parameters. Values greater than 0.5 are denoted in bold.}
 \label{tab:example}
 \end{table}
 
@@ -489,7 +489,7 @@ Our studies suggest that the q-matrix model, first designed for cognitive diagno
 
 % On the first hand, the Rasch model tries to guess a one-dimensional geometry for the question data. On the other hand, the q-matrix model allows a directed-acyclic-graph-like structure to comprehend the question data.
 
-Surprisingly, on the Castor dataset, our implementation of the simpler Rasch model performs slightly better than our q-matrix implementations for $K$ from 1 to 6. In order to understand more \alert{deeply} this behavior, both models should be compared to a more conventional dataset such as a simple calculus test, requiring fewest competences. Also, a better computation of q-matrix using more cutting-edge techniques could lead to different results. % TODO pas bon
+Surprisingly, on the Castor dataset, our implementation of the simpler Rasch model performs slightly better than our q-matrix implementations for $K$ from 1 to 6. In order to explain this behavior, we intend to compare both models on a more conventional dataset such as a simple calculus test, requiring fewest competences. Also, we plan to test other computation of q-matrices using more cutting-edge techniques to see if we get different results.
 
 %However, q-matrix being a richer model, it can be prone to overfitting, particularly for greater values of $K$, as highlighted by our results. In addition, the longer convergence time for high values of $K$ can be explained by the fact that guessing a larger skill vector requires more information, therefore more questions. Thus, there is a tradeoff between a large value of $K$ potentially leading to overfitting and smaller ones which could not provide a rich enough model. The optimal value of $K$ may depend on the size of the training set along with the number of questions of the test. Nevertheless, as pointed out in~\cite{Huebner2010}, there have been no systematic studies for cognitive diagnosis models investigating the most suitable number of skills $K$ for a given dataset.
 
@@ -505,7 +505,7 @@ We made no hypothesis at all on the links between questions, which is why we got
 
 %A new direction could be to 
 
-We devised a protocol to evaluate adaptive testing models, which enables us to test many more algorithms on large-scale datasets. Our simulation highlighted the role of slip and guess parameters compared to the item difficulty parameter of the Rasch model and reveals two possible directions for future research: add regularisation parameters linked to slip and guess, or examine \alert{hybrid} models~\cite{McGlohen2008}.
+We devised a protocol to evaluate adaptive testing models, which enables us to test many more algorithms on large-scale datasets. Our simulation highlighted the role of slip and guess parameters compared to the item difficulty parameter of the Rasch model and reveals two possible directions for future research: add regularisation parameters linked to slip and guess in order to guarantee a fast recovery of the student skills, or examine fusion models that combine item response theory and diagnostic classification models~\cite{McGlohen2008}, \alert{some of which looking after misconceptions instead of skills~\cite{Bradshaw2014}.}
 
 %Please also note that, our item exposure rate is very high as the same first questions are asked. Thus low stakes high stakes
 
