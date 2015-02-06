@@ -4,14 +4,22 @@ from calc import logloss, derivative_logloss, normalize, entropy, compute_mean_e
 from itertools import product
 import my_io
 from datetime import datetime
+from operator import mul
+
+# state (over 2^K) => comp (over K) where K = nb_competences
 
 def bool2int(l):
 	return int(''.join(map(str, map(int, l))), 2)
 
+def prod(l):
+	if len(list(l)) == 0:
+		return 1
+	return reduce(mul, l)
+
 DEFAULT_SLIP = 1e-2
 DEFAULT_GUESS = 1e-2
 K = 3
-LOOP_TIMEOUT = 5
+LOOP_TIMEOUT = 20
 SLIP_GUESS_PRECISION = 1e-2
 ALPHA = 1e-4
 
@@ -20,7 +28,7 @@ class QMatrix():
 		self.name = 'QMatrix'
 		self.nb_competences = nb_competences
 		self.Q = Q
-		self.prior = prior if prior else [1. / (1 << nb_competences)] * (1 << nb_competences)
+		self.prior = prior if prior else [0.5] * nb_competences
 		self.p_states = None
 		self.p_test = None
 		self.slip = slip
@@ -81,7 +89,7 @@ class QMatrix():
 		self.p_test = self.prior
 
 	def compute_proba_question(self, question_id, p_competences, mode=None):
-		proba = sum(p for state, p in enumerate(p_competences) if self.match(self.Q[question_id], state))
+		proba = prod([p for comp, p in enumerate(p_competences) if self.Q[question_id][comp]])
 		if not mode:
 			return proba * (1 - self.slip[question_id]) + (1 - proba) * self.guess[question_id]
 		elif mode == 'slip':
@@ -90,8 +98,8 @@ class QMatrix():
 			return self.guess[question_id] * (1 - proba)
 
 	def predict_future(self, question_id, p_competences):
-		future_if_correct = normalize([p * (1 - self.slip[question_id]) if self.match(self.Q[question_id], state) else p * self.guess[question_id] for state, p in enumerate(p_competences)])
-		future_if_incorrect = normalize([p * self.slip[question_id] if self.match(self.Q[question_id], state) else p * (1 - self.guess[question_id]) for state, p in enumerate(p_competences)])
+		future_if_correct = normalize([p * (1 - self.slip[question_id]) if self.Q[question_id][comp] else p * self.guess[question_id] for comp, p in enumerate(p_competences)])
+		future_if_incorrect = normalize([p * self.slip[question_id] if self.Q[question_id][comp] else p * (1 - self.guess[question_id]) for comp, p in enumerate(p_competences)])
 		return future_if_incorrect, future_if_correct
 
 	def ask_question(self, question_id, is_correct_answer, p_competences):
