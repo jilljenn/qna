@@ -14,7 +14,7 @@ plt.show()
 """
 
 dataset = 'sat'
-MAX = 10
+nb_competences = range(1, 30, 5)
 if dataset == 'sat':
 	train_power = '216'
 elif dataset == 'castor6e':
@@ -85,15 +85,16 @@ print filenames
 print train_power
 fig, ax = plt.subplots()
 irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
-mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
+# mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
 bundle['irt-%s' % train_power] = irt
 qmatrix = {}
-for k in range(1, MAX + 1):
+for i, k in enumerate(nb_competences):
 	qmatrix[k] = json.load(open(filenames[(str(k), train_power)]))['QMatrix']['mean']
 	bundle['qmatrix%d-%s' % (k, train_power)] = qmatrix[k]
-	ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex(k * 255 / MAX)[2:], linewidth=MAX + 1 - k)
-ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
-ax.plot(range(1, len(irt) + 1), irt, color='blue')
+	maxi = len(nb_competences)
+	ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex((i + 1) * 255 / maxi)[2:], linewidth=maxi - i)
+# ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
+ax.plot(range(1, len(irt) + 1), irt, color='blue', linewidth=5)
 ax.set_title('IRT VS q-matrix K = 1-10, train_power %s' % train_power)
 plt.show()
 

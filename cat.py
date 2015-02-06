@@ -2,6 +2,7 @@ from datetime import datetime
 from calc import logloss, surround, avgstd
 import random
 import my_io
+import json
 import sys
 
 filename = 'sat' # castor6e: 17Q
@@ -9,7 +10,7 @@ filename = 'sat' # castor6e: 17Q
 if sys.argv[1] == 'qm':
 	from qmatrix import QMatrix
 	models = []
-	for nb_competences in range(1, 11):
+	for nb_competences in range(1, 30, 5):
 		models.append(QMatrix(nb_competences=nb_competences))
 elif sys.argv[1] == 'irt':
 	from irt import IRT
@@ -88,7 +89,12 @@ def main():
 	if filename == 'sat':
 		nb_questions = 20
 		test_power = 80
-		question_subset = [2 * i for i in range(nb_questions)] # sorted(random.sample(range(len(full_dataset[0])), nb_questions))
+		# question_subset = range(nb_questions)[:20]
+		j = json.load(open('subset.json'))
+		question_subset = j['question_subset']
+		train_subset = j['train_subset']
+		test_subset = sorted(set(range(296)) - set(train_subset))
+		# question_subset = [2 * i for i in range(nb_questions)] # sorted(random.sample(range(len(full_dataset[0])), nb_questions))
 	elif filename == 'castor6e':
 		nb_questions = 17
 		test_power = 10000
@@ -109,8 +115,12 @@ def main():
 		else:
 			god_prefix = 'mepv-irt-%s-%s' % (nb_questions, train_power)
 		dataset = [[full_dataset[i][j] for j in question_subset] for i in range(len(full_dataset))]
+		# train_dataset = dataset[:train_power]
+		# test_dataset = dataset[-test_power:]
+		train_dataset = [dataset[i] for i in train_subset]
+		test_dataset = [dataset[i] for i in test_subset]
 		error_log = []
-		simulate(model, dataset[:train_power], dataset[-test_power:], error_log)
+		simulate(model, train_dataset, test_dataset, error_log)
 		print god_prefix
 		log[model.name] = error_log
 		get_results(log, god_prefix)

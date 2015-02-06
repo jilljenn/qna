@@ -1,6 +1,6 @@
 import json
 
-PREFIX = 'last-sat'
+PREFIX = 'edm'
 
 def split(filename, n):
 	"""Creates files and returns filenames."""
