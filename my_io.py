@@ -1,6 +1,6 @@
 import json
 
-PREFIX = 'edm'
+PREFIX = 'base'
 
 def split(filename, n):
 	"""Creates files and returns filenames."""
