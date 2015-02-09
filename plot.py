@@ -88,7 +88,7 @@ print train_power
 fig, ax = plt.subplots()
 irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
 # mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
-baseline = json.load(open(filenames[('baseline', train_power)]))['Baseline']['mean']
+# baseline = json.load(open(filenames[('baseline', train_power)]))['Baseline']['mean']
 bundle['irt-%s' % train_power] = irt
 qmatrix = {}
 for i, k in enumerate(nb_competences_values):
@@ -97,7 +97,7 @@ for i, k in enumerate(nb_competences_values):
 	maxi = len(nb_competences_values)
 	ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex((i + 1) * 255 / maxi)[2:], linewidth=maxi - i)
 # ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
-ax.plot(range(1, len(baseline) + 1), baseline, color='darkgreen', linewidth=3)
+# ax.plot(range(1, len(baseline) + 1), baseline, color='darkgreen', linewidth=3)
 ax.plot(range(1, len(irt) + 1), irt, color='blue', linewidth=5)
 ax.set_title('IRT VS q-matrix K = 1-10, train_power %s' % train_power)
 plt.show()

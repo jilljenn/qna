@@ -1,6 +1,6 @@
 # coding=utf8
 import random
-from calc import logloss, derivative_logloss, normalize, entropy, compute_mean_entropy
+from calc import logloss, derivative_logloss, normalize, entropy, compute_mean_entropy, surround
 from itertools import product
 import my_io
 from datetime import datetime
@@ -19,8 +19,8 @@ def prod(l):
 DEFAULT_SLIP = 1e-3
 DEFAULT_GUESS = 1e-3
 K = 3
-LOOP_TIMEOUT = 0
-SLIP_GUESS_PRECISION = 1e-3
+LOOP_TIMEOUT = 20
+SLIP_GUESS_PRECISION = 1e-4
 ALPHA = 1e-4
 
 class QMatrix():
@@ -54,12 +54,13 @@ class QMatrix():
 		nb_students = len(train)
 		nb_questions = len(train[0])
 		if not self.Q:
-			self.Q = [[random.randint(1, 2) == 1 for _ in range(self.nb_competences)] for _ in range(nb_questions)]
+			self.Q = [[random.randint(1, 2) == 2 for _ in range(self.nb_competences)] for _ in range(nb_questions)]
 		if not self.slip:
 			self.slip = [DEFAULT_SLIP] * nb_questions
 		if not self.guess:
 			self.guess = [DEFAULT_GUESS] * nb_questions
 		loop = 0
+		self.display_qmatrix()
 		self.infer_state(train)
 		while loop < timeout: # TODO
 			# print 'Infer state %d' % loop
@@ -67,10 +68,11 @@ class QMatrix():
 			#print self.model_error(train)
 			if opt_Q:
 				#print 'Infer Q-Matrix FAST %d' % loop
-				self.infer_qmatrix(train)
+				self.infer_qmatrix_fast(train)
 				#print self.model_error(train)
 			if opt_sg:
 				#print 'Infer guess/slip %d' % loop
+				# pass
 				self.infer_guess_slip(train)
 				#print self.model_error(train)
 			#print 'Infer prior %d' % loop
@@ -103,9 +105,44 @@ class QMatrix():
 		else:
 			return self.guess[question_id] * (1 - proba)
 
+	def product(self, p_competences, state):
+		return prod([p if (state >> (self.nb_competences - 1 - comp)) & 1 == 1 else 1 - p for comp, p in enumerate(p_competences)])
+
 	def predict_future(self, question_id, p_competences):
-		future_if_correct = normalize([p * (1 - self.slip[question_id]) if self.Q[question_id][comp] else p * self.guess[question_id] for comp, p in enumerate(p_competences)])
-		future_if_incorrect = normalize([p * self.slip[question_id] if self.Q[question_id][comp] else p * (1 - self.guess[question_id]) for comp, p in enumerate(p_competences)])
+		proba_question = self.compute_proba_question(question_id, p_competences)
+		# print 'comp', p_competences
+		# debug_vector = [self.product(p_competences, state) for state in range(1 << self.nb_competences)]
+		# debug_vector_if_correct = normalize([p * (1 - self.slip[question_id]) if self.match(self.Q[question_id], state) else p * self.guess[question_id] for state, p in enumerate(debug_vector)])
+		# debug_vector_if_incorrect = normalize([p * self.slip[question_id] if self.match(self.Q[question_id], state) else p * (1 - self.guess[question_id]) for comp, p in enumerate(debug_vector)])
+		# print 'debug', debug_vector
+		proba = prod([p for comp, p in enumerate(p_competences) if self.Q[question_id][comp]])
+		not_proba_question = proba * self.slip[question_id] + (1 - self.guess[question_id]) * (1 - proba)
+		# print '=' * 10, (not_proba_question + proba_question == 1)
+		future_if_correct = p_competences[:]
+		future_if_incorrect = p_competences[:]
+		# print 'question asked', self.Q[question_id]
+		for comp, p in enumerate(p_competences):
+			if self.Q[question_id][comp]:
+				future_if_correct[comp] = (proba * (1. - self.slip[question_id]) + self.guess[question_id] * (1. - (1. - p) - proba)) / proba_question
+				future_if_incorrect[comp] = (proba * self.slip[question_id] + (1. - self.guess[question_id]) * (1. - (1. - p) - proba)) / not_proba_question
+				if future_if_correct[comp] > 1:
+					future_if_correct[comp] = 1.
+					print 'oops1'
+				if future_if_correct[comp] <= 0:
+					future_if_correct[comp] = 0.
+					print 'oops2'
+				if future_if_incorrect[comp] > 1:
+					future_if_incorrect[comp] = 1.
+					print 'oops3'
+				if future_if_incorrect[comp] <= 0:
+					future_if_incorrect[comp] = 0.
+					print 'oops4'
+		# print 'future obtained', future_if_incorrect
+		# print(debug_vector_if_correct)
+		# new_p_competences = [sum(debug_vector_if_incorrect[state] for state in range(1 << self.nb_competences) if (state >> (self.nb_competences - 1 - comp)) & 1 == 1) for comp in range(self.nb_competences)]
+		# print 'we should have obtained', new_p_competences
+		# print 'which would lead to', [self.product(new_p_competences, state) for state in range(1 << self.nb_competences)]
+		assert all(0 <= p <= 1 for p in future_if_correct) and all(0 <= p <= 1 for p in future_if_incorrect)  # CAUTION
 		return future_if_incorrect, future_if_correct
 
 	def ask_question(self, question_id, is_correct_answer, p_competences):
@@ -122,11 +159,16 @@ class QMatrix():
 			self.p_states.append(self.prior[:])
 			for question_id in range(nb_questions): # Ask her ALL questions!
 				self.p_states[student_id] = self.ask_question(question_id, train[student_id][question_id], self.p_states[student_id])
+			# print 'student', student_id, self.p_states[student_id]
 
 	def evaluate_error(self, question_id, train, coefficients=None, sg=None):
 		nb_students = len(train)
+		# print "niveaux, sachant qu'on s'intéresse à la question", question_id
+		"""for line in self.p_states:
+			print(surround(line))"""
 		estimated_column = [self.compute_proba_question(question_id, self.p_states[student_id]) for student_id in range(nb_students)]
 		real_column = [train[student_id][question_id] for student_id in range(nb_students)]
+		# print(surround(estimated_column), real_column)
 		if coefficients:
 			return derivative_logloss(estimated_column, real_column, coefficients) - ALPHA * (1 / sg - 1 / (1 - sg)) # Ahem
 		else:
@@ -144,7 +186,7 @@ class QMatrix():
 			for mode in ['slip', 'guess']:
 				# if mode == 'guess':
 					# print('was', self.guess[question_id], self.model_error(train))
-				a, b = 0., 0.5#1.#0.5#1#.#0.3#1. #0.2 # Limite
+				a, b = 0., 0.15#1.#0.5#1#.#0.3#1. #0.2 # Limite
 				while b - a > SLIP_GUESS_PRECISION:
 					sg = (a + b) / 2
 					if mode == 'slip':
@@ -174,10 +216,15 @@ class QMatrix():
 				self.Q[question_id] = line
 				question_error = self.evaluate_error(question_id, train)
 				if question_error < error_min:
-					# print question_id, question_error, self.model_error(train)
-					# print error_min, line
+					#if question_id in [1, 2]:
+					#	print question_id, question_error, self.model_error(train)
+					#	print error_min, line
 					error_min = question_error
 					best_line = line
+			"""if question_id < 10:
+				print 'new matrix'
+				for i in range(question_id):
+					print(self.Q[i], self.slip[i], self.guess[i])"""
 			self.Q[question_id] = best_line # Put back the best (we once forgot to do so)
 
 	def infer_qmatrix_fast(self, train):
@@ -190,7 +237,7 @@ class QMatrix():
 				question_error = self.evaluate_error(question_id, train)
 				if question_error < error_min:
 					# print question_id, question_error, self.model_error(train)
-					# print error_min, line
+					# print error_min, self.Q[question_id]
 					error_min = question_error
 				else:
 					self.Q[question_id][competence] = not self.Q[question_id][competence] # Backflip
