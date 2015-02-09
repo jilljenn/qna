@@ -77,14 +77,14 @@ def simulate(model, train_data, test_data, error_log):
 			results_so_far.append(test_data[student_id][question_id])
 			model.estimate_parameters(replied_so_far, results_so_far)
 			performance = model.predict_performance()
-			if model.name == 'QMatrix':
+			"""if model.name == 'QMatrix':
 				print surround(model.p_test)
 				print 'required', [''.join(map(lambda x: str(int(x)), model.Q[i])) for i in range(nb_questions) if i not in replied_so_far]
 				print 'slip', [model.slip[i] for i in range(nb_questions) if i not in replied_so_far]
 				print 'guess', [model.guess[i] for i in range(nb_questions) if i not in replied_so_far]
 				print [surround(performance)[i] for i in range(nb_questions) if i not in replied_so_far]
 				print [test_data[student_id][i] for i in range(nb_questions) if i not in replied_so_far]
-				print evaluate(performance, test_data[student_id], replied_so_far)
+				print evaluate(performance, test_data[student_id], replied_so_far)"""
 			# print ''.join(map(lambda x: str(int(round(x))), performance))
 			# print ''.join(map(lambda x: str(int(x)), test_data[student_id]))
 			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], replied_so_far)
