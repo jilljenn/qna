@@ -1,6 +1,7 @@
 # coding=utf8
 import sys, os, re, json
 import matplotlib.pyplot as plt
+from conf import dataset_name, nb_competences_values
 
 """
 loglosses_ltm = json.load(open('data/logloss-ltm.json'))
@@ -13,17 +14,18 @@ ax.set_title('Log loss')
 plt.show()
 """
 
-dataset = 'sat'
-nb_competences = range(1, 30, 5)
-if dataset == 'sat':
+if dataset_name == 'sat':
 	train_power = '216'
-elif dataset == 'castor6e':
+elif dataset_name == 'castor6e':
 	train_power = '48939'
+elif dataset_name == 'fraction':
+	train_power = '436'
 else:
 	train_power = '90'
 
-graphs = {'20': {}, '40': {}, '80': {}, '90': {}, '160': {}, '216': {}, '276': {}, '286': {}, '295': {}, '48939': {}, '99': {}}
+graphs = {'20': {}, '40': {}, '80': {}, '90': {}, '160': {}, '216': {}, '276': {}, '286': {}, '295': {}, '48939': {}, '99': {}, '436': {}, '526': {}, '535': {}}
 graphs2 = {10: {}, 15: {}, 20: {}, 30: {}, 40: {}, 17: {}, 3: {}}
+modelnames = {'irt': 'IRT', 'mepv-irt': 'IRT', 'baseline': 'Baseline'}
 filenames = {}
 
 folder = sys.argv[1]
@@ -31,9 +33,9 @@ folder = sys.argv[1]
 for filename in os.listdir(folder):
 	if filename.startswith('stats'):
 		print filename
-		name, nb_questions, train_power = re.match('stats-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset, filename).groups()
+		name, nb_questions, train_power = re.match('stats-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset_name, filename).groups()
 		nb_questions = int(nb_questions)
-		data = json.load(open('%s/%s' % (folder, filename)))['QMatrix' if len(name) <= 2 else 'IRT']['mean']
+		data = json.load(open('%s/%s' % (folder, filename)))['QMatrix' if len(name) <= 2 else modelnames[name]]['mean']
 		# print name, nb_questions, train_power
 		value = data[nb_questions / 2 - 1]
 		if name not in graphs[train_power]:
@@ -47,7 +49,7 @@ for filename in os.listdir(folder):
 		#if nb_questions == 17: # TODO mettre ça à 40
 		filenames[(name, train_power)] = '%s/%s' % (folder, filename)
 
-colors = {'3': 'red', '4': 'orangered', '5': 'orange', '6': 'yellow', 'irt': 'blue', 'mepv-irt': 'darkblue'}
+colors = {'3': 'red', '4': 'orangered', '5': 'orange', '6': 'yellow', 'irt': 'blue', 'mepv-irt': 'darkblue', 'baseline': 'darkgreen'}
 
 """
 for train_power in ['40', '80', '160']:
@@ -86,14 +88,16 @@ print train_power
 fig, ax = plt.subplots()
 irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
 # mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
+baseline = json.load(open(filenames[('baseline', train_power)]))['Baseline']['mean']
 bundle['irt-%s' % train_power] = irt
 qmatrix = {}
-for i, k in enumerate(nb_competences):
+for i, k in enumerate(nb_competences_values):
 	qmatrix[k] = json.load(open(filenames[(str(k), train_power)]))['QMatrix']['mean']
 	bundle['qmatrix%d-%s' % (k, train_power)] = qmatrix[k]
-	maxi = len(nb_competences)
+	maxi = len(nb_competences_values)
 	ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex((i + 1) * 255 / maxi)[2:], linewidth=maxi - i)
 # ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
+ax.plot(range(1, len(baseline) + 1), baseline, color='darkgreen', linewidth=3)
 ax.plot(range(1, len(irt) + 1), irt, color='blue', linewidth=5)
 ax.set_title('IRT VS q-matrix K = 1-10, train_power %s' % train_power)
 plt.show()

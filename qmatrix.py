@@ -16,11 +16,11 @@ def prod(l):
 		return 1
 	return reduce(mul, l)
 
-DEFAULT_SLIP = 1e-2
-DEFAULT_GUESS = 1e-2
+DEFAULT_SLIP = 1e-3
+DEFAULT_GUESS = 1e-3
 K = 3
-LOOP_TIMEOUT = 20
-SLIP_GUESS_PRECISION = 1e-2
+LOOP_TIMEOUT = 0
+SLIP_GUESS_PRECISION = 1e-3
 ALPHA = 1e-4
 
 class QMatrix():
@@ -38,6 +38,7 @@ class QMatrix():
 	def load(self, filename):
 		data = my_io.load(filename)
 		self.Q = data['Q']
+		self.nb_competences = len(self.Q[0])  # Do not forget!
 		self.slip = data['slip']
 		self.guess = data['guess']
 		self.p_states = data['p_states']
@@ -66,7 +67,7 @@ class QMatrix():
 			#print self.model_error(train)
 			if opt_Q:
 				#print 'Infer Q-Matrix FAST %d' % loop
-				self.infer_qmatrix_fast(train)
+				self.infer_qmatrix(train)
 				#print self.model_error(train)
 			if opt_sg:
 				#print 'Infer guess/slip %d' % loop
@@ -81,9 +82,14 @@ class QMatrix():
 		print self.slip
 		print '->', self.model_error(train)"""
 		self.model_error(train)
-		if timeout == 0:
+		self.display_qmatrix()
+		if timeout is None:
 			self.generate_student_data(50)
 		self.save('qmatrix-%s' % datetime.now().strftime('%d%m%Y%H%M%S'))
+
+	def display_qmatrix(self):
+		for line in self.Q:
+			print(''.join(map(lambda x: str(int(x)), line)))
 
 	def init_test(self):
 		self.p_test = self.prior
@@ -138,7 +144,7 @@ class QMatrix():
 			for mode in ['slip', 'guess']:
 				# if mode == 'guess':
 					# print('was', self.guess[question_id], self.model_error(train))
-				a, b = 0., 1.
+				a, b = 0., 0.5#1.#0.5#1#.#0.3#1. #0.2 # Limite
 				while b - a > SLIP_GUESS_PRECISION:
 					sg = (a + b) / 2
 					if mode == 'slip':
