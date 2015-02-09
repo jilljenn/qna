@@ -475,11 +475,17 @@ Examples of estimated parameters are shown in Table~\ref{tab:example}: item diff
 
 Our studies suggest that the q-matrix model, first designed for cognitive diagnosis, can successfully be used in a context of large-scale assessments, both in terms of speed and predicting quality. This model is thus suitable for placement tests, where few questions should be enough to explore at best the examinee's skills. More globally, it can be used for low-stakes testing, but not high-stakes testing, as the first questions chosen by the item selection rule from one student to another. This high item exposure rate was already pointed out in~\cite{Cheng2009}.
 
+\alert{In the literature~\cite{Cheng2009,Huebner2010}, most experiments made no hypothesis at all on the links between questions, which is why they got a probability distribution of size $2^K$, slowing down both the train and test phases of Q. Assuming pairwise independence of the skills led us to $O(K)$ complexity instead of $O(2^K)$, enabling us to explore a wider range of q-matrix sizes. As pointed out in~\cite{Huebner2010}, there have been no systematic studies so far investigating the most suitable number of skills $K$ for a given dataset.} % ABOUT the relations?
+
+\alert{As shown in Figure~X, the q-matrices derived by our implementation are more efficient than the expert-filled matrix. As stated in Figure~Y, a high guess-slip parameter results in lower training error but leads to overfitting: the parameters of the user model are estimated less precisely. Too low guess-slip parameters induce error in the predictions.}
+
 %Pay attention to the fact that although the training step is longer for the q-matrix model than the IRT chosen model, the next-item step is several times longer for the IRT model with minimum expected posterior variance criterion than the q-matrix model. Thus, for a given test, once a good q-matrix has been computed in a preprocessing step, the test can be administered in a reasonable time. % Can be linked to the prior.
 
 % On the first hand, the Rasch model tries to guess a one-dimensional geometry for the question data. On the other hand, the q-matrix model allows a directed-acyclic-graph-like structure to comprehend the question data.
 
-Surprisingly, on the Castor dataset, our implementation of the simpler Rasch model performs slightly better than our q-matrix implementations for $K$ from 1 to 6. In order to explain this behavior, we intend to compare both models on a more conventional dataset such as a simple calculus test, requiring fewer competences. Also, we plan to test other computation of q-matrices using more cutting-edge techniques to see if we get different results.
+Surprisingly, on the Castor dataset, our implementation of the simpler Rasch model performs slightly better than our q-matrix implementations for $K$ from 1 to 6. \alert{This may be explained by the fact that the model of response is different: students have to build their own solution, and it is a competitive exam, not a knowledge test.}
+
+\alert{A natural question is to ask whether 0-1 entries of the q-matrices should be replaced by real numbers. This approach was already proposed by Brewer~\cite{Barnes2005} (1996) and developed by SPARFA~\cite{Vats2013}, although their approach is more similar to MIRT. Convex optimization techniques could be used to efficient derive the q-matrix achieving minimal error. We plan to use this technique to see if we get better results.}
 
 %However, q-matrix being a richer model, it can be prone to overfitting, particularly for greater values of $K$, as highlighted by our results. In addition, the longer convergence time for high values of $K$ can be explained by the fact that guessing a larger skill vector requires more information, therefore more questions. Thus, there is a tradeoff between a large value of $K$ potentially leading to overfitting and smaller ones which could not provide a rich enough model. The optimal value of $K$ may depend on the size of the training set along with the number of questions of the test. Nevertheless, as pointed out in~\cite{Huebner2010}, there have been no systematic studies for cognitive diagnosis models investigating the most suitable number of skills $K$ for a given dataset.
 
@@ -487,15 +493,13 @@ Surprisingly, on the Castor dataset, our implementation of the simpler Rasch mod
 
 % Our results suggest that q-matrix is not very sensitive to the choice of K as long as this K parameters keep being reasonable given the train dataset.
 
-We made no hypothesis at all on the links between questions, which is why we got a probability distribution of size $2^K$, slowing down both the train and test phases of Q. Assuming pairwise independence of the skills would lead to $O(K)$ complexity instead of $O(2^K)$, enabling us to explore a wider range of q-matrix sizes. As pointed out in~\cite{Huebner2010}, there have been no systematic studies so far investigating the most suitable number of skills $K$ for a given dataset. % ABOUT the relations?
-
 %  Due to limited resources, our simulation was limited to $K \leqslant 6$. Indeed, the most costly part of the process is the training step of the q-matrix, which requires at each iteration a cost exponential in $K$ and a number of iterations increasing with $K$ to obtain convergence towards a local minimum. A better computation of q-matrix using more cutting-edge techniques could have lead to even better results. % TODO insister sur le fait qu'on ne s'est pas concentrés sur le calcul de la Q-matrice
 
 %Our results can extended to other cognitive diagnosis models from the compensatory classes (DINA, etc.~\cite{Desmarais2011}).
 
 %A new direction could be to 
 
-We devised a protocol to evaluate adaptive testing models, which enables us to test many more algorithms on large-scale datasets. Our simulation highlighted the role of slip and guess parameters compared to the item difficulty parameter of the Rasch model and reveals two possible directions for future research: add regularisation parameters linked to slip and guess in order to guarantee a fast recovery of the student skills, or examine fusion models that combine item response theory and diagnostic classification models~\cite{McGlohen2008,Bradshaw2014}.
+We devised a protocol to evaluate adaptive testing models, which allows us to test many more algorithms on large-scale datasets. Our simulation highlighted the role of slip and guess parameters compared to the item difficulty parameter of the Rasch model \alert{and reveals two possible directions for future research: test different regularization parameters linked to slip and guess in order to guarantee a fast recovery of the student skills, or examine fusion models that combine item response theory and diagnostic classification models}~\cite{McGlohen2008,Bradshaw2014}.
 
 %Please also note that, our item exposure rate is very high as the same first questions are asked. Thus low stakes high stakes
 
