@@ -121,6 +121,10 @@ def main():
 		nb_questions = 17
 		test_power = 10000
 		question_subset = range(nb_questions)
+		j = json.load(open('subset.json'))
+		question_subset = j['question_subset']
+		train_subset = j['train_subset']
+		test_subset = sorted(set(range(58939)) - set(train_subset))
 	elif dataset_name.startswith('3x2'):
 		nb_questions = 3
 		test_power = 10
