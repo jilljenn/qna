@@ -7,3 +7,6 @@ syntax: glob
 *.gz
 *.toc
 *.json
+*.bbl
+*.blg
+*.out
