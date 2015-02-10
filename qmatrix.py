@@ -34,6 +34,7 @@ class QMatrix():
 		self.slip = slip
 		self.guess = guess
 		self.error = None
+		self.from_expert = False
 
 	def load(self, filename):
 		data = my_io.load(filename)
@@ -42,6 +43,7 @@ class QMatrix():
 		self.slip = data['slip']
 		self.guess = data['guess']
 		self.p_states = data['p_states']
+		self.from_expert = True
 		# self.prior = data['prior'] # TODO
 
 	def save(self, filename):
@@ -62,7 +64,7 @@ class QMatrix():
 		loop = 0
 		self.display_qmatrix()
 		self.infer_state(train)
-		while loop < timeout: # TODO
+		while not self.from_expert and loop < timeout: # TODO
 			# print 'Infer state %d' % loop
 			self.infer_state(train)
 			#print self.model_error(train)
@@ -90,8 +92,8 @@ class QMatrix():
 		self.save('qmatrix-%s' % datetime.now().strftime('%d%m%Y%H%M%S'))
 
 	def display_qmatrix(self):
-		for line in self.Q:
-			print(''.join(map(lambda x: str(int(x)), line)))
+		for i, line in enumerate(self.Q):
+			print(''.join(map(lambda x: str(int(x)), line)), self.guess[i], self.slip[i])
 
 	def init_test(self):
 		self.p_test = self.prior

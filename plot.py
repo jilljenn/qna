@@ -25,7 +25,7 @@ else:
 
 graphs = {'20': {}, '40': {}, '80': {}, '90': {}, '160': {}, '216': {}, '276': {}, '286': {}, '295': {}, '48939': {}, '99': {}, '436': {}, '526': {}, '535': {}}
 graphs2 = {10: {}, 15: {}, 20: {}, 30: {}, 40: {}, 17: {}, 3: {}}
-modelnames = {'irt': 'IRT', 'mepv-irt': 'IRT', 'baseline': 'Baseline'}
+modelnames = {'irt': 'IRT', 'mepv-irt': 'IRT', 'baseline': 'Baseline', '888': 'QMatrix'}
 filenames = {}
 
 folder = sys.argv[1]
@@ -87,9 +87,11 @@ print filenames
 print train_power
 fig, ax = plt.subplots()
 irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
+# qmspe = json.load(open(filenames[('888', train_power)]))['QMatrix']['mean']
 # mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
 # baseline = json.load(open(filenames[('baseline', train_power)]))['Baseline']['mean']
 bundle['irt-%s' % train_power] = irt
+# bundle['qmatrix888-%s' % train_power] = qmspe
 qmatrix = {}
 for i, k in enumerate(nb_competences_values):
 	qmatrix[k] = json.load(open(filenames[(str(k), train_power)]))['QMatrix']['mean']
@@ -99,6 +101,7 @@ for i, k in enumerate(nb_competences_values):
 # ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
 # ax.plot(range(1, len(baseline) + 1), baseline, color='darkgreen', linewidth=3)
 ax.plot(range(1, len(irt) + 1), irt, color='blue', linewidth=5)
+# ax.plot(range(1, len(qmspe) + 1), qmspe, color='darkgreen', linewidth=5)
 ax.set_title('IRT VS q-matrix K = 1-10, train_power %s' % train_power)
 plt.show()
 
