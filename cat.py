@@ -56,6 +56,7 @@ def get_results(log, god_prefix):
 
 def simulate(model, train_data, test_data, error_log):
 	model.training_step(train_data, opt_Q=True, opt_sg=True)
+	print(datetime.now())
 	nb_students = len(test_data)
 	nb_questions = len(test_data[0])
 	budget = nb_questions
@@ -111,7 +112,7 @@ def main():
 		# question_subset = [2 * i for i in range(nb_questions)] # sorted(random.sample(range(len(full_dataset[0])), nb_questions))
 	elif dataset_name == 'fraction':
 		nb_questions = 20
-		test_power = 1
+		test_power = 100
 		# question_subset = range(nb_questions)
 		j = json.load(open('subset.json'))
 		question_subset = j['question_subset']
@@ -133,9 +134,10 @@ def main():
 		error_rate = []
 		train_power = len(full_dataset) - test_power
 		begin = datetime.now()
+		print begin
 		log = {}
 		if model.name == 'QMatrix':
-			god_prefix = '%s-%s-%s' % (model.nb_competences, nb_questions, train_power)
+			god_prefix = '%s-%s-%s' % (model.nb_competences if sys.argv[1] == 'qm' else '888', nb_questions, train_power)
 		elif model.name == 'Baseline':
 			god_prefix = 'baseline-%s-%s' % (nb_questions, train_power)
 		elif model.criterion == 'MFI':
@@ -153,7 +155,7 @@ def main():
 		log[model.name] = error_log
 		get_results(log, god_prefix)
 		my_io.backup('log-%s-%s-%s' % (dataset_name, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
-		print datetime.now() - begin
+		print datetime.now()
 
 if __name__ == '__main__':
 	main()
