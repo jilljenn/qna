@@ -14,6 +14,7 @@ class IRT():
         self.criterion = criterion
         self.nb_questions = None
         self.coeff = None
+        self.validation_question_set = None
 
     def training_step(self, train, opt_Q=True, opt_sg=True):
         nb_students = len(train)
@@ -22,6 +23,7 @@ class IRT():
         a = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
         model = ltm.rasch(a)
         self.coeff = ltm.coef_rasch(model)
+        print(self.coeff)
         scores = ltm.factor_scores(model).rx('score.dat')[0].rx('z1')[0]
         r('coeff <- coef(rasch(%s))' % a.r_repr())
         r('one <- rep(1, %d)' % self.nb_questions)
@@ -30,12 +32,18 @@ class IRT():
     def load(self, filename):
         pass
 
-    def init_test(self):
+    def init_test(self, validation_question_set):
+        self.validation_question_set = validation_question_set
         r('theta <- 0')
 
     def next_item(self, replied_so_far, results_so_far):
         if self.criterion == 'MFI':
-            best_question = r('nextItem(itembank, NULL, theta, out = c({}), criterion = "{}")$item'.format(','.join(map(lambda x: str(x + 1), replied_so_far)), self.criterion))[0]
+            available_questions = ['1'] * self.nb_questions
+            for question_id in self.validation_question_set:
+                available_questions[question_id] = '0'
+            print('nextItem(itembank, NULL, theta, nAvailable=c({}), out = c({}), criterion = "{}")$item'.format(','.join(available_questions), ','.join(map(lambda x: str(x + 1), replied_so_far)), self.criterion))
+            best_question = r('nextItem(itembank, NULL, theta, nAvailable=c({}), out = c({}), criterion = "{}")$item'.format(','.join(available_questions), ','.join(map(lambda x: str(x + 1), replied_so_far)), self.criterion))[0]
+            # raise Exception
             return best_question - 1
         # next = random.choice(list(set(range(nb_questions)) - set(replied_so_far)))
         # min_entropy = None
@@ -61,6 +69,7 @@ class IRT():
     def estimate_parameters(self, replied_so_far, results_so_far, var_id=''):
         scores_so_far = map(int, results_so_far)
         r('theta{} <- thetaEst(itembank[c({}),], c({}))'.format(var_id, ','.join(map(lambda x: str(x + 1), replied_so_far)), ','.join(map(str, scores_so_far))))
+        print 'Thêta du candidat :', r('theta')[0]
         # pm = r('semTheta(theta, itembank[c({}),])'.format(','.join(map(str, replied_so_far))))
 
     def predict_performance(self, var_id=''):

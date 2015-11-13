@@ -1,3 +1,4 @@
+# coding=utf8
 from datetime import datetime
 from calc import logloss, surround, avgstd
 from conf import dataset_name, nb_competences_values
@@ -35,11 +36,11 @@ def display(results):
 	for name in results:
 		print name, results[name]['mean']
 
-def evaluate(performance, truth, replied_so_far):
+def evaluate(performance, truth, validation_question_set):
 	nb_questions = len(performance)
 	# print [performance[i] for i in range(nb_questions) if i not in replied_so_far], [truth[i] for i in range(nb_questions) if i not in replied_so_far]
 	# return logloss([performance[i] for i in range(nb_questions) if i not in replied_so_far], [truth[i] for i in range(nb_questions) if i not in replied_so_far])
-	return logloss(performance, truth, replied_so_far)
+	return logloss(performance, truth, validation_question_set)
 
 def dummy_count(performance, truth, replied_so_far):
 	nb_questions = len(performance)
@@ -54,30 +55,37 @@ def get_results(log, god_prefix):
 		results[model.name] = {'mean': [sum(log[model.name][i][t] for i in range(nb_students)) / nb_students for t in range(budget)]}
 	my_io.backup('stats-%s-%s-%s' % (dataset_name, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
-def simulate(model, train_data, test_data, error_log):
+def simulate(model, train_data, test_data, validation_question_set, error_log):
 	model.training_step(train_data, opt_Q=True, opt_sg=True)
 	print(datetime.now())
+	print '=' * 10, model.name
 	nb_students = len(test_data)
 	nb_questions = len(test_data[0])
-	budget = nb_questions
+	budget = nb_questions - len(validation_question_set)
 	if all_student_sampled:
 		student_sample = range(nb_students) # All students
 	error_rate = [[] for _ in range(budget)]
 	for student_id in student_sample:
-		# print 'Student', student_id, test_data[student_id]
+		print 'Étudiant', student_id, test_data[student_id]
 		error_log.append([0] * budget)
-		model.init_test()
+		model.init_test(validation_question_set=validation_question_set)
 		replied_so_far = []
 		results_so_far = []
-		# print 'Initial', model.predict_performance()
-		# print 'Initial error', logloss(model.predict_performance(), test_data[student_id])
+		print 'Estimation initiale :', map(lambda x: round(x, 1), model.predict_performance())
+		print 'Erreur initiale :', logloss(model.predict_performance(), test_data[student_id])
 		for t in range(1, budget + 1):
 			question_id = model.next_item(replied_so_far, results_so_far)
-			# print 'Turn', t, '-> question', question_id
+			print
+			print 'Tour', t, '-> question', question_id + 1
+			if model.name == 'IRT':
+				print 'Difficulté :', model.coeff.rx(question_id + 1)[0]
+			else:
+				print 'Cette question, dans la q-matrice :', map(int, model.Q[question_id])
 			replied_so_far.append(question_id)
 			results_so_far.append(test_data[student_id][question_id])
 			model.estimate_parameters(replied_so_far, results_so_far)
 			performance = model.predict_performance()
+			print 'Résultat :', 'OK,' if test_data[student_id][question_id] else 'NOK,', "j'avais prévu", round(performance[question_id], 2)
 			"""if model.name == 'QMatrix':
 				print surround(model.p_test)
 				print 'required', [''.join(map(lambda x: str(int(x)), model.Q[i])) for i in range(nb_questions) if i not in replied_so_far]
@@ -86,11 +94,12 @@ def simulate(model, train_data, test_data, error_log):
 				print [surround(performance)[i] for i in range(nb_questions) if i not in replied_so_far]
 				print [test_data[student_id][i] for i in range(nb_questions) if i not in replied_so_far]
 				print evaluate(performance, test_data[student_id], replied_so_far)"""
-			# print ''.join(map(lambda x: str(int(round(x))), performance))
-			# print ''.join(map(lambda x: str(int(x)), test_data[student_id]))
-			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], replied_so_far)
+			print ' '.join(map(lambda x: str(int(10 * round(x, 1))), performance))
+			print 'Estimation :', ''.join(map(lambda x: '%d' % int(round(x)), performance))
+			print '    Vérité :', ''.join(map(lambda x: '%d' % int(x), test_data[student_id]))
+			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], validation_question_set)
 			# error_rate[t - 1].append(dummy_count(performance, test_data[student_id], replied_so_far) / (len(performance) - len(replied_so_far)))
-			# print '%2d' % t, error_log[-1][t - 1]
+			print 'Erreur au tour %d :' % t, error_log[-1][t - 1]
 			"""if t == 38:
 				print t, error_log[-1][t]
 				print [performance[i] for i in range(len(performance)) if i not in replied_so_far]
@@ -116,6 +125,7 @@ def main():
 		# question_subset = range(nb_questions)
 		j = json.load(open('subset.json'))
 		question_subset = j['question_subset']
+		validation_question_set = set(j['validation_question_set'])
 		train_subset = j['train_subset']
 		test_subset = sorted(set(range(536)) - set(train_subset))
 	elif dataset_name == 'castor6e':
@@ -130,6 +140,22 @@ def main():
 		nb_questions = 3
 		test_power = 10
 		question_subset = range(nb_questions)
+	elif dataset_name == 'functional-analysis':
+		nb_questions = 21
+		test_power = 487
+		question_subset = range(nb_questions)
+		j = json.load(open('subset.json'))
+		question_subset = j['question_subset']
+		train_subset = j['train_subset']
+		test_subset = sorted(set(range(2287)) - set(train_subset))
+	elif dataset_name == 'moodle':
+		nb_questions = 15
+		test_power = 550
+		question_subset = range(nb_questions)
+		j = json.load(open('subset.json'))
+		question_subset = j['question_subset']
+		train_subset = j['train_subset']
+		test_subset = sorted(set(range(2350)) - set(train_subset))
 	for model in models:
 		error_rate = []
 		train_power = len(full_dataset) - test_power
@@ -150,7 +176,7 @@ def main():
 		train_dataset = [dataset[i] for i in train_subset]
 		test_dataset = [dataset[i] for i in test_subset]
 		error_log = []
-		simulate(model, train_dataset, test_dataset, error_log)
+		simulate(model, train_dataset, test_dataset, validation_question_set, error_log)
 		print god_prefix
 		log[model.name] = error_log
 		get_results(log, god_prefix)

@@ -30,10 +30,10 @@ def compute_mean_entropy(p_answering, perf_if_correct, perf_if_incorrect, replie
 def kindlog(x):
 	return math.log(1e-16) if x < 1e-16 else math.log(x)
 
-def logloss(estimated, real, replied_so_far=[]):
-    if len(real) == len(replied_so_far):
+def logloss(estimated, real, only_on_components=[]):
+    if len(only_on_components) == 0:
         return 0
-    return -sum(kindlog(estimated[i]) if real[i] else kindlog(1 - estimated[i]) for i in range(len(real)) if i not in replied_so_far) / (len(real) - len(replied_so_far))
+    return -sum(kindlog(estimated[i]) if real[i] else kindlog(1 - estimated[i]) for i in range(len(real)) if i in only_on_components) / (len(only_on_components))
 
 def derivative_logloss(estimated, real, coefficients):
     return -sum(coefficients[i] / estimated[i] if real[i] else -coefficients[i] / (1 - estimated[i]) for i in range(len(real))) / len(real)

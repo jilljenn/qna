@@ -5,3 +5,4 @@ Puis (si Mac) gfortran dans [ce humble bundle](http://www.scipy.org/scipylib/bui
     $ virtualenv . && . bin/activate
     $ pip install -r requirements.txt
     $ pypy minimal.py
+

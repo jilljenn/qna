@@ -35,6 +35,7 @@ class QMatrix():
 		self.guess = guess
 		self.error = None
 		self.from_expert = False
+		self.validation_question_set = None
 
 	def load(self, filename):
 		data = my_io.load(filename)
@@ -95,8 +96,9 @@ class QMatrix():
 		for i, line in enumerate(self.Q):
 			print(''.join(map(lambda x: str(int(x)), line)), self.guess[i], self.slip[i])
 
-	def init_test(self):
+	def init_test(self, validation_question_set):
 		self.p_test = self.prior
+		self.validation_question_set = validation_question_set
 
 	def compute_proba_question(self, question_id, p_competences, mode=None):
 		proba = prod([p for comp, p in enumerate(p_competences) if self.Q[question_id][comp]])
@@ -151,7 +153,9 @@ class QMatrix():
 		return self.predict_future(question_id, p_competences)[is_correct_answer] # Wooo
 
 	def estimate_parameters(self, replied_so_far, results_so_far):
-		self.p_test = self.ask_question(replied_so_far[-1], results_so_far[-1], self.p_test)
+		p = self.ask_question(replied_so_far[-1], results_so_far[-1], self.p_test)
+		print 'Inférence des compétences du candidat :', map(lambda x: round(x, 2), p)
+		self.p_test = p
 
 	def infer_state(self, train):
 		nb_students = len(train)
@@ -255,7 +259,7 @@ class QMatrix():
 		min_entropy = None
 		max_info = None
 		best_question = None
-		for question_id in range(nb_questions):
+		for question_id in set(range(nb_questions)) - self.validation_question_set:
 			if question_id in replied_so_far:
 				continue
 			p_answering = self.compute_proba_question(question_id, self.p_test)
