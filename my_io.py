@@ -1,6 +1,6 @@
 import json
 
-PREFIX = 'edm-castor2'
+PREFIX = 'bilan'
 
 def split(filename, n):
 	"""Creates files and returns filenames."""
