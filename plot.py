@@ -90,23 +90,24 @@ print filenames
 #for train_power in ['48939']: # , '160'
 print train_power
 fig, ax = plt.subplots()
-irt = json.load(open(filenames[('irt', train_power)]))['IRT']['mean']
-qmspe = json.load(open(filenames[('888', train_power)]))['QMatrix']['mean']
+irt, irt_err = zip(*json.load(open(filenames[('irt', train_power)]))['IRT']['mean'])
+qmspe, qmspe_err = zip(*json.load(open(filenames[('888', train_power)]))['QMatrix']['mean'])
 # mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
 # baseline = json.load(open(filenames[('baseline', train_power)]))['Baseline']['mean']
 bundle['irt-%s' % train_power] = irt
 # bundle['qmatrix888-%s' % train_power] = qmspe
 qmatrix = {}
+qmatrix_spe = {}
+ax.errorbar(range(1, len(irt) + 1), irt, yerr=irt_err, color='blue', linewidth=5)
+ax.errorbar(range(1, len(qmspe) + 1), qmspe, yerr=qmspe_err, color='darkgreen', linewidth=5)
 for i, k in enumerate(nb_competences_values):
 	print('plot', i, k)
-	qmatrix[k] = json.load(open(filenames[(str(k), train_power)]))['QMatrix']['mean']
+	qmatrix[k], qmatrix_spe[k] = zip(*json.load(open(filenames[(str(k), train_power)]))['QMatrix']['mean'])
 	bundle['qmatrix%d-%s' % (k, train_power)] = qmatrix[k]
 	maxi = len(nb_competences_values)
-	ax.plot(range(1, len(qmatrix[k]) + 1), qmatrix[k], color='#ff%s00' % hex((i + 1) * 255 / maxi)[2:], linewidth=maxi - i)
+	ax.errorbar(range(1, len(qmatrix[k]) + 1), qmatrix[k], yerr=qmatrix_spe[k], color='#ff%s00' % '00', linewidth=maxi - i)  # hex((i + 1) * 255 / maxi)[2:]
 # ax.plot(range(1, len(mepv_irt) + 1), mepv_irt, color='darkblue', linewidth=5)
 # ax.plot(range(1, len(baseline) + 1), baseline, color='darkgreen', linewidth=3)
-ax.plot(range(1, len(irt) + 1), irt, color='blue', linewidth=5)
-ax.plot(range(1, len(qmspe) + 1), qmspe, color='darkgreen', linewidth=5)
 ax.set_title('IRT VS q-matrix K = 1-10, train_power %s' % train_power)
 plt.show()
 
