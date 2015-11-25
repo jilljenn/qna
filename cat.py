@@ -2,35 +2,10 @@
 from datetime import datetime
 from calc import logloss, surround, avgstd
 from conf import dataset_name, nb_competences_values
+from my_io import IO
 import random
-import my_io
 import json
 import sys
-
-if sys.argv[1] == 'baseline':
-	from baseline import Baseline
-	models = [Baseline()]
-elif sys.argv[1] == 'qm':
-	from qmatrix import QMatrix
-	models = []
-	for nb_competences in nb_competences_values:
-		models.append(QMatrix(nb_competences=nb_competences))
-elif sys.argv[1] == 'qmspe':
-	from qmatrix import QMatrix
-	q = QMatrix(nb_competences=8)
-	q.load('qmatrix-cdm')
-	models = [q]
-elif sys.argv[1] == 'irt':
-	from irt import IRT
-	models = [IRT()]
-else:
-	from irt import IRT
-	models = [IRT(criterion='MEPV')]
-
-# n_split = 5
-# budget = 20
-all_student_sampled = True
-models_names = [model.name for model in models]
 
 def display(results):
 	for name in results:
@@ -47,13 +22,16 @@ def dummy_count(performance, truth, replied_so_far):
 	# print 'indecision', sum([0.4 <= performance[i] <= 0.6 for i in range(nb_questions) if i not in replied_so_far])
 	return sum([(performance[i] < 0.5 and truth[i]) or (performance[i] > 0.5 and not truth[i]) for i in range(nb_questions) if i not in replied_so_far]) # Count errors
 
-def get_results(log, god_prefix):
+def get_results(log, god_prefix, io_handler):
 	results = {}
 	nb_students = len(log.values()[0])
 	budget = len(log.values()[0][0])
-	for model in models:
-		results[model.name] = {'mean': [sum(log[model.name][i][t] for i in range(nb_students)) / nb_students for t in range(budget)]}
-	my_io.backup('stats-%s-%s-%s' % (dataset_name, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), results)
+	for model_name in log:
+		# print model.name
+		results[model_name] = {'mean': [avgstd([log[model_name][i][t] for i in range(nb_students)]) for t in range(budget)]}
+		"""for t in range(budget):
+			print(avgstd(list(log[model.name][i][t] for i in range(nb_students))))"""
+	io_handler.backup('stats-%s-%s-%s' % (dataset_name, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
 def simulate(model, train_data, test_data, validation_question_set, error_log):
 	model.training_step(train_data, opt_Q=True, opt_sg=True)
@@ -109,7 +87,8 @@ def simulate(model, train_data, test_data, validation_question_set, error_log):
 		print avgstd(error_rate[t])"""
 
 def main():
-	full_dataset = my_io.load(dataset_name, prefix='data')['student_data']#[::-1]
+	io_handle = IO()
+	full_dataset = io_handle.load(dataset_name, prefix='data')['student_data']#[::-1]
 	if dataset_name == 'sat':
 		nb_questions = 20
 		test_power = 80
@@ -125,7 +104,7 @@ def main():
 		# question_subset = range(nb_questions)
 		j = json.load(open('subset.json'))
 		question_subset = j['question_subset']
-		validation_question_set = set(j['validation_question_set'])
+		validation_question_sets = j['validation_question_sets']
 		train_subset = j['train_subset']
 		test_subset = sorted(set(range(536)) - set(train_subset))
 	elif dataset_name == 'castor6e':
@@ -156,32 +135,61 @@ def main():
 		question_subset = j['question_subset']
 		train_subset = j['train_subset']
 		test_subset = sorted(set(range(2350)) - set(train_subset))
-	for model in models:
-		error_rate = []
-		train_power = len(full_dataset) - test_power
-		begin = datetime.now()
-		print begin
-		log = {}
-		if model.name == 'QMatrix':
-			god_prefix = '%s-%s-%s' % (model.nb_competences if sys.argv[1] == 'qm' else '888', nb_questions, train_power)
-		elif model.name == 'Baseline':
-			god_prefix = 'baseline-%s-%s' % (nb_questions, train_power)
-		elif model.criterion == 'MFI':
-			god_prefix = 'irt-%s-%s' % (nb_questions, train_power)
-		else:
-			god_prefix = 'mepv-irt-%s-%s' % (nb_questions, train_power)
-		dataset = [[full_dataset[i][j] for j in question_subset] for i in range(len(full_dataset))]
-		train_dataset = dataset[:train_power]
-		test_dataset = dataset[-test_power:]
-		train_dataset = [dataset[i] for i in train_subset]
-		test_dataset = [dataset[i] for i in test_subset]
-		error_log = []
-		simulate(model, train_dataset, test_dataset, validation_question_set, error_log)
-		print god_prefix
-		log[model.name] = error_log
-		get_results(log, god_prefix)
-		my_io.backup('log-%s-%s-%s' % (dataset_name, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
-		print datetime.now()
+	step = 1
+	for validation_index in validation_question_sets:
+		validation_index = set(validation_index)
+		io_handle.update(step)
+		for model in models:
+			error_rate = []
+			train_power = len(full_dataset) - test_power
+			begin = datetime.now()
+			print begin
+			log = {}
+			if model.name == 'QMatrix':
+				god_prefix = '%s-%s-%s' % (model.nb_competences if sys.argv[1] == 'qm' else '888', nb_questions, train_power)
+			elif model.name == 'Baseline':
+				god_prefix = 'baseline-%s-%s' % (nb_questions, train_power)
+			elif model.criterion == 'MFI':
+				god_prefix = 'irt-%s-%s' % (nb_questions, train_power)
+			else:
+				god_prefix = 'mepv-irt-%s-%s' % (nb_questions, train_power)
+			dataset = [[full_dataset[i][j] for j in question_subset] for i in range(len(full_dataset))]
+			train_dataset = dataset[:train_power]
+			test_dataset = dataset[-test_power:]
+			train_dataset = [dataset[i] for i in train_subset]
+			test_dataset = [dataset[i] for i in test_subset]
+			error_log = []
+			simulate(model, train_dataset, test_dataset, validation_index, error_log)
+			print god_prefix
+			log[model.name] = error_log
+			get_results(log, god_prefix, io_handle)
+			io_handle.backup('log-%s-%s-%s' % (dataset_name, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
+			print datetime.now()
+		step += 1
 
 if __name__ == '__main__':
+	if sys.argv[1] == 'baseline':
+		from baseline import Baseline
+		models = [Baseline()]
+	elif sys.argv[1] == 'qm':
+		from qmatrix import QMatrix
+		models = []
+		for nb_competences in nb_competences_values:
+			models.append(QMatrix(nb_competences=nb_competences))
+	elif sys.argv[1] == 'qmspe':
+		from qmatrix import QMatrix
+		q = QMatrix(nb_competences=8)
+		q.load('qmatrix-cdm')
+		models = [q]
+	elif sys.argv[1] == 'irt':
+		from irt import IRT
+		models = [IRT()]
+	else:
+		from irt import IRT
+		models = [IRT(criterion='MEPV')]
+
+	# n_split = 5
+	# budget = 20
+	all_student_sampled = True
+	models_names = [model.name for model in models]
 	main()

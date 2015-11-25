@@ -38,8 +38,8 @@ def logloss(estimated, real, only_on_components=[]):
 def derivative_logloss(estimated, real, coefficients):
     return -sum(coefficients[i] / estimated[i] if real[i] else -coefficients[i] / (1 - estimated[i]) for i in range(len(real))) / len(real)
 
-def avgstd(l): # Displays mean and variance
+def avgstd(l):  # Displays mean and variance
     n = len(l)
     mean = float(sum(l)) / n
     var = float(sum(i * i for i in l)) / n - mean * mean
-    return '%.3f ± %.3f' % (round(mean, 3), round(1.96 * math.sqrt(var / n), 3))
+    return round(mean, 3), round(1.96 * math.sqrt(var / n), 3)  # '%.3f ± %.3f' % 
