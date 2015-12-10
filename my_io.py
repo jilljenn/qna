@@ -1,10 +1,19 @@
 import json
+import os
 
-PREFIX = 'bilan'
+PREFIX = 'japan'
 
 class IO(object):
 	def __init__(self):
 		self.prefix = PREFIX + '0'
+		for i in range(0, 5):
+			self.update(i)
+			if not os.path.exists(self.prefix):
+				os.system('mkdir %s' % self.prefix)
+		self.update(0)
+		filename = '%s/%s' % (self.prefix, 'qmatrix-cdm.json')
+		if not os.path.exists(filename):
+			os.system('cp qmatrix-cdm.json %s' % filename)
 
 	def update(self, step):
 		prefix = list(self.prefix)

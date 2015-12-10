@@ -29,7 +29,7 @@ else:
 
 graphs = {'20': {}, '40': {}, '80': {}, '90': {}, '160': {}, '216': {}, '276': {}, '286': {}, '295': {}, '48939': {}, '99': {}, '436': {}, '526': {}, '535': {}, '1800': {}}
 graphs2 = {10: {}, 15: {}, 20: {}, 30: {}, 40: {}, 17: {}, 3: {}, 21: {}}
-modelnames = {'irt': 'IRT', 'mepv-irt': 'IRT', 'baseline': 'Baseline', '888': 'QMatrix'}
+modelnames = {'irt': 'IRT', 'mepv-irt': 'IRT', 'baseline': 'Baseline', '888': 'QMatrix', 'mirt': 'MIRT'}
 filenames = {}
 
 folder = sys.argv[1]
@@ -92,6 +92,7 @@ print train_power
 fig, ax = plt.subplots()
 irt, irt_err = zip(*json.load(open(filenames[('irt', train_power)]))['IRT']['mean'])
 qmspe, qmspe_err = zip(*json.load(open(filenames[('888', train_power)]))['QMatrix']['mean'])
+mirt, mirt_err = zip(*json.load(open(filenames[('mirt', train_power)]))['MIRT']['mean'])
 # mepv_irt = json.load(open(filenames[('mepv-irt', train_power)]))['IRT']['mean']
 # baseline = json.load(open(filenames[('baseline', train_power)]))['Baseline']['mean']
 bundle['irt-%s' % train_power] = irt
@@ -99,6 +100,7 @@ bundle['irt-%s' % train_power] = irt
 qmatrix = {}
 qmatrix_spe = {}
 ax.errorbar(range(1, len(irt) + 1), irt, yerr=irt_err, color='blue', linewidth=5)
+ax.errorbar(range(1, len(mirt) + 1), mirt, yerr=mirt_err, color='red', linewidth=5)
 ax.errorbar(range(1, len(qmspe) + 1), qmspe, yerr=qmspe_err, color='darkgreen', linewidth=5)
 for i, k in enumerate(nb_competences_values):
 	print('plot', i, k)
