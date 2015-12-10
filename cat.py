@@ -57,7 +57,7 @@ def simulate(model, train_data, test_data, validation_question_set, error_log):
 			print 'Tour', t, '-> question', question_id + 1
 			if model.name == 'IRT':
 				print 'Difficulté :', model.coeff.rx(question_id + 1)[0]
-			else:
+			elif model.name == 'QMatrix':
 				print 'Cette question, dans la q-matrice :', map(int, model.Q[question_id])
 			replied_so_far.append(question_id)
 			results_so_far.append(test_data[student_id][question_id])
@@ -149,6 +149,8 @@ def main():
 				god_prefix = '%s-%s-%s' % (model.nb_competences if sys.argv[1] == 'qm' else '888', nb_questions, train_power)
 			elif model.name == 'Baseline':
 				god_prefix = 'baseline-%s-%s' % (nb_questions, train_power)
+			elif model.name == 'MIRT':
+				god_prefix = 'mirt-%s-%s' % (nb_questions, train_power)
 			elif model.criterion == 'MFI':
 				god_prefix = 'irt-%s-%s' % (nb_questions, train_power)
 			else:
@@ -184,6 +186,9 @@ if __name__ == '__main__':
 	elif sys.argv[1] == 'irt':
 		from irt import IRT
 		models = [IRT()]
+	elif sys.argv[1] == 'mirt':
+		from mirt import MIRT
+		models = [MIRT()]
 	else:
 		from irt import IRT
 		models = [IRT(criterion='MEPV')]

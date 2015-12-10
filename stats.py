@@ -5,6 +5,7 @@ import os
 import re
 
 model_names = {
+    'mirt': 'MIRT',
     'irt': 'IRT',
     '8': 'QMatrix',
     '888': 'QMatrix'
