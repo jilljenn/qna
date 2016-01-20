@@ -3,7 +3,7 @@ import json
 import random
 from conf import dataset_name, nb_competences_values
 
-STUDENT_TEST_SET_LENGTH = 10
+STUDENT_TEST_SET_LENGTH = 20
 
 if dataset_name == 'castor6e':
     question_subset = range(17)

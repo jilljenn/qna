@@ -1,15 +1,8 @@
 from my_io import IO
-from conf import dataset_name
+from conf import dataset_name, model_names
 from cat import get_results
 import os
 import re
-
-model_names = {
-    'mirt': 'MIRT',
-    'irt': 'IRT',
-    '8': 'QMatrix',
-    '888': 'QMatrix'
-}
 
 io_handler = IO()
 io_handler.update(0)
