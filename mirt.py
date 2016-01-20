@@ -10,14 +10,19 @@ mirt = importr('mirt')
 mirtCAT = importr('mirtCAT')
 
 class MIRT():
-    def __init__(self, Q=None, slip=None, guess=None, prior=None, criterion='MFI'):
+    q = None
+    def __init__(self, q=None, slip=None, guess=None, prior=None, criterion='MFI'):
         self.name = 'MIRT'
         self.criterion = 'MFI'
         self.nb_questions = None
         self.validation_question_set = None
-        r('Q <- as.matrix(fraction.subtraction.qmatrix)')
-        r('entries <- c()')
-        r('for(i in 1:20) { for(j in 1:8) { entries <- c(entries, Q[i, j]) } }')
+        if q:
+            self.q = q
+            robjects.globalenv['entries'] = robjects.IntVector(q.get_entries())
+        else:
+            r('Q <- as.matrix(fraction.subtraction.qmatrix)')
+            r('entries <- c()')
+            r('for(i in 1:20) { for(j in 1:8) { entries <- c(entries, Q[i, j]) } }')
         r("Q <- matrix(c(entries), ncol=8, dimnames=list(NULL, c('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8')), byrow=TRUE)")
 
     def training_step(self, train, opt_Q=True, opt_sg=True):
@@ -58,3 +63,9 @@ class MIRT():
         r('Z <- U %*% t(V)')
         r('p <- 1 / (1 + exp(-Z))')
         return tuple(r.p)
+
+    def get_prefix(self):
+        prefix = 'mirt'
+        if self.q:
+            prefix += '-%s' % self.q.get_prefix()
+        return prefix

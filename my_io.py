@@ -1,7 +1,7 @@
 import json
 import os
 
-PREFIX = 'japan'
+PREFIX = 'janvier'
 
 class IO(object):
 	def __init__(self):

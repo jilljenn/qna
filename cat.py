@@ -15,6 +15,7 @@ def evaluate(performance, truth, validation_question_set):
 	nb_questions = len(performance)
 	# print [performance[i] for i in range(nb_questions) if i not in replied_so_far], [truth[i] for i in range(nb_questions) if i not in replied_so_far]
 	# return logloss([performance[i] for i in range(nb_questions) if i not in replied_so_far], [truth[i] for i in range(nb_questions) if i not in replied_so_far])
+	# return 0 if not validation_question_set else sum(round(performance[i]) != truth[i] for i in validation_question_set)
 	return logloss(performance, truth, validation_question_set)
 
 def dummy_count(performance, truth, replied_so_far):
@@ -145,7 +146,8 @@ def main():
 			begin = datetime.now()
 			print begin
 			log = {}
-			if model.name == 'QMatrix':
+			prefix = model.get_prefix() + '-%s-%s' % (nb_questions, train_power)
+			"""if model.name == 'QMatrix':
 				god_prefix = '%s-%s-%s' % (model.nb_competences if sys.argv[1] == 'qm' else '888', nb_questions, train_power)
 			elif model.name == 'Baseline':
 				god_prefix = 'baseline-%s-%s' % (nb_questions, train_power)
@@ -155,6 +157,7 @@ def main():
 				god_prefix = 'irt-%s-%s' % (nb_questions, train_power)
 			else:
 				god_prefix = 'mepv-irt-%s-%s' % (nb_questions, train_power)
+			"""
 			dataset = [[full_dataset[i][j] for j in question_subset] for i in range(len(full_dataset))]
 			train_dataset = dataset[:train_power]
 			test_dataset = dataset[-test_power:]
@@ -162,10 +165,9 @@ def main():
 			test_dataset = [dataset[i] for i in test_subset]
 			error_log = []
 			simulate(model, train_dataset, test_dataset, validation_index, error_log)
-			print god_prefix
 			log[model.name] = error_log
-			get_results(log, god_prefix, io_handle)
-			io_handle.backup('log-%s-%s-%s' % (dataset_name, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
+			get_results(log, prefix, io_handle)
+			io_handle.backup('log-%s-%s-%s' % (dataset_name, prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
 			print datetime.now()
 		step += 1
 
@@ -189,6 +191,12 @@ if __name__ == '__main__':
 	elif sys.argv[1] == 'mirt':
 		from mirt import MIRT
 		models = [MIRT()]
+	elif sys.argv[1] == 'mirtq':
+		from mirt import MIRT
+		from qmatrix import QMatrix
+		q = QMatrix(nb_competences=8)
+		q.load('qmatrix-custom')
+		models = [MIRT(q=q)]
 	else:
 		from irt import IRT
 		models = [IRT(criterion='MEPV')]

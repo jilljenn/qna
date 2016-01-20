@@ -16,7 +16,11 @@ for i in range(1, 5):
     io_handler.update(i)
     for filename in os.listdir(io_handler.prefix):
         if filename.startswith('log'):
-            name, nb_questions, train_power = re.match('log-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset_name, filename).groups()
+            m = re.match('log-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset_name, filename)
+            if m:
+                name, nb_questions, train_power = m.groups()
+            else:
+                print(filename)
             data[name] = {'nb_questions': nb_questions, 'train_power': train_power, 'dataset_name': dataset_name}
             log = io_handler.load(filename.replace('.json', ''))
             print filename, len(log), 'logs found'

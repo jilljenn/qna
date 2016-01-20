@@ -74,3 +74,6 @@ class IRT():
 
     def predict_performance(self, var_id=''):
         return tuple(r('round(Pi(theta{}, itembank)$Pi, 3)'.format(var_id)))
+
+    def get_prefix(self):
+        return 'irt' if self.criterion == 'MFI' else 'mepv-irt'
