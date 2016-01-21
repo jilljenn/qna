@@ -1,7 +1,8 @@
 import json
 import os
+from conf import PREFIX, DEBUG, STUDENT_TEST_RATE
+import random
 
-PREFIX = 'janvier'
 
 class IO(object):
 	def __init__(self):
@@ -19,7 +20,7 @@ class IO(object):
 		prefix = list(self.prefix)
 		prefix[-1] = str(step)
 		self.prefix = ''.join(prefix)
-		print('prefix is now', self.prefix)
+		print 'prefix is now', self.prefix
 
 	def split(self, filename, n):
 		"""Creates files and returns filenames."""
@@ -44,3 +45,42 @@ class IO(object):
 		if not prefix:
 			prefix = self.prefix
 		return json.load(open('%s/%s.json' % (prefix, filename)))
+
+
+class Dataset(object):
+    data = None
+    files = None
+    def __init__(self, dataset_name, files=None):
+        self.files = files if files else IO()
+        self.data = self.files.load(dataset_name, prefix='data')['student_data']
+        self.nb_questions = len(self.data[0])
+        self.nb_students = len(self.data)
+        self.question_subset = range(self.nb_questions)
+
+    def get_subset(self):
+        from sklearn import cross_validation
+        student_test_length = 1 if DEBUG else int(round(STUDENT_TEST_RATE * self.nb_students))
+        student_train_length = self.nb_students - student_test_length
+        self.train_subset = sorted(random.sample(range(self.nb_students), student_train_length))
+        self.test_subset = list(set(range(self.nb_students)) - set(self.train_subset))
+        self.validation_question_sets = []
+        for _, validation_question_array in cross_validation.KFold(n=self.nb_questions, n_folds=4, shuffle=True, random_state=None):
+            self.validation_question_sets.append(validation_question_array.tolist())
+
+    def to_dict(self):
+        return {
+            'question_subset': self.question_subset,
+            'validation_question_sets': self.validation_question_sets,
+            'train_subset': self.train_subset,
+            'test_subset': self.test_subset
+        }
+
+    def load_subset(self):
+        subset = self.files.load('subset')
+        self.question_subset = subset['question_subset']
+        self.validation_question_sets = subset['validation_question_sets']
+        self.train_subset = subset['train_subset']
+        self.test_subset = subset['test_subset']
+
+    def save_subset(self):
+        self.files.backup('subset', self.to_dict())

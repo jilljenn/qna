@@ -1,4 +1,11 @@
-dataset_name = 'fraction'
+from collections import namedtuple
+
+PREFIX = '2016sat'
+
+STUDENT_TEST_RATE = 0.1
+DEBUG = False
+
+dataset_name = 'sat'
 nb_competences_values = [8] #range(2, 15, 3)
 
 model_names = {
