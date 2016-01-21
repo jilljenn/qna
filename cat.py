@@ -1,11 +1,15 @@
 # coding=utf8
 from datetime import datetime
 from calc import logloss, surround, avgstd
-from conf import dataset_name, nb_competences_values
+from conf import dataset_name, nb_competences_values, VERBOSE
 from my_io import IO, Dataset
 import random
 import json
 import sys
+
+def say(*something):
+	if VERBOSE:
+		print(*something)
 
 def display(results):
 	for name in results:
@@ -36,8 +40,10 @@ def get_results(log, god_prefix, files):
 
 def simulate(model, train_data, test_data, validation_question_set, error_log):
 	model.training_step(train_data, opt_Q=True, opt_sg=True)
-	print(datetime.now())
-	print '=' * 10, model.name
+
+	say(datetime.now())
+	say('=' * 10, model.name)
+
 	nb_students = len(test_data)
 	nb_questions = len(test_data[0])
 	budget = nb_questions - len(validation_question_set)
@@ -45,47 +51,40 @@ def simulate(model, train_data, test_data, validation_question_set, error_log):
 		student_sample = range(nb_students) # All students
 	error_rate = [[] for _ in range(budget)]
 	for student_id in student_sample:
-		print 'Étudiant', student_id, test_data[student_id]
+
+		say('Étudiant', student_id, test_data[student_id])
+
 		error_log.append([0] * budget)
 		model.init_test(validation_question_set=validation_question_set)
 		replied_so_far = []
 		results_so_far = []
-		print 'Estimation initiale :', map(lambda x: round(x, 1), model.predict_performance())
-		print 'Erreur initiale :', logloss(model.predict_performance(), test_data[student_id])
+
+		say('Estimation initiale :', map(lambda x: round(x, 1), model.predict_performance()))
+		say('Erreur initiale :', logloss(model.predict_performance(), test_data[student_id]))
+
 		for t in range(1, budget + 1):
 			question_id = model.next_item(replied_so_far, results_so_far)
-			print
-			print 'Tour', t, '-> question', question_id + 1
+
+			say('\nTour', t, '-> question', question_id + 1)
 			if model.name == 'IRT':
-				print 'Difficulté :', model.coeff.rx(question_id + 1)[0]
+				say('Difficulté :', model.coeff.rx(question_id + 1)[0])
 			elif model.name == 'QMatrix':
-				print 'Cette question, dans la q-matrice :', map(int, model.Q[question_id])
+				say('Cette question, dans la q-matrice :', map(int, model.Q[question_id]))
+
 			replied_so_far.append(question_id)
 			results_so_far.append(test_data[student_id][question_id])
 			model.estimate_parameters(replied_so_far, results_so_far)
 			performance = model.predict_performance()
-			print 'Résultat :', 'OK,' if test_data[student_id][question_id] else 'NOK,', "j'avais prévu", round(performance[question_id], 2)
-			"""if model.name == 'QMatrix':
-				print surround(model.p_test)
-				print 'required', [''.join(map(lambda x: str(int(x)), model.Q[i])) for i in range(nb_questions) if i not in replied_so_far]
-				print 'slip', [model.slip[i] for i in range(nb_questions) if i not in replied_so_far]
-				print 'guess', [model.guess[i] for i in range(nb_questions) if i not in replied_so_far]
-				print [surround(performance)[i] for i in range(nb_questions) if i not in replied_so_far]
-				print [test_data[student_id][i] for i in range(nb_questions) if i not in replied_so_far]
-				print evaluate(performance, test_data[student_id], replied_so_far)"""
-			print ' '.join(map(lambda x: str(int(10 * round(x, 1))), performance))
-			print 'Estimation :', ''.join(map(lambda x: '%d' % int(round(x)), performance))
-			print '    Vérité :', ''.join(map(lambda x: '%d' % int(x), test_data[student_id]))
+
+			say('Résultat :', 'OK,' if test_data[student_id][question_id] else 'NOK,', "j'avais prévu", round(performance[question_id], 2))
+			say(' '.join(map(lambda x: str(int(10 * round(x, 1))), performance))
+			say('Estimation :', ''.join(map(lambda x: '%d' % int(round(x)), performance))
+			say('    Vérité :', ''.join(map(lambda x: '%d' % int(x), test_data[student_id]))
+
 			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], validation_question_set)
 			# error_rate[t - 1].append(dummy_count(performance, test_data[student_id], replied_so_far) / (len(performance) - len(replied_so_far)))
-			print 'Erreur au tour %d :' % t, error_log[-1][t - 1]
-			"""if t == 38:
-				print t, error_log[-1][t]
-				print [performance[i] for i in range(len(performance)) if i not in replied_so_far]
-				print [test_data[student_id][i] for i in range(len(performance)) if i not in replied_so_far]"""
-	"""for t in range(budget):
-		print error_rate[t]
-		print avgstd(error_rate[t])"""
+			say('Erreur au tour %d :' % t, error_log[-1][t - 1])
+
 
 def main():
 	files = IO()
