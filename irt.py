@@ -2,6 +2,7 @@
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from calc import logloss, compute_mean_entropy
+from my_io import say
 import random
 
 r = robjects.r
@@ -23,7 +24,6 @@ class IRT():
         a = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
         model = ltm.rasch(a)
         self.coeff = ltm.coef_rasch(model)
-        print(self.coeff)
         scores = ltm.factor_scores(model).rx('score.dat')[0].rx('z1')[0]
         r('coeff <- coef(rasch(%s))' % a.r_repr())
         r('one <- rep(1, %d)' % self.nb_questions)
@@ -41,7 +41,9 @@ class IRT():
             available_questions = ['1'] * self.nb_questions
             for question_id in self.validation_question_set:
                 available_questions[question_id] = '0'
-            print('nextItem(itembank, NULL, theta, nAvailable=c({}), out = c({}), criterion = "{}")$item'.format(','.join(available_questions), ','.join(map(lambda x: str(x + 1), replied_so_far)), self.criterion))
+
+            say('nextItem(itembank, NULL, theta, nAvailable=c({}), out = c({}), criterion = "{}")$item'.format(','.join(available_questions), ','.join(map(lambda x: str(x + 1), replied_so_far)), self.criterion))
+            
             best_question = r('nextItem(itembank, NULL, theta, nAvailable=c({}), out = c({}), criterion = "{}")$item'.format(','.join(available_questions), ','.join(map(lambda x: str(x + 1), replied_so_far)), self.criterion))[0]
             # raise Exception
             return best_question - 1
@@ -69,7 +71,8 @@ class IRT():
     def estimate_parameters(self, replied_so_far, results_so_far, var_id=''):
         scores_so_far = map(int, results_so_far)
         r('theta{} <- thetaEst(itembank[c({}),], c({}))'.format(var_id, ','.join(map(lambda x: str(x + 1), replied_so_far)), ','.join(map(str, scores_so_far))))
-        print 'Thêta du candidat :', r('theta')[0]
+
+        say('Thêta du candidat :', r('theta')[0])
         # pm = r('semTheta(theta, itembank[c({}),])'.format(','.join(map(str, replied_so_far))))
 
     def predict_performance(self, var_id=''):

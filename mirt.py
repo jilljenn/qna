@@ -2,6 +2,7 @@
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from calc import logloss, compute_mean_entropy
+from my_io import say
 import random
 
 r = robjects.r
@@ -11,6 +12,7 @@ mirtCAT = importr('mirtCAT')
 
 class MIRT():
     q = None
+    dim = None
     def __init__(self, q=None, slip=None, guess=None, prior=None, criterion='MFI'):
         self.name = 'MIRT'
         self.criterion = 'MFI'
@@ -30,11 +32,17 @@ class MIRT():
         self.nb_questions = len(train[0])
         raw_data = map(int, reduce(lambda x, y: x + y, train))
         data = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
-        # robjects.globalenv['data'] = data
-        r('data <- fraction.subtraction.data')
-        r('model = mirt.model(Q)')
-        r('fit = mirt(data, model)')
-        r('V <- coef(fit, simplify=TRUE)$items[,1:9]')
+        robjects.globalenv['data'] = data
+        print(data)
+        # r('data <- fraction.subtraction.data')
+        if self.q:
+            r('model = mirt.model(Q)')
+            r('fit = mirt(data, model)')
+            self.dim = 8
+        else:
+            r('fit = mirt(data, 2)')
+            self.dim = 2
+        r('V <- coef(fit, simplify=TRUE)$items[,1:%d]' % (self.dim + 1))
         # r("U <- cbind(fscores(fit, method='MAP', full.scores=TRUE), rep(1))")
         # r('Z <- U %*% t(V)')
 
@@ -45,17 +53,20 @@ class MIRT():
         self.validation_question_set = validation_question_set
         r("CATdesign <- mirtCAT(NULL, fit, criteria='Drule', start_item='Drule', local_pattern=data, design_elements=TRUE)")
 
-
     def next_item(self, replied_so_far, results_so_far):
         next_item_id = mirtCAT.findNextItem(r.CATdesign)[0]
-        print('Next item', next_item_id - 1)
+
+        say('Next item', next_item_id - 1)
+
         return next_item_id - 1
 
     def estimate_parameters(self, replied_so_far, results_so_far, var_id=''):
-        print('estimate', replied_so_far[-1], results_so_far[-1])
+        say('estimate', replied_so_far[-1], results_so_far[-1])
+
         r('CATdesign <- updateDesign(CATdesign, items=c(%s), response=c(%s))' % (replied_so_far[-1] + 1, int(results_so_far[-1])))
         r('CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)')
-        print 'Thêta du candidat :', r('CATdesign$person$thetas')[0]
+
+        say('Thêta du candidat :', r('CATdesign$person$thetas')[0])
         # pm = r('semTheta(theta, itembank[c({}),])'.format(','.join(map(str, replied_so_far))))
 
     def predict_performance(self, var_id=''):

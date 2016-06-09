@@ -2,7 +2,7 @@
 import random
 from calc import logloss, derivative_logloss, normalize, entropy, compute_mean_entropy, surround
 from itertools import product
-from my_io import IO
+from my_io import IO, say
 from datetime import datetime
 from operator import mul
 
@@ -19,7 +19,7 @@ def prod(l):
 DEFAULT_SLIP = 1e-3
 DEFAULT_GUESS = 1e-3
 K = 3
-LOOP_TIMEOUT = 20
+LOOP_TIMEOUT = 10
 SLIP_GUESS_PRECISION = 1e-4
 ALPHA = 1e-4
 
@@ -163,7 +163,9 @@ class QMatrix():
 
     def estimate_parameters(self, replied_so_far, results_so_far):
         p = self.ask_question(replied_so_far[-1], results_so_far[-1], self.p_test)
-        print 'Inférence des compétences du candidat :', map(lambda x: round(x, 2), p)
+
+        say('Examinee:', map(lambda x: round(x, 2), p))
+
         self.p_test = p
 
     def infer_state(self, train):
