@@ -1,6 +1,8 @@
 syntax: glob
 
 .DS_Store
+.Rapp.history
+.ipynb_checkpoints
 *.aux
 *.log
 *.pdf
@@ -9,4 +11,12 @@ syntax: glob
 *.json
 *.bbl
 *.blg
+*.orig
 *.out
+*.pyc
+*.dvi
+*.ps
+*.zip
+*.npy
+log*
+venv

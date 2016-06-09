@@ -1,15 +1,11 @@
 # coding=utf8
 from datetime import datetime
 from calc import logloss, surround, avgstd
-from conf import dataset_name, nb_competences_values, VERBOSE
-from my_io import IO, Dataset
+from conf import dataset_name, nb_competences_values
+from my_io import IO, Dataset, say
 import random
 import json
 import sys
-
-def say(*something):
-	if VERBOSE:
-		print(*something)
 
 def display(results):
 	for name in results:
@@ -51,6 +47,8 @@ def simulate(model, train_data, test_data, validation_question_set, error_log):
 		student_sample = range(nb_students) # All students
 	error_rate = [[] for _ in range(budget)]
 	for student_id in student_sample:
+		if student_id % 10 == 0:
+			print(student_id)
 
 		say('Étudiant', student_id, test_data[student_id])
 
@@ -65,31 +63,34 @@ def simulate(model, train_data, test_data, validation_question_set, error_log):
 		for t in range(1, budget + 1):
 			question_id = model.next_item(replied_so_far, results_so_far)
 
-			say('\nTour', t, '-> question', question_id + 1)
+			say('\nRound', t, '-> We ask question', question_id + 1, 'to the examinee.')
 			if model.name == 'IRT':
-				say('Difficulté :', model.coeff.rx(question_id + 1)[0])
+				say('Difficulty:', model.coeff.rx(question_id + 1)[0])
 			elif model.name == 'QMatrix':
-				say('Cette question, dans la q-matrice :', map(int, model.Q[question_id]))
+				say('It requires KC:', map(int, model.Q[question_id]))
+
+			performance = model.predict_performance()
+			say('Correct!' if test_data[student_id][question_id] else 'Incorrect.') #, "I expected: %f." % round(performance[question_id], 2))
 
 			replied_so_far.append(question_id)
 			results_so_far.append(test_data[student_id][question_id])
 			model.estimate_parameters(replied_so_far, results_so_far)
 			performance = model.predict_performance()
 
-			say('Résultat :', 'OK,' if test_data[student_id][question_id] else 'NOK,', "j'avais prévu", round(performance[question_id], 2))
-			say(' '.join(map(lambda x: str(int(10 * round(x, 1))), performance))
-			say('Estimation :', ''.join(map(lambda x: '%d' % int(round(x)), performance))
-			say('    Vérité :', ''.join(map(lambda x: '%d' % int(x), test_data[student_id]))
+			say(' '.join(map(lambda x: str(int(10 * round(x, 1))), performance)))
+			say('Estimate:', ''.join(map(lambda x: '%d' % int(round(x)), performance)))
+			say('   Truth:', ''.join(map(lambda x: '%d' % int(x), test_data[student_id])))
 
 			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], validation_question_set)
 			# error_rate[t - 1].append(dummy_count(performance, test_data[student_id], replied_so_far) / (len(performance) - len(replied_so_far)))
-			say('Erreur au tour %d :' % t, error_log[-1][t - 1])
+			# say('Erreur au tour %d :' % t, error_log[-1][t - 1])
 
 
 def main():
 	files = IO()
 	dataset = Dataset(dataset_name, files)
 	dataset.load_subset()
+	print(dataset)
 	step = 1
 	for validation_index in dataset.validation_question_sets:
 		validation_index = set(validation_index)
@@ -135,7 +136,8 @@ if __name__ == '__main__':
 		from mirt import MIRT
 		from qmatrix import QMatrix
 		q = QMatrix(nb_competences=8)
-		q.load('qmatrix-custom')
+		# q.load('qmatrix-custom')
+		q.load('qmatrix-cdm')
 		models = [MIRT(q=q)]
 	else:
 		from irt import IRT
