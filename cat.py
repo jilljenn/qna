@@ -80,6 +80,7 @@ def simulate(model, train_data, test_data, validation_question_set, error_log):
 			say(' '.join(map(lambda x: str(int(10 * round(x, 1))), performance)))
 			say('Estimate:', ''.join(map(lambda x: '%d' % int(round(x)), performance)))
 			say('   Truth:', ''.join(map(lambda x: '%d' % int(x), test_data[student_id])))
+			say('Error computation: ', [performance[i] for i in validation_question_set], [test_data[student_id][i] for i in validation_question_set], evaluate(performance, test_data[student_id], validation_question_set))
 
 			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], validation_question_set)
 			# error_rate[t - 1].append(dummy_count(performance, test_data[student_id], replied_so_far) / (len(performance) - len(replied_so_far)))
@@ -123,21 +124,28 @@ if __name__ == '__main__':
 			models.append(QMatrix(nb_competences=nb_competences))
 	elif sys.argv[1] == 'qmspe':
 		from qmatrix import QMatrix
-		q = QMatrix(nb_competences=8)
-		q.load('qmatrix-cdm')
+		q = QMatrix()
+		q.load('qmatrix-%s' % dataset_name)
 		models = [q]
 	elif sys.argv[1] == 'irt':
 		from irt import IRT
 		models = [IRT()]
 	elif sys.argv[1] == 'mirt':
 		from mirt import MIRT
-		models = [MIRT()]
+		models = [MIRT(dim=int(sys.argv[2]))]
 	elif sys.argv[1] == 'mirtq':
 		from mirt import MIRT
 		from qmatrix import QMatrix
-		q = QMatrix(nb_competences=8)
+		q = QMatrix()
 		# q.load('qmatrix-custom')
-		q.load('qmatrix-cdm')
+		q.load('qmatrix-%s' % dataset_name)
+		models = [MIRT(q=q)]
+	elif sys.argv[1] == 'mirtqspe':
+		from mirt import MIRT
+		from qmatrix import QMatrix
+		q = QMatrix()
+		q.load('qmatrix-cdm-new')
+		# q.load('qmatrix-cdm')
 		models = [MIRT(q=q)]
 	else:
 		from irt import IRT
