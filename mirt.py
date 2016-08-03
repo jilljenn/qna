@@ -2,7 +2,7 @@
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from calc import logloss, compute_mean_entropy
-from my_io import say
+from my_io import say, Dataset
 import random
 
 r = robjects.r
@@ -13,7 +13,8 @@ mirtCAT = importr('mirtCAT')
 class MIRT():
     q = None
     dim = None
-    def __init__(self, q=None, slip=None, guess=None, prior=None, criterion='MFI'):
+    def __init__(self, dim=2, q=None, slip=None, guess=None, prior=None, criterion='MFI'):
+        self.dim = q.nb_competences if q else dim
         self.name = 'MIRT'
         self.criterion = 'MFI'
         self.nb_questions = None
@@ -21,11 +22,7 @@ class MIRT():
         if q:
             self.q = q
             robjects.globalenv['entries'] = robjects.IntVector(q.get_entries())
-        else:
-            r('Q <- as.matrix(fraction.subtraction.qmatrix)')
-            r('entries <- c()')
-            r('for(i in 1:20) { for(j in 1:8) { entries <- c(entries, Q[i, j]) } }')
-        r("Q <- matrix(c(entries), ncol=8, dimnames=list(NULL, c('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8')), byrow=TRUE)")
+            r("Q <- matrix(c(entries), ncol=%d, byrow=TRUE)" % self.dim)  # dimnames=list(NULL, c('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'))
 
     def training_step(self, train, opt_Q=True, opt_sg=True):
         nb_students = len(train)
@@ -33,18 +30,22 @@ class MIRT():
         raw_data = map(int, reduce(lambda x, y: x + y, train))
         data = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
         robjects.globalenv['data'] = data
-        print(data)
-        # r('data <- fraction.subtraction.data')
         if self.q:
             r('model = mirt.model(Q)')
             r('fit = mirt(data, model)')
-            self.dim = 8
         else:
-            r('fit = mirt(data, 2)')
-            self.dim = 2
+            r('fit = mirt(data, %d)' % self.dim)
         r('V <- coef(fit, simplify=TRUE)$items[,1:%d]' % (self.dim + 1))
-        # r("U <- cbind(fscores(fit, method='MAP', full.scores=TRUE), rep(1))")
-        # r('Z <- U %*% t(V)')
+        print(r.V)
+        r("U <- cbind(fscores(fit, method='MAP', full.scores=TRUE), rep(1))")
+        print(r('U[1:5,]'))
+        r('Z <- U %*% t(V)')
+        r('p <- 1 / (1 + exp(-Z))')
+        print(r('Z[1:5,]'))
+        print(r('p[1:5,]'))
+        print(r('data[1:5,]'))
+        for line in Dataset('banach').data[:5]:
+            print(line)
 
     def load(self, filename):
         pass
@@ -54,7 +55,10 @@ class MIRT():
         r("CATdesign <- mirtCAT(NULL, fit, criteria='Drule', start_item='Drule', local_pattern=data, design_elements=TRUE)")
 
     def next_item(self, replied_so_far, results_so_far):
-        next_item_id = mirtCAT.findNextItem(r.CATdesign)[0]
+        available_questions = map(str, set(range(1, self.nb_questions + 1)) - self.validation_question_set)
+        # print('available', available_questions)
+        # print(r('CATdesign'))
+        next_item_id = mirtCAT.findNextItem(r.CATdesign, subset=available_questions)[0]
 
         say('Next item', next_item_id - 1)
 
@@ -73,6 +77,7 @@ class MIRT():
         r('U <- cbind(CATdesign$person$thetas, rep(1))')
         r('Z <- U %*% t(V)')
         r('p <- 1 / (1 + exp(-Z))')
+        print(r.p)
         return tuple(r.p)
 
     def get_prefix(self):

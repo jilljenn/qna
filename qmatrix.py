@@ -103,7 +103,7 @@ class QMatrix():
 
     def display_qmatrix(self):
         for i, line in enumerate(self.Q):
-            print(''.join(map(lambda x: str(int(x)), line)), self.guess[i], self.slip[i])
+            print ''.join(map(lambda x: '1' if x else '.', line)), self.guess[i], self.slip[i]
 
     def init_test(self, validation_question_set):
         self.p_test = self.prior

@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\title{Adaptive tests using q-matrices}
+\author{Jill-Jênn Vie \and TMTC}
+
+\newtheorem{jb}{Nota Jibe}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+To our knowledge, this is the first use of q-matrices for adaptive tests.
+\end{abstract}
+
+\begin{jb}
+Deadline le 15 juin.
+\end{jb}
+
+\section{Introduction}
+
+
+
+\section{Definition}
+
+A user is modeled by a binary vector, called \emph{state}, representing her master of the different skills.
+
+A $Q$-matrix represents, for each question, the different skills required to answer the question. $Q_{ij}$ is equal to 1 if the skill $j$ is required to solve the question $i$, 0 otherwise.
+
+Recent work tend to infer such q-matrices from student data. Based on this structure, it is possible to refine an estimation of a newcomer's skills, according to her answers. Indeed, according to the presupposed state of a newcomer's current skills, it is interesting to pick the question that will bring the most information about her true skills.
+
+\begin{jb}
+Desmarais a écrit beaucoup de papiers sur le sujet et m'a confirmé que les q-matrices n'avaient jamais été utilisées à des fins de tests.
+\end{jb}
+
+\section{Our contribution}
+
+This paper tends to address three cases:
+\begin{itemize}
+\item every student answers according to its true skills;
+\item every student may fail one question whereas she has the correct skills or answer correctly while she hasn't the required skills, according to a \emph{slip} parameter;
+\item an new question is added to the test, the skills required to answer to it being unknown.
+\end{itemize}
+
+\section{Test framework}
+
+\section{Results}
+
+\end{document}

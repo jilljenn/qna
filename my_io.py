@@ -16,9 +16,9 @@ class IO(object):
             if not os.path.exists(self.prefix):
                 os.system('mkdir %s' % self.prefix)
         self.update(0)
-        filename = '%s/%s' % (self.prefix, 'qmatrix-cdm.json')
-        if not os.path.exists(filename):
-            os.system('cp qmatrix-cdm.json %s' % filename)
+        # filename = '%s/%s' % (self.prefix, 'qmatrix-cdm.json')
+        # if not os.path.exists(filename):
+        #    os.system('cp qmatrix-cdm.json %s' % filename)
 
     def update(self, step):
         prefix = list(self.prefix)
@@ -78,6 +78,7 @@ class Dataset(object):
         self.validation_question_sets = []
         for _, validation_question_array in cross_validation.KFold(n=self.nb_questions, n_folds=4, shuffle=True, random_state=None):
             self.validation_question_sets.append(validation_question_array.tolist())
+            # break  # TODO REMOVE THIS break OR WE ARE ALL DEAD
 
     def to_dict(self):
         return {
