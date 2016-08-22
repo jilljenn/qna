@@ -10,7 +10,7 @@ cdm = importr('CDM')
 mirt = importr('mirt')
 mirtCAT = importr('mirtCAT')
 
-class MIRT():
+class MIRT:
     q = None
     dim = None
     def __init__(self, dim=2, q=None, slip=None, guess=None, prior=None, criterion='MFI'):

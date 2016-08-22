@@ -2,7 +2,7 @@ library(CDM)
 library(mirt)
 
 # data = fraction.subtraction.data
-# qmatrix = fraction.subtraction.qmatrix
+# qmatrix = as.matrix(fraction.subtraction.qmatrix)
 data = read.csv('data/banach.csv')
 qmatrix = as.matrix(read.csv('data/qmatrix-banach.csv'))
 
@@ -31,8 +31,87 @@ d = 2
 fit = mirt(data, d)
 computeError(fit)
 
-CATdesign <- mirtCAT(NULL, fit, criteria='Drule', start_item='Drule', local_pattern=data, design_elements=TRUE)
-mirtCAT.findNextItem(CATdesign)
-CATdesign <- updateDesign(CATdesign, items=c(6), response=c(0))
+library(mirtCAT)
+data2 <- data
+data2[is.na(data2)] <- 0
+
+CATdesign <- mirtCAT(NULL, fit, criteria='Drule', start_item='Drule', local_pattern=data2, design_elements=TRUE)
+
+nextItem <- findNextItem(CATdesign)
+print(nextItem)
+summary(data[nextItem])
+
+reply <- function(q, r) {
+    CATdesign <- updateDesign(CATdesign, items=c(q), response=c(r))
+    CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)
+    nextItem <- findNextItem(CATdesign)
+    print(nextItem)
+    print(summary(data[nextItem]))
+    print('rep.')
+    print(data[1373, nextItem])
+    nextItem
+}
+
+auto <- function(r) {
+    reply(nextItem, r)
+}
+
+nextItem <- auto(0)
+nextItem <- auto(1)
+
+CATdesign <- updateDesign(CATdesign, items=c(68), response=c(1))
 CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)
 CATdesign$person$thetas
+
+theta <- cbind(CATdesign$person$thetas, 1)
+Z <- theta %*% t(V)
+p <- 1 / (1 + exp(-Z))
+
+nextItem <- findNextItem(CATdesign)
+nextItem
+summary(data[nextItem])
+
+CATdesign <- updateDesign(CATdesign, items=c(68, 8), response=c(1, 0))
+CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)
+CATdesign$person$thetas
+
+theta <- cbind(CATdesign$person$thetas, 1)
+Z <- theta %*% t(V)
+p <- 1 / (1 + exp(-Z))
+ranked <- sort(p, index.return=TRUE)
+p[,ranked$ix]
+
+nextItem <- findNextItem(CATdesign)
+nextItem
+summary(data[nextItem])
+
+CATdesign <- updateDesign(CATdesign, items=c(68, 8, 94), response=c(1, 0, 1))
+CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)
+CATdesign$person$thetas
+
+theta <- cbind(CATdesign$person$thetas, 1)
+Z <- theta %*% V
+p <- 1 / (1 + exp(-Z))
+ranked <- sort(p, index.return=TRUE)
+ranked
+p[,ranked$ix]
+
+nextItem <- findNextItem(CATdesign)
+nextItem
+summary(data[nextItem])
+
+CATdesign <- updateDesign(CATdesign, items=c(68, 8, 94, 129), response=c(1, 0, 1, 1))
+CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)
+CATdesign$person$thetas
+
+theta <- cbind(CATdesign$person$thetas, 1)
+Z <- theta %*% t(V)
+p <- 1 / (1 + exp(-Z))
+ranked <- sort(p, index.return=TRUE)
+ranked
+p[,ranked$ix]
+
+write.csv(U, 'u.csv')
+write.csv(V, 'v.csv')
+
+write.csv(CATdesign$person$thetas_history, 'testlog.csv')
