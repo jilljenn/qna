@@ -1,6 +1,6 @@
 import json
 import os
-from conf import PREFIX, DEBUG, STUDENT_TEST_RATE, VERBOSE
+from conf import PREFIX, DEBUG, STUDENT_TEST_RATE, VERBOSE, VALIDATION_FOLD
 import random
 
 def say(*something):
@@ -11,7 +11,7 @@ def say(*something):
 class IO(object):
     def __init__(self):
         self.prefix = PREFIX + '0'
-        for i in range(0, 5):
+        for i in range(0, VALIDATION_FOLD + 1):
             self.update(i)
             if not os.path.exists(self.prefix):
                 os.system('mkdir %s' % self.prefix)
@@ -76,7 +76,7 @@ class Dataset(object):
         self.train_subset = sorted(random.sample(range(self.nb_students), student_train_length))
         self.test_subset = list(set(range(self.nb_students)) - set(self.train_subset))
         self.validation_question_sets = []
-        for _, validation_question_array in cross_validation.KFold(n=self.nb_questions, n_folds=4, shuffle=True, random_state=None):
+        for _, validation_question_array in cross_validation.KFold(n=self.nb_questions, n_folds=VALIDATION_FOLD, shuffle=True, random_state=None):
             self.validation_question_sets.append(validation_question_array.tolist())
             # break  # TODO REMOVE THIS break OR WE ARE ALL DEAD
 

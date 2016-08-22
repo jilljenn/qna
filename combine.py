@@ -1,4 +1,4 @@
-from conf import dataset_name
+from conf import dataset_name, VALIDATION_FOLD
 from my_io import IO
 from datetime import datetime
 import os
@@ -12,7 +12,7 @@ def make_stats(log):
 io_handler = IO()
 logs = {}
 data = {}
-for i in range(1, 5):
+for i in range(1, VALIDATION_FOLD + 1):
     io_handler.update(i)
     for filename in os.listdir(io_handler.prefix):
         if filename.startswith('log'):
