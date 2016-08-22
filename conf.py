@@ -1,12 +1,14 @@
 dataset_name = 'fraction'
-PREFIX = 'last-fraction'# + dataset_name
+PREFIX = 'coldstart'# + dataset_name
 
 #dataset_name = 'banach'
 #PREFIX = 'banach-lite'# + dataset_name
 
 STUDENT_TEST_RATE = 0.2
 VALIDATION_FOLD = 2
-DEBUG = False  # Debug means only one student
+BATCH_SIZE = 10
+
+DEBUG = False  # Debug == TRUE means only one student
 VERBOSE = False
 
 nb_competences_values = [8] #range(2, 15, 3)
