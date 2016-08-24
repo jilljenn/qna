@@ -1,8 +1,9 @@
 # coding=utf8
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
-from calc import logloss, compute_mean_entropy, sample_k
+from calc import logloss, compute_mean_entropy
 from my_io import say, Dataset
+import dpp
 import numpy as np
 import random
 import os
@@ -55,7 +56,10 @@ class MIRT:
             print(r('data[1:5,]'))
             for line in Dataset('banach').data[:5]:
                 print(line)"""
-        self.similarity = np.array(r.V.dot(r.V.transpose()))
+        similarity = np.array(r.V.dot(r.V.transpose()))
+        D, V = np.linalg.eig(similarity)
+        self.D = np.real(D)
+        self.V = np.real(V)
 
     def load(self, filename):
         pass
@@ -99,7 +103,7 @@ class MIRT:
         return tuple(r.p)
 
     def select_batch(self, batch_size):
-        chosen = sample_k(range(r.V.dim[0]), self.similarity, batch_size)
+        chosen = map(int, dpp.sample_k(batch_size, self.D, self.V))
         return chosen
 
     def get_prefix(self):

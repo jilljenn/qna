@@ -19,8 +19,8 @@ def hinge(performance, truth):
 def simulate(train_data, test_data):
     q = QMatrix()
     q.load('qmatrix-%s' % dataset_name)
-    # model = MIRT(q=q)
-    model = MIRT(dim=8)
+    model = MIRT(q=q)
+    # model = MIRT(dim=8)
     model.training_step(train_data)
     nb_students = len(test_data)
     nb_questions = len(test_data[0])
