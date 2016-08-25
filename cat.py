@@ -1,7 +1,7 @@
 # coding=utf8
 from datetime import datetime
 from calc import logloss, surround, avgstd
-from conf import dataset_name, nb_competences_values
+from conf import dataset_name, nb_competences_values, STUDENT_FOLD, QUESTION_FOLD
 from my_io import IO, Dataset, say
 import random
 import json
@@ -89,10 +89,10 @@ def main():
 	dataset = Dataset(dataset_name, files)
 	dataset.load_subset()
 	print(dataset)
-	for i_exp in range(dataset.STUDENT_FOLD):
+	for i_exp in range(STUDENT_FOLD):
 		train_subset = dataset.train_subsets[i_exp]
 		test_subset = dataset.test_subsets[i_exp]
-		for j_exp in range(dataset.QUESTION_FOLD):
+		for j_exp in range(QUESTION_FOLD):
 			validation_index = set(dataset.validation_question_sets[j_exp])
 			files.update(i_exp, j_exp)
 			for model in models:
