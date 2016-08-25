@@ -1,11 +1,11 @@
 dataset_name = 'fraction'
-PREFIX = 'tmp'# + dataset_name
+PREFIX = 'tmp3'# + dataset_name
 
 #dataset_name = 'banach'
 #PREFIX = 'banach-lite'# + dataset_name
 
-STUDENT_TEST_RATE = 0.2
-VALIDATION_FOLD = 2
+STUDENT_FOLD = 1  # 4
+QUESTION_FOLD = 1  # 2
 BATCH_SIZE = 5
 
 DEBUG = True  # DEBUG == True means only one student
@@ -19,6 +19,7 @@ model_names = {
     'qm': 'QMatrix',
     'qm-qmatrix-cdm': 'QMatrix',
     'qm-qmatrix-ecpe': 'QMatrix',
+    'qm-qmatrix-fake': 'QMatrix',
     'qm-qmatrix-fraction': 'QMatrix',
     '8': 'QMatrix',
     '888': 'QMatrix',
@@ -29,5 +30,6 @@ model_names = {
     'mirt-qm-qmatrix-ecpe': 'MIRT',
     'mirt-qm-qmatrix-banach': 'MIRT',
     'mirt-qm-qmatrix-custom': 'MIRT',
+    'mirt-qm-qmatrix-fake': 'MIRT',
     'mirt-qm-qmatrix-fraction': 'MIRT'
 }

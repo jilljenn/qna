@@ -1,7 +1,7 @@
 # coding=utf8
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
-from calc import logloss, compute_mean_entropy
+from calc import logloss, compute_mean_entropy, get_train_checksum
 from my_io import say, Dataset
 import dpp
 import numpy as np
@@ -12,6 +12,7 @@ r = robjects.r
 cdm = importr('CDM')
 mirt = importr('mirt')
 mirtCAT = importr('mirtCAT')
+
 
 class MIRT:
     q = None
@@ -28,9 +29,11 @@ class MIRT:
             r("Q <- matrix(c(entries), ncol=%d, byrow=TRUE)" % self.dim)  # dimnames=list(NULL, c('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'))
 
     def training_step(self, train, opt_Q=True, opt_sg=True):
+        checksum = get_train_checksum(self.get_prefix(), train)
+        print('check', checksum)
         self.nb_questions = len(train[0])
-        if os.path.isfile(self.get_prefix() + '.rdata'):
-            r.load(self.get_prefix() + '.rdata')
+        if os.path.isfile('backup/' + checksum + '.rdata'):
+            r.load('backup/' + checksum + '.rdata')
         else:
             nb_students = len(train)
             raw_data = map(int, reduce(lambda x, y: x + y, train))
@@ -46,7 +49,7 @@ class MIRT:
             r('V <- coef(fit, simplify=TRUE)$items[,1:%d]' % (self.dim + 1))
             print(r.V)
             r("U <- cbind(fscores(fit, method='MAP', full.scores=TRUE), rep(1))")
-            r('save(fit, U, V, data, file="%s.rdata")' % self.get_prefix())
+            r('save(fit, U, V, data, file="backup/%s.rdata")' % checksum)
 
             """print(r('U[1:5,]'))
             r('Z <- U %*% t(V)')

@@ -4,14 +4,15 @@ from cat import get_results
 import os
 import re
 
-io_handler = IO()
-io_handler.update(0)
-for filename in os.listdir(io_handler.prefix):
-    if filename.startswith('log') and not os.path.exists('%s/%s' % (io_handler.prefix, filename.replace('log', 'stats'))):
+files = IO()
+files.init()
+for filename in os.listdir(files.get_folder_name()):
+    if filename.startswith('log') and not os.path.exists('%s/%s' % (files.get_folder_name(), filename.replace('log', 'stats'))):  # No stats for these reports
         name, nb_questions, train_power = re.match('log-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset_name, filename).groups()
         model_name = model_names[name]
         god_prefix = '%s-%s-%s' % (name, nb_questions, train_power)
-        log = {}
+
         if raw_input('Do you want to rebuild stats for %s? ' % filename) == 'y':
-            log[model_name] = io_handler.load(filename.replace('.json', ''))
-            get_results(log, god_prefix, io_handler)
+            report = files.load(filename.replace('.json', ''))
+            report['model_name'] = model_name
+            get_results(report, god_prefix, files)

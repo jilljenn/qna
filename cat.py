@@ -11,30 +11,26 @@ def display(results):
 	for name in results:
 		print name, results[name]['mean']
 
-def evaluate(performance, truth, validation_question_set):
-	nb_questions = len(performance)
-	# print [performance[i] for i in range(nb_questions) if i not in replied_so_far], [truth[i] for i in range(nb_questions) if i not in replied_so_far]
-	# return logloss([performance[i] for i in range(nb_questions) if i not in replied_so_far], [truth[i] for i in range(nb_questions) if i not in replied_so_far])
-	# return 0 if not validation_question_set else sum(round(performance[i]) != truth[i] for i in validation_question_set)
-	return logloss(performance, truth, validation_question_set)
+def nb_mistakes(performance, truth, validation_question_set):
+	return 0 if not validation_question_set else sum(round(performance[i]) != truth[i] for i in validation_question_set)
 
 def dummy_count(performance, truth, replied_so_far):
 	nb_questions = len(performance)
 	# print 'indecision', sum([0.4 <= performance[i] <= 0.6 for i in range(nb_questions) if i not in replied_so_far])
 	return sum([(performance[i] < 0.5 and truth[i]) or (performance[i] > 0.5 and not truth[i]) for i in range(nb_questions) if i not in replied_so_far]) # Count errors
 
-def get_results(log, god_prefix, files):
+def get_results(report, filename, files):
 	results = {}
-	nb_students = len(log.values()[0])
-	budget = len(log.values()[0][0])
-	for model_name in log:
-		# print model.name
-		results[model_name] = {'mean': [avgstd([log[model_name][i][t] for i in range(nb_students)]) for t in range(budget)]}
-		"""for t in range(budget):
-			print(avgstd(list(log[model.name][i][t] for i in range(nb_students))))"""
-	files.backup('stats-%s-%s-%s' % (dataset_name, god_prefix, datetime.now().strftime('%d%m%Y%H%M%S')), results)
+	nb_students = len(report['mean_error'])
+	budget = len(report['mean_error'][0])
+	model_name = report['model_name']
+	results[model_name] = {
+		'mean': [avgstd([report['mean_error'][i][t] for i in range(nb_students)]) for t in range(budget)],
+		'count': [avgstd([report['nb_mistakes'][i][t] for i in range(nb_students)]) for t in range(budget)]
+	}
+	files.backup('stats-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
-def simulate(model, train_data, test_data, validation_question_set, error_log):
+def simulate(model, train_data, test_data, validation_question_set):
 	model.training_step(train_data, opt_Q=True, opt_sg=True)
 
 	say(datetime.now())
@@ -43,16 +39,15 @@ def simulate(model, train_data, test_data, validation_question_set, error_log):
 	nb_students = len(test_data)
 	nb_questions = len(test_data[0])
 	budget = nb_questions - len(validation_question_set)
-	if all_student_sampled:
-		student_sample = range(nb_students) # All students
-	error_rate = [[] for _ in range(budget)]
-	for student_id in student_sample:
+	report = {'mean_error': [], 'nb_mistakes': [], 'model_name': model.name}
+	for student_id in range(nb_students):
 		if student_id % 10 == 0:
 			print(student_id)
 
 		say('Étudiant', student_id, test_data[student_id])
 
-		error_log.append([0] * budget)
+		report['mean_error'].append([0] * budget)
+		report['nb_mistakes'].append([0] * budget)
 		model.init_test(validation_question_set=validation_question_set)
 		replied_so_far = []
 		results_so_far = []
@@ -80,11 +75,13 @@ def simulate(model, train_data, test_data, validation_question_set, error_log):
 			say(' '.join(map(lambda x: str(int(10 * round(x, 1))), performance)))
 			say('Estimate:', ''.join(map(lambda x: '%d' % int(round(x)), performance)))
 			say('   Truth:', ''.join(map(lambda x: '%d' % int(x), test_data[student_id])))
-			say('Error computation: ', [performance[i] for i in validation_question_set], [test_data[student_id][i] for i in validation_question_set], evaluate(performance, test_data[student_id], validation_question_set))
+			say('Error computation: ', [performance[i] for i in validation_question_set], [test_data[student_id][i] for i in validation_question_set], logloss(performance, test_data[student_id], validation_question_set))
 
-			error_log[-1][t - 1] = evaluate(performance, test_data[student_id], validation_question_set)
+			report['mean_error'][student_id][t - 1] = logloss(performance, test_data[student_id], validation_question_set)
+			report['nb_mistakes'][student_id][t - 1] = nb_mistakes(performance, test_data[student_id], validation_question_set)
 			# error_rate[t - 1].append(dummy_count(performance, test_data[student_id], replied_so_far) / (len(performance) - len(replied_so_far)))
 			# say('Erreur au tour %d :' % t, error_log[-1][t - 1])
+	return report
 
 
 def main():
@@ -92,26 +89,24 @@ def main():
 	dataset = Dataset(dataset_name, files)
 	dataset.load_subset()
 	print(dataset)
-	step = 1
-	for validation_index in dataset.validation_question_sets:
-		validation_index = set(validation_index)
-		files.update(step)
-		for model in models:
-			train_power = len(dataset.train_subset)
-			error_rate = []
-			begin = datetime.now()
-			print begin
-			log = {}
-			prefix = model.get_prefix() + '-%s-%s' % (dataset.nb_questions, train_power)
-			train_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in dataset.train_subset]
-			test_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in dataset.test_subset]
-			error_log = []
-			simulate(model, train_dataset, test_dataset, validation_index, error_log)
-			log[model.name] = error_log
-			get_results(log, prefix, files)
-			files.backup('log-%s-%s-%s' % (dataset_name, prefix, datetime.now().strftime('%d%m%Y%H%M%S')), error_log)
-			print datetime.now()
-		step += 1
+	for i_exp in range(dataset.STUDENT_FOLD):
+		train_subset = dataset.train_subsets[i_exp]
+		test_subset = dataset.test_subsets[i_exp]
+		for j_exp in range(dataset.QUESTION_FOLD):
+			validation_index = set(dataset.validation_question_sets[j_exp])
+			files.update(i_exp, j_exp)
+			for model in models:
+				train_power = len(train_subset)
+				begin = datetime.now()
+				print begin
+				filename = model.get_prefix() + '-%s-%s' % (dataset.nb_questions, train_power)
+				train_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in train_subset]
+				test_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in test_subset]
+				report = simulate(model, train_dataset, test_dataset, validation_index)
+				get_results(report, filename, files)
+				files.backup('log-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), report)
+				print datetime.now()
+
 
 if __name__ == '__main__':
 	if sys.argv[1] == 'baseline':
@@ -125,7 +120,9 @@ if __name__ == '__main__':
 	elif sys.argv[1] == 'qmspe':
 		from qmatrix import QMatrix
 		q = QMatrix()
+		print 'Toujours', q.prior
 		q.load('qmatrix-%s' % dataset_name)
+		print 'Toujours2', q.prior
 		models = [q]
 	elif sys.argv[1] == 'irt':
 		from irt import IRT
@@ -151,6 +148,5 @@ if __name__ == '__main__':
 		from irt import IRT
 		models = [IRT(criterion='MEPV')]
 
-	all_student_sampled = True
 	models_names = [model.name for model in models]
 	main()

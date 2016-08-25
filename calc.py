@@ -1,6 +1,7 @@
 # coding=utf-8
 import math
 import numpy as np
+from hashlib import md5
 
 
 def entr(x):
@@ -45,3 +46,8 @@ def avgstd(l):  # Displays mean and variance
     mean = float(sum(l)) / n
     var = float(sum(i * i for i in l)) / n - mean * mean
     return round(mean, 3), round(1.96 * math.sqrt(var / n), 3)  # '%.3f ± %.3f' % 
+
+def get_train_checksum(prefix, train):
+    s = prefix
+    s += ''.join(map(lambda line: ''.join(map(lambda x: str(int(x)), line)), train))
+    return md5(s).hexdigest()

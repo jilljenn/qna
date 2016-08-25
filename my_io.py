@@ -1,6 +1,7 @@
 import json
 import os
-from conf import PREFIX, DEBUG, STUDENT_TEST_RATE, VERBOSE, VALIDATION_FOLD
+from conf import PREFIX, DEBUG, STUDENT_FOLD, VERBOSE, QUESTION_FOLD
+from sklearn.cross_validation import KFold, StratifiedKFold
 import random
 
 def say(*something):
@@ -9,45 +10,41 @@ def say(*something):
 
 
 class IO(object):
+    i = 0
+    j = 0
     def __init__(self):
-        self.prefix = PREFIX + '0'
-        for i in range(0, VALIDATION_FOLD + 1):
-            self.update(i)
-            if not os.path.exists(self.prefix):
-                os.system('mkdir %s' % self.prefix)
-        self.update(0)
-        # filename = '%s/%s' % (self.prefix, 'qmatrix-cdm.json')
-        # if not os.path.exists(filename):
-        #    os.system('cp qmatrix-cdm.json %s' % filename)
+        if not os.path.exists(PREFIX):
+            os.system('mkdir %s' % PREFIX)  # Maybe safer is better? :P
+        for i in range(STUDENT_FOLD):
+            for j in range(QUESTION_FOLD):
+                self.update(i, j)
+                if not os.path.exists(self.get_folder_name()):
+                    os.system('mkdir %s' % self.get_folder_name())
+        self.init()
 
-    def update(self, step):
-        prefix = list(self.prefix)
-        prefix[-1] = str(step)
-        self.prefix = ''.join(prefix)
-        print 'prefix is now', self.prefix
+    def get_folder_name(self):
+        if self.i is not None:
+            return '%s/%d-%d' % (PREFIX, self.i, self.j)
+        else:
+            return PREFIX
 
-    def split(self, filename, n):
-        """Creates files and returns filenames."""
-        dataset = load(filename)['student_data']
-        chunk_length = (len(dataset) - len(dataset) % n) / n
-        bundle = []
-        for k in range(n):
-            train, test = [], []
-            for i, line in enumerate(dataset):
-                if k * chunk_length <= i < (k + 1) * chunk_length:
-                    test.append(line)
-                else:
-                    train.append(line)
-            bundle.append((train, test))
-        return bundle
+    def update(self, i, j, silent=False):
+        self.i = i
+        self.j = j
+        if not silent:
+            print 'prefix is now', self.get_folder_name()
+
+    def init(self):
+        self.i = None
+        self.j = None
 
     def backup(self, filename, data):
-        with open('%s/%s.json' % (self.prefix, filename), 'w') as f:
+        with open('%s/%s.json' % (self.get_folder_name(), filename), 'w') as f:
             f.write(json.dumps(data))
 
     def load(self, filename, prefix=None):
         if not prefix:
-            prefix = self.prefix
+            prefix = self.get_folder_name()
         return json.load(open('%s/%s.json' % (prefix, filename)))
 
 
@@ -56,9 +53,11 @@ class Dataset(object):
     data = None
     nb_questions = None
     nb_students = None
-    question_subset = None
-    train_subset = None
-    test_subset = None
+    question_subset = None  # Deprecated
+    train_subsets = None
+    test_subsets = None
+    STUDENT_FOLD = None
+    QUESTION_FOLD = None
     validation_question_sets = None
     files = None
     def __init__(self, dataset_name, files=None):
@@ -67,36 +66,49 @@ class Dataset(object):
         self.data = self.files.load(dataset_name, prefix='data')['student_data']
         self.nb_questions = len(self.data[0])
         self.nb_students = len(self.data)
-        self.question_subset = range(self.nb_questions)
+        self.question_subset = range(self.nb_questions)  # All questions every time
 
     def get_subset(self):
-        from sklearn import cross_validation
-        student_test_length = 1 if DEBUG else int(round(STUDENT_TEST_RATE * self.nb_students))
-        student_train_length = self.nb_students - student_test_length
-        self.train_subset = sorted(random.sample(range(self.nb_students), student_train_length))
-        self.test_subset = list(set(range(self.nb_students)) - set(self.train_subset))
+        scores = [sum(student) for student in self.data]
+        self.train_subsets = []
+        self.test_subsets = []
+        if DEBUG:
+            all_students = range(len(self.data))
+            random.shuffle(all_students)
+            train = all_students
+            test_student = train.pop()
+            test = [test_student]
+            self.train_subsets.append(sorted(train))
+            self.test_subsets.append(test)
+        else:
+            for train, test in StratifiedKFold(scores, STUDENT_FOLD):
+                self.train_subsets.append(train.tolist())
+                self.test_subsets.append(test.tolist())
         self.validation_question_sets = []
-        for _, validation_question_array in cross_validation.KFold(n=self.nb_questions, n_folds=VALIDATION_FOLD, shuffle=True, random_state=None):
+        for _, validation_question_array in KFold(n=self.nb_questions, n_folds=QUESTION_FOLD, shuffle=True, random_state=None):
             self.validation_question_sets.append(validation_question_array.tolist())
-            # break  # TODO REMOVE THIS break OR WE ARE ALL DEAD
 
     def to_dict(self):
         return {
             'question_subset': self.question_subset,
             'validation_question_sets': self.validation_question_sets,
-            'train_subset': self.train_subset,
-            'test_subset': self.test_subset
+            'train_subsets': self.train_subsets,
+            'test_subsets': self.test_subsets,
+            'STUDENT_FOLD': STUDENT_FOLD,
+            'QUESTION_FOLD': QUESTION_FOLD,
         }
 
     def load_subset(self):
         subset = self.files.load('subset')
         self.question_subset = subset['question_subset']
         self.validation_question_sets = subset['validation_question_sets']
-        self.train_subset = subset['train_subset']
-        self.test_subset = subset['test_subset']
+        self.train_subsets = subset['train_subsets']
+        self.test_subsets = subset['test_subsets']
+        self.STUDENT_FOLD = subset['STUDENT_FOLD']
+        self.QUESTION_FOLD = subset['QUESTION_FOLD']
 
     def save_subset(self):
         self.files.backup('subset', self.to_dict())
 
     def __str__(self):
-        return '[%s] (%d + %d) x %d, %d VQ' % (self.name, len(self.train_subset), len(self.test_subset), self.nb_questions, len(self.validation_question_sets))
+        return '[%s] (%d + %d) x %d, %dx%d-fold' % (self.name, len(self.train_subsets[0]), len(self.test_subsets[0]), self.nb_questions, len(self.train_subsets), len(self.validation_question_sets))
