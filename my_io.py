@@ -15,6 +15,7 @@ class IO(object):
     def __init__(self):
         if not os.path.exists(PREFIX):
             os.system('mkdir %s' % PREFIX)  # Maybe safer is better? :P
+            os.system('mkdir %s/logs' % PREFIX)  # Maybe safer is better? :P
         for i in range(STUDENT_FOLD):
             for j in range(QUESTION_FOLD):
                 self.update(i, j)
@@ -75,7 +76,7 @@ class Dataset(object):
         if DEBUG:
             all_students = range(len(self.data))
             random.shuffle(all_students)
-            train = all_students
+            train = all_students[:6]  # For debug
             test_student = train.pop()
             test = [test_student]
             self.train_subsets.append(sorted(train))
@@ -94,8 +95,6 @@ class Dataset(object):
             'validation_question_sets': self.validation_question_sets,
             'train_subsets': self.train_subsets,
             'test_subsets': self.test_subsets,
-            'STUDENT_FOLD': STUDENT_FOLD,
-            'QUESTION_FOLD': QUESTION_FOLD,
         }
 
     def load_subset(self):
@@ -104,8 +103,6 @@ class Dataset(object):
         self.validation_question_sets = subset['validation_question_sets']
         self.train_subsets = subset['train_subsets']
         self.test_subsets = subset['test_subsets']
-        self.STUDENT_FOLD = subset['STUDENT_FOLD']
-        self.QUESTION_FOLD = subset['QUESTION_FOLD']
 
     def save_subset(self):
         self.files.backup('subset', self.to_dict())

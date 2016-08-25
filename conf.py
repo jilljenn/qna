@@ -1,5 +1,5 @@
 dataset_name = 'fraction'
-PREFIX = 'tmp2'# + dataset_name
+PREFIX = dataset_name
 
 STUDENT_FOLD = 4  # 4
 QUESTION_FOLD = 2  # 2
@@ -7,6 +7,10 @@ BATCH_SIZE = 5
 
 DEBUG = True  # DEBUG == True means only one student
 VERBOSE = True
+
+if DEBUG:
+    STUDENT_FOLD = 1
+    PREFIX = 'tmp'
 
 nb_competences_values = [8] #range(2, 15, 3)
 
