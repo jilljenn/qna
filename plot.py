@@ -1,11 +1,15 @@
 # coding=utf8
 import sys, os, re, json
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import glob
-from conf import nb_competences_values, model_names
+from conf import PREFIX, nb_competences_values, model_names
+
+displayed_y_axis = sys.argv[2]  # 'mean' or 'count'
 
 from matplotlib.backends.backend_pdf import PdfPages
-pp = PdfPages('plot.pdf')
+# pp = PdfPages('plot.pdf')
 
 results = {}
 
@@ -21,7 +25,7 @@ for filename in os.listdir(folder):
 		print filename
 		dataset_name, name, nb_questions, train_power = re.match('stats-(%s)-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % '|'.join(all_datasets), filename).groups()
 		nb_questions = int(nb_questions)
-		data = json.load(open('%s/%s' % (folder, filename)))['QMatrix' if len(name) <= 2 else model_names[name]]['mean']
+		data = json.load(open('%s/%s' % (folder, filename)))['QMatrix' if len(name) <= 2 else model_names[name]][displayed_y_axis]
 		# print name, nb_questions, train_power
 		results[(name, train_power)] = data
 for line in results:
@@ -53,8 +57,8 @@ for (name, train_power) in results:
 	handles.append(curve)
 ax.set_title('Comparing models for adaptive testing (dataset: %s)' % dataset_name)
 ax.set_xlabel('Number of questions asked')
-ax.set_ylabel('Incorrect predictions count' if folder == 'ectel0' else 'Mean error')
+ax.set_ylabel('Incorrect predictions count' if displayed_y_axis == 'count' else 'Mean error')
 print(results, handles)
 plt.legend(handles=handles)
-plt.savefig('plot.png', format='png')
-plt.show()
+plt.savefig('%s/plot-%s.pdf' % (PREFIX, displayed_y_axis), format='pdf')
+# plt.show()
