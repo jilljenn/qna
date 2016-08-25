@@ -22,3 +22,4 @@ syntax: glob
 *.npy
 log*
 venv
+backup
