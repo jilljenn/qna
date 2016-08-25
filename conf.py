@@ -1,11 +1,8 @@
 dataset_name = 'fraction'
-PREFIX = 'tmp3'# + dataset_name
+PREFIX = 'tmp2'# + dataset_name
 
-#dataset_name = 'banach'
-#PREFIX = 'banach-lite'# + dataset_name
-
-STUDENT_FOLD = 1  # 4
-QUESTION_FOLD = 1  # 2
+STUDENT_FOLD = 4  # 4
+QUESTION_FOLD = 2  # 2
 BATCH_SIZE = 5
 
 DEBUG = True  # DEBUG == True means only one student

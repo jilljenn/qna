@@ -70,7 +70,13 @@ class IRT():
 
     def estimate_parameters(self, replied_so_far, results_so_far, var_id=''):
         scores_so_far = map(int, results_so_far)
-        r('theta{} <- thetaEst(itembank[c({}),], c({}))'.format(var_id, ','.join(map(lambda x: str(x + 1), replied_so_far)), ','.join(map(str, scores_so_far))))
+        pattern = ['NA'] * self.nb_questions
+        for i, pos in enumerate(replied_so_far):
+            pattern[pos] = str(int(results_so_far[i]))
+        say('theta{} <- thetaEst(itembank, c({}))'.format(var_id, ','.join(pattern)))
+        r('theta{} <- thetaEst(itembank, c({}))'.format(var_id, ','.join(pattern)))
+
+        # r('theta{} <- thetaEst(itembank[c({}),], c({}))'.format(var_id, ','.join(map(lambda x: str(x + 1), replied_so_far)), ','.join(map(str, scores_so_far))))
 
         say('Thêta du candidat :', r('theta')[0])
         # pm = r('semTheta(theta, itembank[c({}),])'.format(','.join(map(str, replied_so_far))))
