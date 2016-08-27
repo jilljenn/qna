@@ -158,7 +158,7 @@ class QMatrix():
         return future_if_incorrect, future_if_correct
 
     def ask_question(self, question_id, is_correct_answer, p_competences):
-        return self.predict_future(question_id, p_competences)[is_correct_answer] # Wooo
+        return self.predict_future(question_id, p_competences)[int(is_correct_answer)] # Wooo
 
     def display_states(self):
         for state, p in enumerate(self.p_test):
