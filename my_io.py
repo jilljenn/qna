@@ -1,7 +1,6 @@
 import json
 import os
 from conf import PREFIX, DEBUG, STUDENT_FOLD, VERBOSE, QUESTION_FOLD
-from sklearn.cross_validation import KFold, StratifiedKFold
 import random
 
 def say(*something):
@@ -82,6 +81,7 @@ class Dataset(object):
             self.train_subsets.append(sorted(train))
             self.test_subsets.append(test)
         else:
+            from sklearn.cross_validation import KFold, StratifiedKFold
             for train, test in StratifiedKFold(scores, STUDENT_FOLD):
                 self.train_subsets.append(train.tolist())
                 self.test_subsets.append(test.tolist())

@@ -1,12 +1,12 @@
-dataset_name = 'fraction'
+dataset_name = 'timss2003'
 PREFIX = dataset_name
 
 STUDENT_FOLD = 4  # 4
 QUESTION_FOLD = 2  # 2
 BATCH_SIZE = 5
 
-DEBUG = True  # DEBUG == True means only one student
-VERBOSE = True
+DEBUG = False  # DEBUG == True means only one student
+VERBOSE = False
 
 if DEBUG:
     STUDENT_FOLD = 1
@@ -22,6 +22,7 @@ model_names = {
     'qm-qmatrix-ecpe': 'QMatrix',
     'qm-qmatrix-fake': 'QMatrix',
     'qm-qmatrix-fraction': 'QMatrix',
+    'qm-qmatrix-timss2003': 'QMatrix',
     '8': 'QMatrix',
     '888': 'QMatrix',
     'mepv-irt': 'IRT',
@@ -32,5 +33,6 @@ model_names = {
     'mirt-qm-qmatrix-banach': 'MIRT',
     'mirt-qm-qmatrix-custom': 'MIRT',
     'mirt-qm-qmatrix-fake': 'MIRT',
-    'mirt-qm-qmatrix-fraction': 'MIRT'
+    'mirt-qm-qmatrix-fraction': 'MIRT',
+    'mirt-qm-qmatrix-timss2003': 'MIRT'
 }
