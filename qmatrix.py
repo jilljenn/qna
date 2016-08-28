@@ -5,7 +5,7 @@ from itertools import product
 from my_io import IO, say
 from datetime import datetime
 from operator import mul
-import numpy as np
+# import numpy as np
 
 # state (over 2^K) => comp (over K) where K = nb_competences
 
@@ -113,7 +113,6 @@ class QMatrix():
 
     def init_test(self, validation_question_set):
         self.p_test = self.prior
-        print(self.p_test)
         self.validation_question_set = validation_question_set
 
     def compute_proba_question(self, question_id, p_states, mode=None):
@@ -185,6 +184,8 @@ class QMatrix():
         nb_questions = len(train[0])
         self.p_states = []
         for student_id in range(nb_students):
+            if student_id % 20 == 0:
+                print(student_id)
             self.p_states.append(self.uniform_prior[:])
             for question_id in range(nb_questions): # Ask her ALL questions!
                 self.p_states[student_id] = self.ask_question(question_id, train[student_id][question_id], self.p_states[student_id])

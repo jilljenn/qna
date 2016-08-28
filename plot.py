@@ -36,7 +36,7 @@ fmt = {'irt': '.', 'mirt-qm-qmatrix-cdm': '+', 'mirt-qm-qmatrix-cdm-new': 's', '
 # linewidth = {'mirt': 5, '888': 3, '8': 3, 'irt': 1, 'qm': 3, 'qm-qmatrix-cdm': 3, 'mirt-qm-qmatrix-cdm': 5, 'mirt-qm-qmatrix-cdm-new': 7, 'mirt-qm-qmatrix-cdm-new': 7}
 linewidth = {'irt': 2, 'mirt-qm-qmatrix-cdm-new': 3}
 label = {'irt': 'Rasch', 'qm-qmatrix-cdm': 'DINA', 'mirt-qm-qmatrix-cdm-new': 'GenMA + auto', 'mirt': 'MIRT', 'qm': 'DINA auto'}
-for qmatrix_name in ['cdm', 'ecpe', 'banach', 'fraction', 'custom', 'cdm-new', 'fake']:
+for qmatrix_name in ['cdm', 'ecpe', 'banach', 'fraction', 'custom', 'cdm-new', 'fake', 'timss2003']:
 	for prefix in ['qm', 'mirt-qm']:
 		tag = '%s-qmatrix-%s' % (prefix, qmatrix_name)
 		color[tag] = 'red' if prefix == 'mirt-qm' else 'green'
