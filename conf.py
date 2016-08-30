@@ -1,8 +1,9 @@
-dataset_name = 'timss2003'
-PREFIX = dataset_name
+dataset_name = 'ecpe'
+PREFIX = 'redo-ecpe'
+# PREFIX = dataset_name
 
-STUDENT_FOLD = 4  # 4
-QUESTION_FOLD = 2  # 2
+STUDENT_FOLD = 1  # 4
+QUESTION_FOLD = 4  # 2
 BATCH_SIZE = 5
 
 DEBUG = False  # DEBUG == True means only one student
