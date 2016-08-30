@@ -1,6 +1,7 @@
 # coding=utf8
 import sys, os, re, json
 import matplotlib
+matplotlib.rcParams['font.family'] = 'Times New Roman'
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import glob
@@ -14,7 +15,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 results = {}
 
 folder = sys.argv[1]
-BW = False
+BW = True
 
 all_datasets = []
 for filename in glob.glob('data/*.json'):
@@ -35,7 +36,7 @@ color = {'3': 'red', '4': 'orangered', '5': 'orange', '6': 'yellow', '8': 'blue'
 fmt = {'irt': '.', 'mirt-qm-qmatrix-cdm': '+', 'mirt-qm-qmatrix-cdm-new': 's', 'mirt': '+', 'qm': 'o'}
 # linewidth = {'mirt': 5, '888': 3, '8': 3, 'irt': 1, 'qm': 3, 'qm-qmatrix-cdm': 3, 'mirt-qm-qmatrix-cdm': 5, 'mirt-qm-qmatrix-cdm-new': 7, 'mirt-qm-qmatrix-cdm-new': 7}
 linewidth = {'irt': 2, 'mirt-qm-qmatrix-cdm-new': 3}
-label = {'irt': 'Rasch', 'qm-qmatrix-cdm': 'DINA', 'mirt-qm-qmatrix-cdm-new': 'GenMA + auto', 'mirt': 'MIRT', 'qm': 'DINA auto'}
+label = {'irt': 'Rasch', 'qm-qmatrix-cdm': 'DINA', 'mirt': 'MIRT', 'qm': 'DINA auto'}
 for qmatrix_name in ['cdm', 'ecpe', 'banach', 'fraction', 'custom', 'cdm-new', 'fake', 'timss2003']:
 	for prefix in ['qm', 'mirt-qm']:
 		tag = '%s-qmatrix-%s' % (prefix, qmatrix_name)
@@ -43,6 +44,7 @@ for qmatrix_name in ['cdm', 'ecpe', 'banach', 'fraction', 'custom', 'cdm-new', '
 		# linewidth[tag] = 5 if prefix == 'mirt-qm' else 3
 		label[tag] = 'GenMA + expert' if prefix == 'mirt-qm' else 'DINA'
 		fmt[tag] = 'o' if prefix == 'mirt-qm' else '+'
+label['mirt-qm-qmatrix-cdm-new'] = 'GenMA + auto'
 
 # plt.style.use('ggplot')
 fig, ax = plt.subplots()
