@@ -17,6 +17,7 @@ mirtCAT = importr('mirtCAT')
 class MIRT:
     q = None
     dim = None
+    theta = None
     def __init__(self, dim=2, q=None, slip=None, guess=None, prior=None, criterion='MFI'):
         self.dim = q.nb_competences if q else dim
         self.name = 'MIRT'
@@ -41,7 +42,7 @@ class MIRT:
             robjects.globalenv['data'] = data
             if self.q:
                 r('model = mirt.model(Q)')
-                r('fit = mirt(data, model, method="MHRM")')
+                r('fit = mirt(data, model)')#, method="MHRM")')
             elif self.dim < 3:
                 r('fit = mirt(data, %d)' % self.dim)
             else:
@@ -81,11 +82,16 @@ class MIRT:
 
         return next_item_id - 1
 
+    def update_theta(self):
+        r('CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)')
+        r("theta <- cbind(CATdesign$person$thetas, 1)")
+        self.theta = r.theta
+
     def estimate_parameters(self, replied_so_far, results_so_far, var_id=''):
         say('estimate', replied_so_far[-1], results_so_far[-1])
 
         r('CATdesign <- updateDesign(CATdesign, items=c(%s), response=c(%s))' % (replied_so_far[-1] + 1, int(results_so_far[-1])))
-        r('CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)')
+        self.update_theta()
 
         say('Thêta du candidat :', r('CATdesign$person$thetas'))
         # pm = r('semTheta(theta, itembank[c({}),])'.format(','.join(map(str, replied_so_far))))
@@ -94,9 +100,7 @@ class MIRT:
         items_asked = ','.join(map(lambda x: str(x + 1), chosen))
         answers_got = ','.join(map(lambda x: str(int(x)), answers))
         r("CATdesign <- updateDesign(CATdesign, items=c(%s), response=c(%s))" % (items_asked, answers_got))
-        r("CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)")
-        r("theta <- cbind(CATdesign$person$thetas, 1)")
-        return r.theta
+        self.update_theta()
 
     def predict_performance(self, var_id=''):
         r('U <- cbind(CATdesign$person$thetas, rep(1))')

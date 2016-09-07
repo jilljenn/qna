@@ -1,10 +1,10 @@
-dataset_name = 'ecpe'
-PREFIX = 'redo-ecpe'
+dataset_name = 'fraction'
+# PREFIX = 'results/timss2003'
+PREFIX = 'tmp'
 # PREFIX = dataset_name
 
-STUDENT_FOLD = 1  # 4
-QUESTION_FOLD = 4  # 2
-BATCH_SIZE = 5
+STUDENT_FOLD = 4  # 4
+QUESTION_FOLD = 1  # 2
 
 DEBUG = False  # DEBUG == True means only one student
 VERBOSE = False
@@ -35,5 +35,10 @@ model_names = {
     'mirt-qm-qmatrix-custom': 'MIRT',
     'mirt-qm-qmatrix-fake': 'MIRT',
     'mirt-qm-qmatrix-fraction': 'MIRT',
-    'mirt-qm-qmatrix-timss2003': 'MIRT'
+    'mirt-qm-qmatrix-timss2003': 'MIRT',
+    'cat': 'cat',
+    'dpp': 'dpp',
+    'random': 'random'
 }
+
+strategies = ['random', 'dpp']
