@@ -24,10 +24,13 @@ def get_results(report, filename, files):
 	nb_students = len(report['mean_error'])
 	budget = len(report['mean_error'][0])
 	model_name = report['model_name']
-	results[model_name] = {
-		'mean': [avgstd([report['mean_error'][i][t] for i in range(nb_students)]) for t in range(budget)],
-		'count': [avgstd([report['nb_mistakes'][i][t] for i in range(nb_students)]) for t in range(budget)]
-	}
+	results[model_name] = {}
+	if 'mean_error' in report:
+		results[model_name]['mean'] = [avgstd([report['mean_error'][i][t] for i in range(nb_students)]) for t in range(budget)]
+	if 'nb_mistakes' in report:
+		results[model_name]['count'] = [avgstd([report['nb_mistakes'][i][t] for i in range(nb_students)]) for t in range(budget)]
+	if 'delta' in report:
+		results[model_name]['delta'] = [avgstd([report['delta'][i][t] for i in range(nb_students)]) for t in range(budget)]
 	files.backup('stats-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
 def simulate(model, train_data, test_data, validation_question_set):

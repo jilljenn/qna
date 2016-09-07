@@ -28,7 +28,7 @@ class IO(object):
         else:
             return PREFIX
 
-    def update(self, i, j, silent=False):
+    def update(self, i, j=0, silent=False):
         self.i = i
         self.j = j
         if not silent:
@@ -69,25 +69,28 @@ class Dataset(object):
         self.question_subset = range(self.nb_questions)  # All questions every time
 
     def get_subset(self):
+        from sklearn.cross_validation import KFold, StratifiedKFold
         scores = [sum(student) for student in self.data]
         self.train_subsets = []
         self.test_subsets = []
         if DEBUG:
             all_students = range(len(self.data))
             random.shuffle(all_students)
-            train = all_students[:6]  # For debug
+            train = all_students[:150]#[:6]  # For debug
             test_student = train.pop()
             test = [test_student]
             self.train_subsets.append(sorted(train))
             self.test_subsets.append(test)
         else:
-            from sklearn.cross_validation import KFold, StratifiedKFold
             for train, test in StratifiedKFold(scores, STUDENT_FOLD):
                 self.train_subsets.append(train.tolist())
                 self.test_subsets.append(test.tolist())
         self.validation_question_sets = []
-        for _, validation_question_array in KFold(n=self.nb_questions, n_folds=QUESTION_FOLD, shuffle=True, random_state=None):
-            self.validation_question_sets.append(validation_question_array.tolist())
+        if QUESTION_FOLD >= 2:
+            for _, validation_question_array in KFold(n=self.nb_questions, n_folds=QUESTION_FOLD, shuffle=True, random_state=None):
+                self.validation_question_sets.append(validation_question_array.tolist())
+        else:
+            self.validation_question_sets.append(list(range(self.nb_questions)))
 
     def to_dict(self):
         return {
