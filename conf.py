@@ -1,12 +1,10 @@
 dataset_name = 'fraction'
-# PREFIX = 'results/timss2003'
 PREFIX = 'tmp'
-# PREFIX = dataset_name
 
-STUDENT_FOLD = 4  # 4
-QUESTION_FOLD = 1  # 2
+STUDENT_FOLD = 4
+QUESTION_FOLD = 2
 
-DEBUG = False  # DEBUG == True means only one student
+DEBUG = True  # DEBUG == True means only one student
 VERBOSE = False
 
 if DEBUG:
