@@ -2,6 +2,10 @@
 
 Comparing Rasch, DINA, MIRT, GenMA presented at the EC-TEL 2016 conference.
 
+Comments are welcome! See Authors below.
+
+## Requirements
+
 You first need to install [virtualenv](https://pypi.python.org/pypi/virtualenv) for Python 2.7. ``pypy`` is optional but I strongly suggest it for the DINA model, which is pretty slow to train.
 
 As scikit-learn relies on scipy, you may need [gfortran](http://www.scipy.org/scipylib/building/macosx.html#compilers-c-c-fortran-cython) as well.
@@ -25,7 +29,7 @@ You may need to do the following while installing RPy: ``apt-get install libread
 
 ## Usage
 
-Either you try a ``./start.sh tmp``, or you check the ``start.sh`` file.
+Either you try a ``./start.sh tmp`` (which by default runs the whole framework on the Fraction dataset), or you check the ``start.sh`` file.
 
 The default ``conf.py`` file is in ``DEBUG`` mode, which means it focuses on making an adaptive test on only one student. You can change it by setting the ``DEBUG`` parameter to ``False``.
 
@@ -34,10 +38,11 @@ The default ``conf.py`` file is in ``DEBUG`` mode, which means it focuses on mak
 - MIRT 2-dim: 20s
 - GenMA 8-dim: 95s
 
-# License
+## License
 
 The code is under license **AGPLv3** which roughly means, you can use it for commercial purposes, even plugging it to proprietary source code, but if you modify it for your needs, you need to publish your changes.
 
-# Author
+## Authors
 
-Jill-Jênn Vie <vie@jill-jenn.net>
+- Jill-Jênn Vie <vie@jill-jenn.net>
+- Jean-Bastien Grill
