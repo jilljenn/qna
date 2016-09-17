@@ -30,6 +30,7 @@ class QMatrix():
         self.nb_competences = nb_competences
         self.Q = Q
         self.prior = prior  # if prior else [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
+        self.uniform_prior = [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
         print 'Prior', self.prior
         self.p_states = None
         self.p_test = None
