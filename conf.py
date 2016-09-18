@@ -11,7 +11,7 @@ if DEBUG:
     STUDENT_FOLD = 1
     PREFIX = 'tmp'
 
-nb_competences_values = [2] #range(2, 15, 3)
+nb_competences_values = [3, 5, 7] #range(2, 15, 3)
 
 model_names = {
     'mirt': 'MIRT',

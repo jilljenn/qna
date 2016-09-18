@@ -30,7 +30,7 @@ class QMatrix():
         self.nb_competences = nb_competences
         self.Q = Q
         self.prior = prior  # if prior else [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
-        self.uniform_prior = [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
+        self.uniform_prior = [1. / (1 << self.nb_competences)] * (1 << self.nb_competences) if self.nb_competences else None
         print 'Prior', self.prior
         self.p_states = None
         self.p_test = None
@@ -327,3 +327,6 @@ class QMatrix():
         if self.filename:
             prefix += '-%s' % self.filename
         return prefix
+
+    def get_dim(self):
+        return self.nb_competences

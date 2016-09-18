@@ -118,3 +118,6 @@ class MIRT:
         if self.q:
             prefix += '-%s' % self.q.get_prefix()
         return prefix
+
+    def get_dim(self):
+        return self.dim

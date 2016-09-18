@@ -86,3 +86,6 @@ class IRT():
 
     def get_prefix(self):
         return 'irt' if self.criterion == 'MFI' else 'mepv-irt'
+
+    def get_dim(self):
+        return 1

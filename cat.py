@@ -20,7 +20,7 @@ def dummy_count(performance, truth, replied_so_far):
 	return sum([(performance[i] < 0.5 and truth[i]) or (performance[i] > 0.5 and not truth[i]) for i in range(nb_questions) if i not in replied_so_far]) # Count errors
 
 def get_results(report, filename, files):
-	results = {}
+	results = {'dim': report['dim']}
 	nb_students = len(report['mean_error'])
 	budget = len(report['mean_error'][0])
 	model_name = report['model_name']
@@ -42,7 +42,7 @@ def simulate(model, train_data, test_data, validation_question_set):
 	nb_students = len(test_data)
 	nb_questions = len(test_data[0])
 	budget = nb_questions - len(validation_question_set)
-	report = {'mean_error': [], 'nb_mistakes': [], 'model_name': model.name}
+	report = {'mean_error': [], 'nb_mistakes': [], 'model_name': model.name, 'dim': model.get_dim()}
 	for student_id in range(nb_students):
 		if student_id % 10 == 0:
 			print(student_id)
@@ -99,10 +99,9 @@ def main():
 			validation_index = set(dataset.validation_question_sets[j_exp])
 			files.update(i_exp, j_exp)
 			for model in models:
-				train_power = len(train_subset)
 				begin = datetime.now()
 				print begin
-				filename = model.get_prefix() + '-%s-%s' % (dataset.nb_questions, train_power)
+				filename = model.get_prefix() + '-%s-%s' % (dataset.nb_questions, model.get_dim())
 				train_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in train_subset]
 				test_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in test_subset]
 				report = simulate(model, train_dataset, test_dataset, validation_index)

@@ -41,13 +41,13 @@ fmt = {
 	'mirt-qm-qmatrix-cdm': '+',
 	'mirt-qm-qmatrix-cdm-new': 's',
 	'mirt': '+',
-	'qm': 'o',
+	'qm': '^',
 	'dpp': '+',
 	'random': '.',
 	'cat': 'o'
 }
 
-label = {
+main_label = {
 	'irt': 'Rasch',
 	'qm-qmatrix-cdm': 'DINA',
 	'mirt': 'MIRT',
@@ -56,6 +56,12 @@ label = {
 	'dpp': 'DPP',
 	'random': 'Random'
 }
+
+def get_label(name, dim):
+	label = main_label[name]
+	if name == 'qm':
+		label += ' K = %s' % dim
+	return label
 
 ylabel = {
 	'count': 'Incorrect predictions count',
@@ -70,24 +76,38 @@ for filename in glob.glob('data/*.json'):
 for filename in os.listdir(folder):
 	if filename.startswith('stats'):
 		print filename
-		dataset_name, name, nb_questions, train_power = re.match('stats-(%s)-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % '|'.join(all_datasets), filename).groups()
+		dataset_name, name, nb_questions, dim = re.match('stats-(%s)-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % '|'.join(all_datasets), filename).groups()
 		nb_questions = int(nb_questions)
 		data = json.load(open('%s/%s' % (folder, filename)))['QMatrix' if len(name) <= 2 else model_names[name]][displayed_y_axis]
-		# print name, nb_questions, train_power
-		results[(name, train_power)] = data
+		# print name, nb_questions, dim
+		results[(name, dim)] = data
 for line in results:
 	print(line)
 
 # linewidth = {'mirt': 5, '888': 3, '8': 3, 'irt': 1, 'qm': 3, 'qm-qmatrix-cdm': 3, 'mirt-qm-qmatrix-cdm': 5, 'mirt-qm-qmatrix-cdm-new': 7, 'mirt-qm-qmatrix-cdm-new': 7}
-linewidth = {'irt': 2, 'mirt-qm-qmatrix-cdm-new': 3}
+main_linewidth = {'irt': 2, 'mirt-qm-qmatrix-cdm-new': 3}
 for qmatrix_name in ['cdm', 'ecpe', 'banach', 'fraction', 'custom', 'cdm-new', 'fake', 'timss2003']:
 	for prefix in ['qm', 'mirt-qm']:
 		tag = '%s-qmatrix-%s' % (prefix, qmatrix_name)
 		color[tag] = 'red' if prefix == 'mirt-qm' else 'green'
 		# linewidth[tag] = 5 if prefix == 'mirt-qm' else 3
-		label[tag] = 'GenMA + expert' if prefix == 'mirt-qm' else 'DINA'
+		main_label[tag] = 'GenMA + expert' if prefix == 'mirt-qm' else 'DINA'
 		fmt[tag] = 'o' if prefix == 'mirt-qm' else '+'
-label['mirt-qm-qmatrix-cdm-new'] = 'GenMA + auto'
+main_label['mirt-qm-qmatrix-cdm-new'] = 'GenMA + auto'
+
+all_dim = set()
+for (name, dim) in results:
+	if name == 'qm':
+		all_dim.add(dim)
+all_dim = sorted(all_dim)
+
+def get_linewidth(name, dim):
+	if name in main_linewidth:
+		return main_linewidth[name]
+	elif name == 'qm':
+		return 2 + all_dim.index(dim)
+	else: 
+		return 2
 
 # plt.style.use('ggplot')
 fig, ax = plt.subplots()
@@ -97,10 +117,10 @@ errorbar = {}
 
 handles = []
 names = []
-for (name, train_power) in results:
+for (name, dim) in results:
 	names.append(name)
-	curves[name], errorbar[name] = zip(*results[(name, train_power)])
-	curve = ax.errorbar(range(1, len(curves[name]) + 1), curves[name], yerr=errorbar[name], color=color[name] if not BW else 'black', linewidth=linewidth.get(name, 2), label=label[name], fmt='-' + fmt[name])  # linewidth[name]
+	curves[name], errorbar[name] = zip(*results[(name, dim)])
+	curve = ax.errorbar(range(1, len(curves[name]) + 1), curves[name], yerr=errorbar[name], color=color[name] if not BW else 'black', linewidth=get_linewidth(name, dim), label=get_label(name, dim), fmt='-' + fmt[name])  # linewidth[name]
 	handles.append(curve)
 ax.set_title('Comparing %s for adaptive testing (dataset: %s)' % ('strategies' if 'dpp' in names else 'models', dataset_name))
 ax.set_xlabel('Number of questions asked')
