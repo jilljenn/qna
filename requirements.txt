@@ -1,5 +1,6 @@
 rpy2==2.5.0
 numpy
+scipy
 scikit-learn
 matplotlib
 singledispatch
