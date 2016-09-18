@@ -20,18 +20,18 @@ for i in range(STUDENT_FOLD):
             if filename.startswith('log'):
                 m = re.match('log-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset_name, filename)
                 if m:
-                    model_name, nb_questions, train_power = m.groups()
+                    model_name, nb_questions, dim = m.groups()
                 else:
                     print(filename)
-                data[model_name] = {'nb_questions': nb_questions, 'train_power': train_power, 'dataset_name': dataset_name}
+                data[model_name, dim] = {'nb_questions': nb_questions, 'dim': dim, 'dataset_name': dataset_name}
                 report = files.load(filename.replace('.json', ''))
                 print filename, len(report), 'reports found'
                 if model_name not in reports:
-                    reports[model_name] = {}
+                    reports[model_name, dim] = {'dim': report['dim']}
                 for category in ['mean_error', 'nb_mistakes']:
-                    reports[model_name].setdefault(category, []).extend(report[category])  # Combine
+                    reports[model_name, dim].setdefault(category, []).extend(report[category])  # Combine
 files.init()
-for model_name in reports:
-    dataset_name, nb_questions, train_power = data[model_name]['dataset_name'], data[model_name]['nb_questions'], data[model_name]['train_power']
-    files.backup('log-%s-%s-%s-%s-%s' % (dataset_name, model_name, nb_questions, train_power, datetime.now().strftime('%d%m%Y%H%M%S')), reports[model_name])
-    print model_name, len(reports[model_name])
+for model_name, dim in reports:
+    dataset_name, nb_questions, dim = data[model_name, dim]['dataset_name'], data[model_name, dim]['nb_questions'], data[model_name, dim]['dim']
+    files.backup('log-%s-%s-%s-%s-%s' % (dataset_name, model_name, nb_questions, dim, datetime.now().strftime('%d%m%Y%H%M%S')), reports[model_name, dim])
+    print model_name, len(reports[model_name, dim])

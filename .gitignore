@@ -1,5 +1,6 @@
 .DS_Store
 *.pyc
 backup
+results
 tmp
 venv
