@@ -33,7 +33,8 @@ color = {
 	'mirt-qm-matrix-cdm-new': 'gold',
 	'random': 'blue',
 	'dpp': 'red',
-	'cat': 'green'
+	'cat': 'green',
+	'uncertainty': 'black'
 }
 
 fmt = {
@@ -43,8 +44,9 @@ fmt = {
 	'mirt': '+',
 	'qm': '^',
 	'dpp': '+',
-	'random': '.',
-	'cat': 'o'
+	'random': '^',
+	'cat': 'o',
+	'uncertainty': '.'
 }
 
 main_label = {
@@ -53,7 +55,8 @@ main_label = {
 	'mirt': 'MIRT',
 	'qm': 'DINA auto',
 	'cat': 'CAT',
-	'dpp': 'DPP',
+	'dpp': 'InitialD',
+	'uncertainty': 'Uncertainty',
 	'random': 'Random'
 }
 
@@ -125,7 +128,7 @@ for (name, dim) in results:
 ax.set_title('Comparing %s for adaptive testing (dataset: %s)' % ('strategies' if 'dpp' in names else 'models', dataset_name))
 ax.set_xlabel('Number of questions asked')
 ax.set_ylabel(ylabel[displayed_y_axis])
-print(results, handles)
+# print(results, handles)
 plt.legend(handles=handles)
-plt.savefig('%s/plot-%s.pdf' % (PREFIX, displayed_y_axis), format='pdf')
+plt.savefig('%s/plot-%s.pdf' % (folder, displayed_y_axis), format='pdf')
 # plt.show()

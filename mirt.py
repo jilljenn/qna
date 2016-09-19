@@ -42,7 +42,7 @@ class MIRT:
             robjects.globalenv['data'] = data
             if self.q:
                 r('model = mirt.model(Q)')
-                r('fit = mirt(data, model)')#, method="MHRM")')
+                r('fit = mirt(data, model, method="QMCEM")')#, method="MHRM")')
             elif self.dim < 3:
                 r('fit = mirt(data, %d)' % self.dim)
             else:

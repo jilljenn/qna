@@ -13,9 +13,9 @@ import numpy as np
 def full_logloss(performance, truth):
     return logloss(performance, truth, range(len(performance)))
 
-def hinge(performance, truth):
+def nb_mistakes(performance, truth):
     nb_questions = len(performance)
-    return sum(np.round(performance)[i] == truth[i] for i in range(nb_questions))
+    return sum(np.round(performance)[i] != truth[i] for i in range(nb_questions))
 
 def get_delta(theta1, theta2):
     return np.linalg.norm(np.array(theta1) - np.array(theta2))
@@ -25,15 +25,15 @@ def simulate(train_data, test_data):
     q = QMatrix()
     q.load('qmatrix-%s' % dataset_name)
     model = MIRT(q=q)
-    # model = MIRT(dim=8)
+    # model = MIRT(dim=2)
     model.training_step(train_data)
     nb_students = len(test_data)
     nb_questions = len(test_data[0])
-    report = {strategy: {'delta': [], 'mean_error': [], 'model_name': strategy} for strategy in strategies + ['cat']}
+    report = {strategy: {'delta': [], 'mean_error': [], 'nb_mistakes': [], 'model_name': strategy, 'dim': model.get_dim()} for strategy in strategies + ['cat']}
 
     for student_id in range(nb_students):
         for strategy in strategies + ['cat']:
-            for key in ['delta', 'mean_error']:
+            for key in ['delta', 'mean_error', 'nb_mistakes']:
                 report[strategy][key].append([])  # Data for new student
 
         truth = np.array(test_data[student_id])
@@ -51,16 +51,20 @@ def simulate(train_data, test_data):
                 model.init_test()
                 if strategy == 'random':  # Random
                     chosen = random.sample(range(nb_questions), nb_questions_asked)
-                else:  # DPP
+                elif strategy == 'dpp':  # DPP
                     chosen = model.select_batch(nb_questions_asked)
+                elif strategy == 'uncertainty':
+                    _, chosen = zip(*sorted(zip(model.predict_performance(), range(nb_questions)), key=lambda x: abs(x[0] - 0.5))[:nb_questions_asked])
+                    chosen = list(chosen)
                 answers = truth[chosen]
                 model.bootstrap(chosen, answers)
                 performance = model.predict_performance()
                 report[strategy]['mean_error'][student_id].append(full_logloss(performance, truth))
+                report[strategy]['nb_mistakes'][student_id].append(nb_mistakes(performance, truth))
                 report[strategy]['delta'][student_id].append(get_delta(model.theta, true_theta))
 
                 say('mean_error', full_logloss(performance, truth))
-                say(hinge(performance, truth), 'correct out of', nb_questions)
+                say(nb_mistakes(performance, truth), 'correct out of', nb_questions)
         # report[strategy]['mean_error'].reverse()
         # report[strategy]['delta'].reverse()
 
@@ -82,10 +86,11 @@ def simulate(train_data, test_data):
             # say('   Truth:', ''.join(map(lambda x: '%d' % int(x), test_data[student_id])))
             # say(full_logloss(performance, truth))
             report['cat']['mean_error'][student_id].append(full_logloss(performance, truth))
+            report['cat']['nb_mistakes'][student_id].append(nb_mistakes(performance, truth))
             report['cat']['delta'][student_id].append(get_delta(model.theta, true_theta))
 
             say('mean_error', full_logloss(performance, truth))
-            say(hinge(performance, truth), 'correct out of', nb_questions)
+            say(nb_mistakes(performance, truth), 'correct out of', nb_questions)
     return report
 
 

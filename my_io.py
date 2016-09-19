@@ -82,7 +82,7 @@ class Dataset(object):
             self.train_subsets.append(sorted(train))
             self.test_subsets.append(test)
         else:
-            for train, test in StratifiedKFold(scores, STUDENT_FOLD):
+            for train, test in StratifiedKFold(scores, STUDENT_FOLD, shuffle=True):
                 self.train_subsets.append(train.tolist())
                 self.test_subsets.append(test.tolist())
         self.validation_question_sets = []
