@@ -32,7 +32,7 @@ if LATEX:
             elements = [r'$%s \pm %s$ (%d \%%)' % tuple(results[key]['mean'][q_index] + [round(100 * (1 - results[key]['count'][q_index][0] / nb_validation), 1)]) for q_index in questions]
         else:
             elements = [r'$%s \pm %s$' % tuple(results[key]['delta'][q_index]) for q_index in questions]
-        print model_names[model_name], '&', ' & '.join(elements) + r'\\'
+        print model_names[model_name], 'K = %s' % key[1], '&', ' & '.join(elements) + r'\\'
     print(r'\end{tabular}')
 else:
     for key in results:
