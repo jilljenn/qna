@@ -89,7 +89,7 @@ for line in results:
 
 # linewidth = {'mirt': 5, '888': 3, '8': 3, 'irt': 1, 'qm': 3, 'qm-qmatrix-cdm': 3, 'mirt-qm-qmatrix-cdm': 5, 'mirt-qm-qmatrix-cdm-new': 7, 'mirt-qm-qmatrix-cdm-new': 7}
 main_linewidth = {'irt': 2, 'mirt-qm-qmatrix-cdm-new': 3}
-for qmatrix_name in ['cdm', 'ecpe', 'banach', 'fraction', 'custom', 'cdm-new', 'fake', 'timss2003']:
+for qmatrix_name in ['cdm', 'ecpe', 'banach', 'fraction', 'custom', 'cdm-new', 'fake', 'timss2003', 'castor6e', 'sat', 'sat2', 'sat3', 'sat4']:
 	for prefix in ['qm', 'mirt-qm']:
 		tag = '%s-qmatrix-%s' % (prefix, qmatrix_name)
 		color[tag] = 'red' if prefix == 'mirt-qm' else 'green'

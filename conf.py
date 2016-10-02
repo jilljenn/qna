@@ -1,10 +1,10 @@
-dataset_name = 'fraction'
-PREFIX = 'tmp'
+dataset_name = 'sat'
+PREFIX = 'sat2'
 
-STUDENT_FOLD = 4
+STUDENT_FOLD = 5
 QUESTION_FOLD = 2
 
-DEBUG = True  # DEBUG == True means only one student
+DEBUG = False  # DEBUG == True means only one student
 VERBOSE = False
 
 if DEBUG:
@@ -22,6 +22,11 @@ model_names = {
     'qm-qmatrix-fake': 'QMatrix',
     'qm-qmatrix-fraction': 'QMatrix',
     'qm-qmatrix-timss2003': 'QMatrix',
+    'qm-qmatrix-castor6e': 'QMatrix',
+    'qm-qmatrix-sat': 'QMatrix',
+    'qm-qmatrix-sat2': 'QMatrix',
+    'qm-qmatrix-sat3': 'QMatrix',
+    'qm-qmatrix-sat4': 'QMatrix',
     '8': 'QMatrix',
     '888': 'QMatrix',
     'mepv-irt': 'IRT',
@@ -34,9 +39,11 @@ model_names = {
     'mirt-qm-qmatrix-fake': 'MIRT',
     'mirt-qm-qmatrix-fraction': 'MIRT',
     'mirt-qm-qmatrix-timss2003': 'MIRT',
+    'mirt-qm-qmatrix-sat': 'MIRT',
     'cat': 'cat',
     'dpp': 'dpp',
-    'random': 'random'
+    'random': 'random',
+    'uncertainty': 'uncertainty'
 }
 
-strategies = ['random', 'dpp']
+strategies = ['random', 'dpp', 'uncertainty']

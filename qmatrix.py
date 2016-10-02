@@ -50,8 +50,8 @@ class QMatrix():
         self.guess = q_data['guess']
         self.p_states = q_data['p_states']
         self.from_expert = True
-        self.prior = q_data['prior'] if q_data['prior'] else [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
         self.uniform_prior = [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
+        self.prior = self.uniform_prior # q_data['prior'] if q_data['prior'] else [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
 
     def save(self, filename):
         self.io.backup(filename, {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior, 'error': self.error, 'p_states': self.p_states})
@@ -102,7 +102,9 @@ class QMatrix():
         print self.guess
         print self.slip
         print '->', self.model_error(train)"""
-        self.model_error(train)
+        print(self.model_error(train))
+        self.infer_guess_slip(train)
+        print(self.model_error(train))
         self.display_qmatrix()
         if timeout is None:
             self.generate_student_data(50)
@@ -218,7 +220,7 @@ class QMatrix():
             for mode in ['slip', 'guess']:
                 # if mode == 'guess':
                     # print('was', self.guess[question_id], self.model_error(train))
-                a, b = 0., 0.15#1.#0.5#1#.#0.3#1. #0.2 # Limite
+                a, b = 0., 1.#0.15#1.#0.5#1#.#0.3#1. #0.2 # Limite
                 while b - a > SLIP_GUESS_PRECISION:
                     sg = (a + b) / 2
                     if mode == 'slip':
@@ -278,7 +280,7 @@ class QMatrix():
     def infer_prior(self):
         nb_students = len(self.p_states)
         nb_states = len(self.p_states[0])
-        self.prior = [sum(self.p_states[student_id][j] for student_id in range(nb_students)) / nb_students for j in range(nb_states)]
+        # self.prior = [sum(self.p_states[student_id][j] for student_id in range(nb_students)) / nb_students for j in range(nb_states)]
 
     def next_item(self, replied_so_far, results_so_far):
         nb_questions = len(self.Q)

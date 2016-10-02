@@ -119,6 +119,12 @@ if __name__ == '__main__':
 		models = []
 		for nb_competences in nb_competences_values:
 			models.append(QMatrix(nb_competences=nb_competences))
+	elif sys.argv[1] == 'dina':
+		from qmatrix import QMatrix
+		q = QMatrix()
+		q.load('qmatrix-%s' % sys.argv[2])
+		# print('test', q.model_error())
+		models = [q]
 	elif sys.argv[1] == 'qmspe':
 		from qmatrix import QMatrix
 		q = QMatrix()
