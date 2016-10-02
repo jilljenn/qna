@@ -1,6 +1,8 @@
+# coding=utf-8
 import sys, os, glob
 import re, json
 from conf import model_names
+from style import get_label
 
 LATEX = True
 
@@ -25,14 +27,14 @@ for filename in os.listdir(folder):
 
 if LATEX:
     print(r'\begin{tabular}{c%s}' % ('c' * len(questions)))
-    print(r'& ' + ' & '.join('After %d questions' % (q_index + 1) for q_index in questions) + r'\\')
+    print(r'& ' + ' & '.join('Après %d questions' % (q_index + 1) for q_index in questions) + r'\\')
     for key in results:
         model_name, _ = key
         if value == 'mean':
             elements = [r'$%s \pm %s$ (%d \%%)' % tuple(results[key]['mean'][q_index] + [round(100 * (1 - results[key]['count'][q_index][0] / nb_validation), 1)]) for q_index in questions]
         else:
             elements = [r'$%s \pm %s$' % tuple(results[key]['delta'][q_index]) for q_index in questions]
-        print model_names[model_name], 'K = %s' % key[1], '&', ' & '.join(elements) + r'\\'
+        print get_label(model_name, key[1]), '&', ' & '.join(elements) + r'\\'
     print(r'\end{tabular}')
 else:
     for key in results:
