@@ -1,7 +1,7 @@
-dataset_name = 'sat'
-PREFIX = 'sat2'
+dataset_name = 'timss2003'
+PREFIX = 'results/timss2003'
 
-STUDENT_FOLD = 5
+STUDENT_FOLD = 4
 QUESTION_FOLD = 2
 
 DEBUG = False  # DEBUG == True means only one student
@@ -11,7 +11,7 @@ if DEBUG:
     STUDENT_FOLD = 1
     PREFIX = 'tmp'
 
-nb_competences_values = [3, 5, 7] #range(2, 15, 3)
+nb_competences_values = [3] #range(2, 15, 3)
 
 model_names = {
     'mirt': 'MIRT',
@@ -19,10 +19,14 @@ model_names = {
     'qm': 'QMatrix',
     'qm-qmatrix-cdm': 'QMatrix',
     'qm-qmatrix-ecpe': 'QMatrix',
+    'qm-qmatrix-ecpe2': 'QMatrix',
     'qm-qmatrix-fake': 'QMatrix',
     'qm-qmatrix-fraction': 'QMatrix',
+    'qm-qmatrix-fraction2': 'QMatrix',
     'qm-qmatrix-timss2003': 'QMatrix',
+    'qm-qmatrix-timss2003b': 'QMatrix',
     'qm-qmatrix-castor6e': 'QMatrix',
+    'qm-qmatrix-castor6e2': 'QMatrix',
     'qm-qmatrix-sat': 'QMatrix',
     'qm-qmatrix-sat2': 'QMatrix',
     'qm-qmatrix-sat3': 'QMatrix',

@@ -26,6 +26,7 @@ full_dataset = {
 	'fraction': 'Fraction',
 	'ecpe': 'ECPE',
 	'timss2003': 'TIMSS',
+	'castor6e': 'Castor',
 }
 
 ylabel = {
@@ -83,5 +84,5 @@ ax.set_xlabel('Nombre de questions posées')
 ax.set_ylabel(ylabel[displayed_y_axis])
 # print(results, handles)
 plt.legend(handles=handles)
-plt.savefig('%s/plot-%s.pdf' % (folder, displayed_y_axis), format='pdf')
+plt.savefig('%s/%s-%s.pdf' % (folder, dataset_name, displayed_y_axis), format='pdf')
 # plt.show()
