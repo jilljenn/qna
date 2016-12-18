@@ -20,7 +20,7 @@ def dummy_count(performance, truth, replied_so_far):
 	return sum([(performance[i] < 0.5 and truth[i]) or (performance[i] > 0.5 and not truth[i]) for i in range(nb_questions) if i not in replied_so_far]) # Count errors
 
 def get_results(report, filename, files):
-	results = {'dim': report['dim']}
+	results = {'dim': report.get('dim', 3)}
 	nb_students = len(report['mean_error'])
 	budget = len(report['mean_error'][0])
 	model_name = report['model_name']

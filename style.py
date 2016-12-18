@@ -19,14 +19,14 @@ color = {
 }
 
 fmt = {
-    'irt': '.',
-    'mirt-qm-qmatrix-cdm': '+',
-    'mirt-qm-qmatrix-cdm-new': 's',
-    'mirt': '^',
-    'qm': '^',
+    'irt': '-.',
+    'mirt-qm-qmatrix-cdm': '-+',
+    'mirt-qm-qmatrix-cdm-new': '-s',
+    'mirt': '-^',
+    'qm': '-^',
     'dpp': '+',
     'random': '^',
-    'cat': 'o',
+    'cat': '-o',
     'uncertainty': '.'
 }
 
@@ -49,7 +49,7 @@ for qmatrix_name in ['cdm', 'ecpe', 'ecpe2', 'banach', 'fraction', 'fraction2', 
         color[tag] = 'red' if prefix == 'mirt-qm' else 'green'
         # linewidth[tag] = 5 if prefix == 'mirt-qm' else 3
         main_label[tag] = 'GenMA' if prefix == 'mirt-qm' else 'DINA'
-        fmt[tag] = 'o' if prefix == 'mirt-qm' else '+'
+        fmt[tag] = '-o' if prefix == 'mirt-qm' else '-+'
 main_label['mirt-qm-qmatrix-cdm-new'] = 'GenMA + auto'
 
 def get_label(name, dim):

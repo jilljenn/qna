@@ -23,11 +23,12 @@ for i in range(STUDENT_FOLD):
                     model_name, nb_questions, dim = m.groups()
                 else:
                     print(filename)
+                dim = 3
                 data[model_name, dim] = {'nb_questions': nb_questions, 'dim': dim, 'dataset_name': dataset_name}
                 report = files.load(filename.replace('.json', ''))
                 print filename, len(report), 'reports found'
                 if model_name not in reports:
-                    reports[model_name, dim] = {'dim': report['dim']}
+                    reports[model_name, dim] = {'dim': report.get('dim', 13)}
                 for category in ['mean_error', 'nb_mistakes']:
                     reports[model_name, dim].setdefault(category, []).extend(report[category])  # Combine
 files.init()
