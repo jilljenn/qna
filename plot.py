@@ -35,9 +35,12 @@ full_dataset = {
 }
 
 ylabel = {
-	'count': 'Nombre de prédictions incorrectes',
-	'mean': 'Log loss',
-	'delta': 'Distance au diagnostic final',
+	# 'count': 'Nombre de prédictions incorrectes',
+	'count': 'Number of incorrect predictions',
+	# 'mean': 'Log loss',
+	'mean': 'Log-loss',
+	# 'delta': 'Distance au diagnostic final',
+	'delta': 'Distance to the final diagnosis',
 }
 
 all_datasets = []
@@ -82,10 +85,12 @@ for (name, dim) in sorted(results):
 	curves[name], errorbar[name] = zip(*results[(name, dim)])
 	curve = ax.errorbar(range(1, len(curves[name]) + 1), curves[name], yerr=errorbar[name], color=color[name] if not BW else 'black', linewidth=get_linewidth(name, dim), label=get_label(name, dim), fmt=fmt[name])  # linewidth[name]
 	handles.append(curve)
-title = 'Comparaison de %s de tests adaptatifs (%s)' % ('stratégies' if 'dpp' in names else 'modèles', full_dataset[dataset_name])
+# title = 'Comparaison de %s de tests adaptatifs (%s)' % ('stratégies' if 'dpp' in names else 'modèles', full_dataset[dataset_name])
+title = 'Comparison of %s of subset selection (%s)' % ('strategies' if 'dpp' in names else 'models', full_dataset[dataset_name])
 print(title)
 ax.set_title(title)
-ax.set_xlabel('Nombre initial de questions posées')
+# ax.set_xlabel('Nombre initial de questions posées')
+ax.set_xlabel('Initial number of questions asked')
 ax.set_ylabel(ylabel[displayed_y_axis])
 # print(results, handles)
 plt.legend(handles=handles)
