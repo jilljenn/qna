@@ -7,7 +7,7 @@ Comments are welcome! See Authors below.
 ## Requirements
 
 - Python 3 (2.7 works as well if you replace `raw_input` with `input` in `stats.py`)
-- Successfully tested on Python 3.6 and R 3.3.3 (2017-03-06)
+- Successfully tested on Python 3.6.1 (2017-04-04) and R 3.3.3 (2017-03-06)
 
 ``pypy`` is optional but I strongly suggest it for the DINA model, which is pretty slow to train.
 
@@ -26,7 +26,7 @@ This code also relies on R packages, that you will have to install:
 - mirt ≥ 1.23
 - mirtCAT ≥ 1.4
 
-Or simply type `Rscript install.r`.
+Or simply type `Rscript install.R`.
 
 ## Troubleshooting
 
