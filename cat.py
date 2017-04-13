@@ -9,7 +9,7 @@ import sys
 
 def display(results):
 	for name in results:
-		print name, results[name]['mean']
+		print(name, results[name]['mean'])
 
 def nb_mistakes(performance, truth, validation_question_set):
 	return 0 if not validation_question_set else sum(round(performance[i]) != truth[i] for i in validation_question_set)
@@ -100,14 +100,14 @@ def main():
 			files.update(i_exp, j_exp)
 			for model in models:
 				begin = datetime.now()
-				print begin
+				print(begin)
 				filename = model.get_prefix() + '-%s-%s' % (dataset.nb_questions, model.get_dim())
 				train_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in train_subset]
 				test_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in test_subset]
 				report = simulate(model, train_dataset, test_dataset, validation_index)
 				get_results(report, filename, files)
 				files.backup('log-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), report)
-				print datetime.now()
+				print(datetime.now())
 
 
 if __name__ == '__main__':
@@ -128,9 +128,9 @@ if __name__ == '__main__':
 	elif sys.argv[1] == 'qmspe':
 		from qmatrix import QMatrix
 		q = QMatrix()
-		print 'Toujours', q.prior
+		print('Toujours', q.prior)
 		q.load('qmatrix-%s' % dataset_name)
-		print 'Toujours2', q.prior
+		print('Toujours2', q.prior)
 		models = [q]
 	elif sys.argv[1] == 'irt':
 		from irt import IRT

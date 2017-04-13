@@ -6,22 +6,27 @@ Comments are welcome! See Authors below.
 
 ## Requirements
 
-You first need to install [virtualenv](https://pypi.python.org/pypi/virtualenv) for Python 2.7. ``pypy`` is optional but I strongly suggest it for the DINA model, which is pretty slow to train.
+- Python 3 (2.7 works as well if you replace `raw_input` with `input` in `stats.py`)
+- Successfully tested on Python 3.6 and R 3.3.3 (2017-03-06)
+
+``pypy`` is optional but I strongly suggest it for the DINA model, which is pretty slow to train.
 
 As scikit-learn relies on scipy, you may need [gfortran](http://www.scipy.org/scipylib/building/macosx.html#compilers-c-c-fortran-cython) as well.
 
     $ mkdir backup
-    $ virtualenv venv
+    $ python3 -m venv venv
     $ . venv/bin/activate
     $ pip install -r requirements.txt
 
 This code also relies on R packages, that you will have to install:
 
-- ltm
-- catR
-- CDM
-- mirt
-- mirtCAT
+- ltm ≥ 1.0.0
+- catR ≥ 3.12
+- CDM ≥ 5.3.0
+- mirt ≥ 1.23
+- mirtCAT ≥ 1.4
+
+Or simply type `Rscript install.r`.
 
 ## Troubleshooting
 

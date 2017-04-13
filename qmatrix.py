@@ -31,7 +31,7 @@ class QMatrix():
         self.Q = Q
         self.prior = prior  # if prior else [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
         self.uniform_prior = [1. / (1 << self.nb_competences)] * (1 << self.nb_competences) if self.nb_competences else None
-        print 'Prior', self.prior
+        print('Prior', self.prior)
         self.p_states = None
         self.p_test = None
         self.slip = slip
@@ -94,7 +94,7 @@ class QMatrix():
                 self.infer_guess_slip(train)
                 #print self.model_error(train)
             #print 'Infer prior %d' % loop
-            print self.model_error(train)
+            print(self.model_error(train))
             self.infer_prior()
             print('AHA prior', self.prior)
             loop += 1
@@ -103,8 +103,8 @@ class QMatrix():
         print self.slip
         print '->', self.model_error(train)"""
         print(self.model_error(train))
-        self.infer_guess_slip(train)
-        print(self.model_error(train))
+        #self.infer_guess_slip(train)  # Why so long?
+        #print(self.model_error(train))
         self.display_qmatrix()
         if timeout is None:
             self.generate_student_data(50)
@@ -112,7 +112,7 @@ class QMatrix():
 
     def display_qmatrix(self):
         for i, line in enumerate(self.Q):
-            print ''.join(map(lambda x: '1' if x else '.', line)), self.guess[i], self.slip[i]
+            print(''.join(map(lambda x: '1' if x else '.', line)), self.guess[i], self.slip[i])
 
     def init_test(self, validation_question_set):
         self.p_test = self.prior
@@ -164,7 +164,7 @@ class QMatrix():
 
     def display_states(self):
         for state, p in enumerate(self.p_test):
-            print '%s: %f' % (bin(state)[2:].zfill(3), p)
+            print('%s: %f' % (bin(state)[2:].zfill(3), p))
 
     def get_components(self):
         p_components = []

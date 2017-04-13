@@ -3,6 +3,7 @@ import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from calc import logloss, compute_mean_entropy, get_train_checksum
 from my_io import say, Dataset
+from functools import reduce
 import dpp
 import numpy as np
 import random
@@ -31,14 +32,14 @@ class MIRT:
 
     def training_step(self, train, opt_Q=True, opt_sg=True):
         checksum = get_train_checksum(self.get_prefix(), train)
-        print('check', checksum)
         self.nb_questions = len(train[0])
         if os.path.isfile('backup/' + checksum + '.rdata'):
             r.load('backup/' + checksum + '.rdata')
         else:
             nb_students = len(train)
-            raw_data = map(int, reduce(lambda x, y: x + y, train))
+            raw_data = list(map(int, reduce(lambda x, y: x + y, train)))
             data = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
+            data.colnames = robjects.StrVector(['Q%d' % i for i in range(1, self.nb_questions + 1)])
             robjects.globalenv['data'] = data
             if self.q:
                 r('model = mirt.model(Q)')
@@ -73,7 +74,7 @@ class MIRT:
         r("CATdesign <- mirtCAT(NULL, fit, criteria='Drule', start_item='Drule', local_pattern=data, design_elements=TRUE)")
 
     def next_item(self, replied_so_far, results_so_far):
-        available_questions = map(str, set(range(1, self.nb_questions + 1)) - self.validation_question_set)
+        available_questions = list(map(str, set(range(1, self.nb_questions + 1)) - self.validation_question_set))
         # print('available', available_questions)
         # print(r('CATdesign'))
         next_item_id = mirtCAT.findNextItem(r.CATdesign, subset=available_questions)[0]
@@ -83,7 +84,7 @@ class MIRT:
         return next_item_id - 1
 
     def update_theta(self):
-        r('CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)')
+        r('CATdesign$design@Update.thetas(CATdesign$design, CATdesign$person, CATdesign$test)')
         r("theta <- cbind(CATdesign$person$thetas, 1)")
         self.theta = r.theta
 

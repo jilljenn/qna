@@ -1,5 +1,5 @@
-dataset_name = 'timss2003'
-PREFIX = 'trop/timss2003'
+dataset_name = 'fraction'
+PREFIX = '2017/fraction'
 
 STUDENT_FOLD = 4
 QUESTION_FOLD = 2

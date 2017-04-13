@@ -3,6 +3,7 @@ import os
 from conf import PREFIX, DEBUG, STUDENT_FOLD, VERBOSE, QUESTION_FOLD
 import random
 
+
 def say(*something):
     if VERBOSE:
         print(' '.join(map(str, something)))
@@ -32,7 +33,7 @@ class IO(object):
         self.i = i
         self.j = j
         if not silent:
-            print 'prefix is now', self.get_folder_name()
+            print('prefix is now', self.get_folder_name())
 
     def init(self):
         self.i = None
@@ -66,10 +67,10 @@ class Dataset(object):
         self.data = self.files.load(dataset_name, prefix='data')['student_data']
         self.nb_questions = len(self.data[0])
         self.nb_students = len(self.data)
-        self.question_subset = range(self.nb_questions)  # All questions every time
+        self.question_subset = list(range(self.nb_questions))  # All questions every time
 
     def get_subset(self):
-        from sklearn.cross_validation import KFold, StratifiedKFold
+        from sklearn.model_selection import KFold, StratifiedKFold
         scores = [sum(student) for student in self.data]
         self.train_subsets = []
         self.test_subsets = []
@@ -82,12 +83,14 @@ class Dataset(object):
             self.train_subsets.append(sorted(train))
             self.test_subsets.append(test)
         else:
-            for train, test in StratifiedKFold(scores, STUDENT_FOLD, shuffle=True):
+            kfold = StratifiedKFold(n_splits=STUDENT_FOLD, shuffle=True)
+            for train, test in kfold.split(self.data, scores):
                 self.train_subsets.append(train.tolist())
                 self.test_subsets.append(test.tolist())
         self.validation_question_sets = []
         if QUESTION_FOLD >= 2:
-            for _, validation_question_array in KFold(n=self.nb_questions, n_folds=QUESTION_FOLD, shuffle=True, random_state=None):
+            kfold = KFold(n_splits=QUESTION_FOLD, shuffle=True, random_state=None)
+            for _, validation_question_array in kfold.split(self.data[0]):
                 self.validation_question_sets.append(validation_question_array.tolist())
         else:
             self.validation_question_sets.append(list(range(self.nb_questions)))

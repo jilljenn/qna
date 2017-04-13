@@ -49,4 +49,4 @@ def avgstd(l):  # Displays mean and variance
 def get_train_checksum(prefix, train):
     s = prefix
     s += ''.join(map(lambda line: ''.join(map(lambda x: str(int(x)), line)), train))
-    return md5(s).hexdigest()
+    return md5(s.encode('utf-8')).hexdigest()

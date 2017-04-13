@@ -3,6 +3,7 @@ import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from calc import logloss, compute_mean_entropy
 from my_io import say
+from functools import reduce
 import random
 
 r = robjects.r
@@ -20,7 +21,7 @@ class IRT():
     def training_step(self, train, opt_Q=True, opt_sg=True):
         nb_students = len(train)
         self.nb_questions = len(train[0])
-        raw_data = map(int, reduce(lambda x, y: x + y, train))
+        raw_data = list(map(int, reduce(lambda x, y: x + y, train)))
         a = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
         model = ltm.rasch(a)
         self.coeff = ltm.coef_rasch(model)

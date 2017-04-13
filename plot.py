@@ -56,7 +56,7 @@ for filename in os.listdir(folder):
 		# print name, nb_questions, dim
 		results[(name, dim)] = data
 for line in results:
-	print(line)
+	print(*line)
 
 all_dim = set()
 for (name, dim) in results:

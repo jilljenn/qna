@@ -12,7 +12,7 @@ for filename in os.listdir(files.get_folder_name()):
         model_name = model_names[name]
         god_prefix = '%s-%s-%s' % (name, nb_questions, train_power)
 
-        if raw_input('Do you want to rebuild stats for %s? ' % filename) == 'y':
+        if input('Do you want to rebuild stats for %s? ' % filename) == 'y':
             report = files.load(filename.replace('.json', ''))
             report['model_name'] = model_name
             get_results(report, god_prefix, files)
