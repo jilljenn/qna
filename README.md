@@ -22,9 +22,9 @@ This code also relies on R packages, that you will have to install:
 
 - ltm ≥ 1.0.0
 - catR ≥ 3.12
-- CDM ≥ 5.3.0
-- mirt ≥ 1.23
-- mirtCAT ≥ 1.4
+- CDM ≥ 5.5-21
+- mirt ≥ 1.24
+- mirtCAT ≥ 1.5
 
 Or simply type `Rscript install.R`.
 

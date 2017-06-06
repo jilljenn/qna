@@ -13,7 +13,7 @@ def normalize(p):
 	return [x / sum(p) for x in p]
 
 def surround(p):
-	return map(lambda x: round(x, 3), p)
+	return list(map(lambda x: round(x, 3), p))
 
 def normalize2(p, e):
 	return (p * e) / (p * e + (1 - p) * (1 - e))

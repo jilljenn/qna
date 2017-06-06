@@ -1,10 +1,10 @@
 library(CDM)
 library(mirt)
 
-# data = fraction.subtraction.data
-# qmatrix = as.matrix(fraction.subtraction.qmatrix)
-data = read.csv('data/banach.csv')
-qmatrix = as.matrix(read.csv('data/qmatrix-banach.csv'))
+data = fraction.subtraction.data
+qmatrix = as.matrix(fraction.subtraction.qmatrix)
+# data = read.csv('data/banach.csv')
+# qmatrix = as.matrix(read.csv('data/qmatrix-banach.csv'))
 
 model = mirt.model(qmatrix)
 d = dim(qmatrix)[2]
@@ -43,7 +43,7 @@ summary(data[nextItem])
 
 reply <- function(q, r) {
     CATdesign <- updateDesign(CATdesign, items=c(q), response=c(r))
-    CATdesign$person$Update.thetas(CATdesign$design, CATdesign$test)
+    CATdesign$design@Update.thetas(CATdesign$design, CATdesign$person, CATdesign$test)
     nextItem <- findNextItem(CATdesign)
     print(nextItem)
     print(summary(data[nextItem]))

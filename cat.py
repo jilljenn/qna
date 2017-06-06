@@ -39,7 +39,7 @@ def simulate(model, train_data, test_data, validation_question_set):
 	say(datetime.now())
 	say('=' * 10, model.name)
 
-	nb_students = len(test_data)
+	nb_students = 1#len(test_data)
 	nb_questions = len(test_data[0])
 	budget = nb_questions - len(validation_question_set)
 	report = {'mean_error': [], 'nb_mistakes': [], 'model_name': model.name, 'dim': model.get_dim()}
@@ -66,6 +66,8 @@ def simulate(model, train_data, test_data, validation_question_set):
 				say('Difficulty:', model.coeff.rx(question_id + 1)[0])
 			elif model.name == 'QMatrix':
 				say('It requires KC:', map(int, model.Q[question_id]))
+			elif model.name == 'MIRT':
+				say('It requires KC:', surround(model.V.rx(question_id + 1, True)))
 
 			performance = model.predict_performance()
 			say('Correct!' if test_data[student_id][question_id] else 'Incorrect.') #, "I expected: %f." % round(performance[question_id], 2))

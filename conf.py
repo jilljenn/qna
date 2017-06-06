@@ -1,14 +1,15 @@
 dataset_name = 'fraction'
-PREFIX = '2017/fraction'
+PREFIX = 'tmp'
 
 STUDENT_FOLD = 4
 QUESTION_FOLD = 2
 
-DEBUG = False  # DEBUG == True means only one student
-VERBOSE = False
+DEBUG = True  # DEBUG == True means only one slice of the cross validation
+VERBOSE = True
 
 if DEBUG:
     STUDENT_FOLD = 1
+    QUESTION_FOLD = 1
     PREFIX = 'tmp'
 
 nb_competences_values = [3] #range(2, 15, 3)

@@ -60,14 +60,14 @@ for line in results:
 
 all_dim = set()
 for (name, dim) in results:
-	if name == 'qm':
+	if name in {'qm', 'mirt'}:
 		all_dim.add(dim)
 all_dim = sorted(all_dim)
 
 def get_linewidth(name, dim):
 	if name in main_linewidth:
 		return main_linewidth[name]
-	elif name == 'qm':
+	elif name in {'qm', 'mirt'}:
 		return 2 + all_dim.index(dim)
 	else: 
 		return 2
