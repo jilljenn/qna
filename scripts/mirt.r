@@ -1,6 +1,9 @@
 library(CDM)
 library(mirt)
 
+train <- read.csv('icml/trainr.csv', header=FALSE)
+test <- read.csv('icml/testr.csv', header=FALSE)
+
 data = fraction.subtraction.data
 qmatrix = as.matrix(fraction.subtraction.qmatrix)
 # data = read.csv('data/banach.csv')
@@ -17,6 +20,12 @@ computeError <- function(fit) {
     U <- cbind(fscores(fit, method='MAP', full.scores=TRUE), rep(1))
     Z <- U %*% t(V)
     p <- 1 / (1 + exp(-Z))
+
+    pred <- p[!is.na(test)]
+    vrai <- test[!is.na(test)]
+
+    log(1 - abs(pred - vrai), 2)
+
     print(p[1:5,])
     print(data[1:5,])
     print(colSums(abs(data - round(p)), 2))  # 8232 pour la connerie d = 2, 597 pour l'autre
