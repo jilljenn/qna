@@ -81,6 +81,7 @@ errorbar = {}
 handles = []
 names = []
 for (name, dim) in sorted(results):
+	print(name, dim)
 	names.append(name)
 	curves[name], errorbar[name] = zip(*results[(name, dim)])
 	curve = ax.errorbar(range(1, len(curves[name]) + 1), curves[name], yerr=errorbar[name], color=color[name] if not BW else 'black', linewidth=get_linewidth(name, dim), label=get_label(name, dim), fmt=fmt[name])  # linewidth[name]

@@ -34,7 +34,7 @@ def get_results(report, filename, files):
 	files.backup('stats-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
 def simulate(model, train_data, test_data, validation_question_set):
-	model.training_step(train_data, opt_Q=True, opt_sg=True)
+	model.training_step(train_data)
 
 	say(datetime.now())
 	say('=' * 10, model.name)
@@ -55,7 +55,7 @@ def simulate(model, train_data, test_data, validation_question_set):
 		replied_so_far = []
 		results_so_far = []
 
-		say('Estimation initiale :', map(lambda x: round(x, 1), model.predict_performance()))
+		say('Estimation initiale :', list(map(lambda x: round(x, 1), model.predict_performance())))
 		say('Erreur initiale :', logloss(model.predict_performance(), test_data[student_id]))
 
 		for t in range(1, budget + 1):
@@ -64,7 +64,7 @@ def simulate(model, train_data, test_data, validation_question_set):
 			say('\nRound', t, '-> We ask question', question_id + 1, 'to the examinee.')
 			if model.name == 'IRT':
 				say('Difficulty:', model.coeff.rx(question_id + 1)[0])
-			elif model.name == 'QMatrix':
+			elif model.name == 'QMatrix': 
 				say('It requires KC:', map(int, model.Q[question_id]))
 			elif model.name == 'MIRT':
 				say('It requires KC:', surround(model.V.rx(question_id + 1, True)))
@@ -154,6 +154,9 @@ if __name__ == '__main__':
 		q.load('qmatrix-cdm-new')
 		# q.load('qmatrix-cdm')
 		models = [MIRT(q=q)]
+	elif sys.argv[1] == 'genma':
+		from genma import GenMA
+		models = [GenMA(dim=int(sys.argv[2]))]
 	else:
 		from irt import IRT
 		models = [IRT(criterion='MEPV')]

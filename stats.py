@@ -7,8 +7,9 @@ import re
 files = IO()
 files.init()
 for filename in os.listdir(files.get_folder_name()):
-    if filename.startswith('log') and not os.path.exists('%s/%s' % (files.get_folder_name(), filename.replace('log', 'stats'))):  # No stats for these reports
-        name, nb_questions, train_power = re.match('log-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset_name, filename).groups()
+    if filename.startswith('log') and not filename.startswith('logs') and not os.path.exists('%s/%s' % (files.get_folder_name(), filename.replace('log', 'stats'))):  # No stats for these reports
+        regexp = 'log-%s-([a-z0-9-]+)-([0-9]+)-([0-9]+)-' % dataset_name
+        name, nb_questions, train_power = re.match(regexp, filename).groups()
         model_name = model_names[name]
         god_prefix = '%s-%s-%s' % (name, nb_questions, train_power)
 

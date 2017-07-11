@@ -9,13 +9,15 @@ color = {
     'baseline': 'darkgreen',
     '888': 'green',
     'mirt': 'red',
+    'mirt2': 'red',
     'qm': 'blue',
     'qm-qmatrix-cdm': 'green',
     'mirt-qm-matrix-cdm-new': 'gold',
     'random': 'blue',
     'dpp': 'red',
     'cat': 'green',
-    'uncertainty': 'black'
+    'uncertainty': 'black',
+    'genma': 'gold'
 }
 
 fmt = {
@@ -23,22 +25,26 @@ fmt = {
     'mirt-qm-qmatrix-cdm': '-+',
     'mirt-qm-qmatrix-cdm-new': '-s',
     'mirt': '-^',
+    'mirt2': '-^',
     'qm': '-^',
     'dpp': '+',
     'random': '^',
     'cat': '-o',
-    'uncertainty': '.'
+    'uncertainty': '.',
+    'genma': '-+'
 }
 
 main_label = {
     'irt': 'Rasch',
     'qm-qmatrix-cdm': 'DINA',
     'mirt': 'MIRT',
+    'mirt2': 'MIRT',
     'qm': 'DINA auto',
     'cat': 'CAT',
     'dpp': 'InitialD',
     'uncertainty': 'Uncertainty',
-    'random': 'Random'
+    'random': 'Random',
+    'genma': 'GenMA'
 }
 
 # linewidth = {'mirt': 5, '888': 3, '8': 3, 'irt': 1, 'qm': 3, 'qm-qmatrix-cdm': 3, 'mirt-qm-qmatrix-cdm': 5, 'mirt-qm-qmatrix-cdm-new': 7, 'mirt-qm-qmatrix-cdm-new': 7}

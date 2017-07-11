@@ -75,7 +75,7 @@ class Dataset(object):
         self.train_subsets = []
         self.test_subsets = []
         if DEBUG:
-            all_students = range(len(self.data))
+            all_students = list(range(len(self.data)))
             random.shuffle(all_students)
             train = all_students[:150]#[:6]  # For debug
             test_student = train.pop()

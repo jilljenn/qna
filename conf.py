@@ -5,11 +5,11 @@ STUDENT_FOLD = 4
 QUESTION_FOLD = 2
 
 DEBUG = True  # DEBUG == True means only one slice of the cross validation
-VERBOSE = True
+VERBOSE = False
 
 if DEBUG:
     STUDENT_FOLD = 1
-    QUESTION_FOLD = 1
+    QUESTION_FOLD = 2
     PREFIX = 'tmp'
 
 nb_competences_values = [3] #range(2, 15, 3)
@@ -48,7 +48,9 @@ model_names = {
     'cat': 'cat',
     'dpp': 'dpp',
     'random': 'random',
-    'uncertainty': 'uncertainty'
+    'uncertainty': 'uncertainty',
+    'genma': 'GenMA',
+    'mirt2': 'MIRT',
 }
 
 strategies = ['random', 'dpp', 'uncertainty']

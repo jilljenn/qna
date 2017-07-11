@@ -12,8 +12,8 @@ qmatrix = as.matrix(fraction.subtraction.qmatrix)
 model = mirt.model(qmatrix)
 d = dim(qmatrix)[2]
 fit = mirt(data, model)
-# d = 2
-# fit = mirt(data, d)
+d = 2
+fit = mirt(data, d)
 
 computeError <- function(fit) {
     V <- coef(fit, simplify=TRUE)$items[,1:(d + 1)]
