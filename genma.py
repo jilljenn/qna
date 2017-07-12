@@ -5,17 +5,30 @@ from sklearn.linear_model import LogisticRegression
 
 
 def sigmoid(x):
-    return 1 / (1 + math.exp(-x))
+    return 1 / (1 + np.exp(-x))
 
 class GenMA:
     def __init__(self, dim=8):
         self.name = 'GenMA'
         self.dim = dim
 
-    def training_step(self, train_data):
+    def load(self):
         U, V, bias = np.load('genma.npy')
+        self.U = U
         self.V = V
-        self.bias = bias[:, 0]
+        self.bias = bias
+
+    def compute_all_errors(self, dataset):
+        self.load()
+        user_train = dataset.train_subsets[0]
+        train = np.array(dataset.data)[user_train]
+        pred = sigmoid(self.U.dot(self.V.T) + self.bias)[user_train]
+        print('Train RMSE:', np.mean((pred - train) ** 2) ** 0.5)
+        print('Train NLL:', -np.mean(np.log(np.abs(pred - train))))
+        print('Train accuracy:', np.mean(np.round(pred) == train))
+
+    def training_step(self, train_data):
+        self.load()
         self.nb_questions = len(train_data[0])
 
     def init_test(self, validation_question_set=[]):
@@ -30,12 +43,12 @@ class GenMA:
             clf.fit(self.V[replied_so_far], results_so_far)
             self.theta = clf.coef_[0]
         elif results_so_far[0] == True:
-            self.theta += 1
+            self.theta = np.array([0.] * self.dim)
         else:
-            self.theta -= 1
+            self.theta = np.array([0.] * self.dim)
 
     def predict_performance(self, var_id=''):
-        return list(map(sigmoid, self.theta.dot(self.V.T) + self.bias))
+        return sigmoid(self.theta.dot(self.V.T) + self.bias).tolist()
 
     def get_prefix(self):
         return 'genma'

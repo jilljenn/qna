@@ -40,9 +40,32 @@ class MIRT:
             robjects.globalenv['entries'] = robjects.IntVector(q.get_entries())
             rlog("Q <- matrix(c(entries), ncol=%d, byrow=TRUE)" % self.dim)  # dimnames=list(NULL, c('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'))
 
+    def compute_all_errors(self, dataset):
+        prefix = self.get_prefix() if '-' in self.get_prefix() == 'mirtq' else self.get_prefix() + str(self.dim)
+        print(prefix)
+        user_train = dataset.train_subsets[0]
+        train = np.array(dataset.data)[user_train]
+        print(train.shape)
+        checksum = get_train_checksum(prefix, train)
+        if os.path.isfile('backup/' + checksum + '.rdata'):
+            print('Cool, already found!', checksum)
+            r.load('backup/' + checksum + '.rdata')
+        print('datasize =>', r('dim(data)'))
+
+        self.U = r('U')
+        self.V = r('V')
+        rlog('Z <- U %*% t(V)')
+        rlog('p <- 1 / (1 + exp(-Z))')
+
+        print('Train RMSE:', r('mean((p - data) ** 2) ** 0.5')[0])
+        print('Train NLL:', r('-mean(log(abs(p - data)))')[0])
+        print('Train accuracy:', r('mean(round(p) == data)')[0])
+
     def training_step(self, train, opt_Q=True, opt_sg=True):
+        print('Train size:', len(train))
         prefix = self.get_prefix() if '-' in self.get_prefix() == 'mirtq' else self.get_prefix() + str(self.dim)
         checksum = get_train_checksum(prefix, train)
+        print('Check', checksum)
         self.nb_questions = len(train[0])
         if os.path.isfile('backup/' + checksum + '.rdata'):
             print('Cool, already found!', checksum)
@@ -89,15 +112,15 @@ class MIRT:
 
     def init_test(self, validation_question_set=[]):
         self.validation_question_set = set(validation_question_set)
-        rlog("CATdesign <- mirtCAT(NULL, fit, method='ML', criteria='Drule', start_item='Drule', local_pattern=data, design_elements=TRUE)")
-        print(rlog('CATdesign'))
+        rlog("CATdesign <- mirtCAT(NULL, fit, criteria='Drule', start_item='Drule', local_pattern=data, design_elements=TRUE)")
+        #print(rlog('CATdesign'))
 
     def next_item(self, replied_so_far, results_so_far):
         available_questions = list(map(str, set(range(1, self.nb_questions + 1)) - self.validation_question_set))
         # print('available', available_questions)
         # print(rlog('CATdesign'))
         next_item_id = mirtCAT.findNextItem(r.CATdesign, subset=available_questions)[0]
-        print(rlog('CATdesign'))
+        #print(rlog('CATdesign'))
 
         say('Next item', next_item_id - 1)
 
@@ -106,8 +129,13 @@ class MIRT:
     def update_theta(self):
         with open('savesession.txt', 'w') as f:
             f.write('\n'.join(lines))
+        '''print('hiya', r('CATdesign$person'))
+                                print('DAT TEST', r('CATdesign$test'))
+                                print('letshope')'''
         rlog('CATdesign$design@Update.thetas(CATdesign$design, CATdesign$person, CATdesign$test)')
+        #print('Erreur maintenant')
         rlog("theta <- cbind(CATdesign$person$thetas, 1)")
+        #print('Erreur before')
         self.theta = r.theta
 
     def estimate_parameters(self, replied_so_far, results_so_far, var_id=''):
@@ -115,7 +143,6 @@ class MIRT:
 
         say('CATdesign <- updateDesign(CATdesign, items=c(%s), response=c(%s))' % (replied_so_far[-1] + 1, int(results_so_far[-1])))
         rlog('CATdesign <- updateDesign(CATdesign, items=c(%s), response=c(%s))' % (replied_so_far[-1] + 1, int(results_so_far[-1])))
-        print(rlog('CATdesign$person'))
         self.update_theta()
 
         say('Thêta du candidat :', rlog('CATdesign$person$thetas'))

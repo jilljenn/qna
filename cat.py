@@ -39,7 +39,8 @@ def simulate(model, train_data, test_data, validation_question_set):
 	say(datetime.now())
 	say('=' * 10, model.name)
 
-	nb_students = 1#len(test_data)
+	#print(len(test_data), 'students to consider')
+	nb_students = len(test_data)
 	nb_questions = len(test_data[0])
 	budget = nb_questions - len(validation_question_set)
 	report = {'mean_error': [], 'nb_mistakes': [], 'model_name': model.name, 'dim': model.get_dim()}
@@ -51,6 +52,7 @@ def simulate(model, train_data, test_data, validation_question_set):
 
 		report['mean_error'].append([0] * budget)
 		report['nb_mistakes'].append([0] * budget)
+
 		model.init_test(validation_question_set=validation_question_set)
 		replied_so_far = []
 		results_so_far = []
