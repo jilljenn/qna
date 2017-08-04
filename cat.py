@@ -1,7 +1,7 @@
 # coding=utf8
 from datetime import datetime
 from calc import logloss, surround, avgstd
-from conf import dataset_name, nb_competences_values, STUDENT_FOLD, QUESTION_FOLD
+from conf import dataset_name, nb_competences_values, STUDENT_FOLD, QUESTION_FOLD, SHUFFLE_TEST
 from my_io import IO, Dataset, say
 import random
 import json
@@ -44,11 +44,16 @@ def simulate(model, train_data, test_data, validation_question_set):
 	nb_questions = len(test_data[0])
 	budget = nb_questions - len(validation_question_set)
 	report = {'mean_error': [], 'nb_mistakes': [], 'model_name': model.name, 'dim': model.get_dim()}
+
+	if SHUFFLE_TEST:
+		random.shuffle(test_data)
+	print(test_data[0])
+
 	for student_id in range(nb_students):
 		if student_id % 10 == 0:
 			print(student_id)
 
-		say('Étudiant', student_id, test_data[student_id])
+		say('Étudiant', student_id, list(zip(range(1, nb_questions+1), test_data[student_id])))
 
 		report['mean_error'].append([0] * budget)
 		report['nb_mistakes'].append([0] * budget)
@@ -72,10 +77,12 @@ def simulate(model, train_data, test_data, validation_question_set):
 				say('It requires KC:', surround(model.V.rx(question_id + 1, True)))
 
 			performance = model.predict_performance()
-			say('Correct!' if test_data[student_id][question_id] else 'Incorrect.') #, "I expected: %f." % round(performance[question_id], 2))
+			positive_outcome = input('Did you solve it?') == 'y'
+			# positive_outcome = test_data[student_id][question_id]
+			say('Correct!' if positive_outcome else 'Incorrect.') #, "I expected: %f." % round(performance[question_id], 2))
 
 			replied_so_far.append(question_id)
-			results_so_far.append(test_data[student_id][question_id])
+			results_so_far.append(positive_outcome)
 			model.estimate_parameters(replied_so_far, results_so_far)
 			performance = model.predict_performance()
 
