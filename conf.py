@@ -1,7 +1,7 @@
 dataset_name = 'fraction'
 PREFIX = 'tmp'
 
-STUDENT_FOLD = 1
+STUDENT_FOLD = 5
 QUESTION_FOLD = 2
 
 DEBUG = False  # DEBUG == True means only one slice of the cross validation
