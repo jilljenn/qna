@@ -13,9 +13,15 @@ def proba1(Th, X):
     return 1 / (1 + np.exp(-np.column_stack((X, np.ones(N)))
                               .dot(Th.T)))
 
-def likelihood(Th, X):
-    return ((1 - Y) * proba1(Th, X)
-                + Y * proba1(Th, X))
+def loglikelihood(Th, X):
+    return ((1 - Y) * (1 - proba1(Th, X))
+               + Y  *      proba1(Th, X))
+
+def score(Th, X):
+    pass
+
+def hessian(Th, X):
+    pass
 
 def q(xi, xis):
     return multivariate_normal.pdf(xis, mean=xi, cov=SIGMA)
