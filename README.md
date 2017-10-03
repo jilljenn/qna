@@ -34,6 +34,10 @@ You may need to do the following while installing RPy: ``apt-get install libread
 
 ## Usage
 
+Perform cross validation:
+
+    python cv.py
+
 Either you try a ``./start.sh tmp`` (which by default runs the whole framework on the Fraction dataset), or you check the ``start.sh`` file.
 
 The default ``conf.py`` file is in ``DEBUG`` mode, which means it focuses on making an adaptive test on only one student. You can change it by setting the ``DEBUG`` parameter to ``False``.

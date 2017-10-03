@@ -15,7 +15,7 @@ def full_logloss(performance, truth):
 
 def nb_mistakes(performance, truth):
     nb_questions = len(performance)
-    return sum(np.round(performance)[i] != truth[i] for i in range(nb_questions))
+    return sum(round(performance[i]) != int(truth[i]) for i in range(nb_questions))
 
 def get_delta(theta1, theta2):
     return np.linalg.norm(np.array(theta1) - np.array(theta2))
@@ -36,8 +36,8 @@ def simulate(train_data, test_data):
             for key in ['delta', 'mean_error', 'nb_mistakes']:
                 report[strategy][key].append([])  # Data for new student
 
-        truth = np.array(test_data[student_id])
-        if student_id % 10 == 0:
+        truth = np.array(test_data[student_id], dtype=np.float64)
+        if student_id % 20 == 0:
             print(student_id)
         say('Étudiant', student_id, test_data[student_id])
 
@@ -64,7 +64,7 @@ def simulate(train_data, test_data):
                 report[strategy]['delta'][student_id].append(get_delta(model.theta, true_theta))
 
                 say('mean_error', full_logloss(performance, truth))
-                say(nb_mistakes(performance, truth), 'correct out of', nb_questions)
+                say(nb_mistakes(performance, truth), 'correct out of', len(chosen))
         # report[strategy]['mean_error'].reverse()
         # report[strategy]['delta'].reverse()
 
@@ -74,8 +74,8 @@ def simulate(train_data, test_data):
         results_so_far = []
         for t in range(1, nb_questions + 1):
             question_id = model.next_item(replied_so_far, results_so_far)
-            # say('\nRound', t, '-> We ask question', question_id + 1, 'to the examinee.')
-            # say('Correct!' if test_data[student_id][question_id] else 'Incorrect.') #, "I expected: %f." % round(
+            say('\nRound', t, '-> We ask question', question_id + 1, 'to the examinee.')
+            say('Correct!' if test_data[student_id][question_id] else 'Incorrect.') #, "I expected: %f." % round(
             replied_so_far.append(question_id)
             results_so_far.append(test_data[student_id][question_id])
             model.estimate_parameters(replied_so_far, results_so_far)
@@ -91,6 +91,7 @@ def simulate(train_data, test_data):
 
             say('mean_error', full_logloss(performance, truth))
             say(nb_mistakes(performance, truth), 'correct out of', nb_questions)
+        break
     return report
 
 
@@ -111,6 +112,7 @@ def main():
             filename = strategy + '-%s-%s' % (dataset.nb_questions, train_power)
             get_results(report[strategy], filename, files)
             files.backup('log-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), report[strategy])
+        break
 
 
 if __name__ == '__main__':

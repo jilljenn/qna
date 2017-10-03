@@ -69,6 +69,9 @@ class Dataset(object):
         self.nb_students = len(self.data)
         self.question_subset = list(range(self.nb_questions))  # All questions every time
 
+    def get_triplets(self):
+        return [(i, j, self.data[i][j]) for i in range(self.nb_students) for j in range(self.nb_questions)]
+
     def get_subset(self):
         from sklearn.model_selection import KFold, StratifiedKFold
         scores = [sum(student) for student in self.data]
@@ -77,7 +80,7 @@ class Dataset(object):
         if DEBUG:
             all_students = list(range(len(self.data)))
             random.shuffle(all_students)
-            train = all_students[:150]#[:6]  # For debug
+            train = all_students  # For debug
             test_student = train.pop()
             test = [test_student]
             self.train_subsets.append(sorted(train))

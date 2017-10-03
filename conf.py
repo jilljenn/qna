@@ -5,7 +5,7 @@ STUDENT_FOLD = 5
 QUESTION_FOLD = 2
 
 DEBUG = False  # DEBUG == True means only one slice of the cross validation
-VERBOSE = True
+VERBOSE = False
 SHUFFLE_TEST = True
 
 if DEBUG:

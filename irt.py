@@ -1,34 +1,52 @@
-# coding=utf8
 import rpy2.robjects as robjects
+from rpy2.robjects.functions import SignatureTranslatedFunction
 from rpy2.robjects.packages import importr
 from calc import logloss, compute_mean_entropy
+from rpyinterface import RPyInterface
 from my_io import say
 from functools import reduce
 import random
+import numpy as np
+
 
 r = robjects.r
 ltm = importr('ltm')
 cat = importr('catR')
 
-class IRT():
+class IRT(RPyInterface):
     def __init__(self, Q=None, slip=None, guess=None, prior=None, criterion='MFI'):
         self.name = 'IRT'
         self.criterion = criterion
+        self.data = None
+        self.nb_students = None
         self.nb_questions = None
         self.coeff = None
+        self.scores = None
         self.validation_question_set = None
 
-    def training_step(self, train, opt_Q=True, opt_sg=True):
-        nb_students = len(train)
-        self.nb_questions = len(train[0])
-        raw_data = list(map(int, reduce(lambda x, y: x + y, train)))
-        a = r.matrix(robjects.IntVector(raw_data), nrow=nb_students, byrow=True)
-        model = ltm.rasch(a)
+    def compute_all_predictions(self):
+        return np.array([self.predict_performance(theta=self.scores[i]) for i in range(self.nb_students)])  # ! Discrimination parameter
+
+    # def compute_all_errors(self, mask):        
+    #     print('Train RMSE:', ((((p - self.data) * mask) ** 2).sum() / mask.sum()) ** 0.5)
+    #     print('Train NLL:', -np.log(1 - abs(p - self.data) * mask).mean())
+    #     print('Train accuracy:', (np.round(p) == self.data).mean())
+
+    def training_step(self, train=None, opt_Q=True, opt_sg=True):
+        # self.nb_students = len(train)
+        # self.nb_questions = len(train[0])
+        # raw_data = list(map(int, reduce(lambda x, y: x + y, train)))
+        # self.data = r.matrix(robjects.IntVector(raw_data), nrow=self.nb_students, byrow=True)
+        model = ltm.rasch(self.r_data)
         self.coeff = ltm.coef_rasch(model)
-        scores = ltm.factor_scores(model).rx('score.dat')[0].rx('z1')[0]
-        r('coeff <- coef(rasch(%s))' % a.r_repr())
+        ltm.factor_scores = SignatureTranslatedFunction(ltm.factor_scores, init_prm_translate={'resp_patterns': 'resp.patterns'})  # Mais dans quel monde vivons-nous ma p'tite dame
+        self.scores = ltm.factor_scores(model, resp_patterns=self.r_data).rx('score.dat')[0].rx('z1')[0]
+        r('data <- %s' % self.r_data.r_repr())
+        #r('data[1][1] <- NA')
+        r('coeff <- coef(rasch(data))')
         r('one <- rep(1, %d)' % self.nb_questions)
         r('itembank <- cbind(coeff[,2:1], 1 - one, one)')
+        # self.compute_all_errors()
 
     def load(self, filename):
         pass
@@ -74,16 +92,19 @@ class IRT():
         pattern = ['NA'] * self.nb_questions
         for i, pos in enumerate(replied_so_far):
             pattern[pos] = str(int(results_so_far[i]))
-        say('theta{} <- thetaEst(itembank, c({}))'.format(var_id, ','.join(pattern)))
-        r('theta{} <- thetaEst(itembank, c({}))'.format(var_id, ','.join(pattern)))
+        say('theta{} <- thetaEst(itembank, method="ML", c({}))'.format(var_id, ','.join(pattern)))
+        r('theta{} <- thetaEst(itembank, method="ML", c({}))'.format(var_id, ','.join(pattern)))
 
         # r('theta{} <- thetaEst(itembank[c({}),], c({}))'.format(var_id, ','.join(map(lambda x: str(x + 1), replied_so_far)), ','.join(map(str, scores_so_far))))
 
         say('Thêta du candidat :', r('theta')[0])
         # pm = r('semTheta(theta, itembank[c({}),])'.format(','.join(map(str, replied_so_far))))
 
-    def predict_performance(self, var_id=''):
-        return tuple(r('round(Pi(theta{}, itembank)$Pi, 3)'.format(var_id)))
+    def predict_performance(self, var_id='', theta=None):
+        if theta is None:
+            return tuple(r('Pi(theta{}, itembank)$Pi'.format(var_id)))
+        else:
+            return tuple(r('Pi({}, itembank)$Pi'.format(theta)))
 
     def get_prefix(self):
         return 'irt' if self.criterion == 'MFI' else 'mepv-irt'

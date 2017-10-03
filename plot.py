@@ -13,7 +13,7 @@ matplotlib.rcParams.update(pgf_with_rc_fonts)
 #matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import glob
-from conf import PREFIX, nb_competences_values, model_names
+from conf import PREFIX, nb_competences_values, model_names, dataset_name
 from style import color, fmt, main_label, main_linewidth, get_label
 
 displayed_y_axis = sys.argv[2]  # 'mean' or 'count'

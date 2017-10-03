@@ -77,8 +77,8 @@ def simulate(model, train_data, test_data, validation_question_set):
 				say('It requires KC:', surround(model.V.rx(question_id + 1, True)))
 
 			performance = model.predict_performance()
-			positive_outcome = input('Did you solve it?') == 'y'
-			# positive_outcome = test_data[student_id][question_id]
+			# positive_outcome = input('Did you solve it?') == 'y'
+			positive_outcome = test_data[student_id][question_id]
 			say('Correct!' if positive_outcome else 'Incorrect.') #, "I expected: %f." % round(performance[question_id], 2))
 
 			replied_so_far.append(question_id)
