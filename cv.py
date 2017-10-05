@@ -24,7 +24,7 @@ for dataset_name in ['fraction']:
 	dataset = Dataset(dataset_name, files)
 	q = QMatrix()
 	q.load('qmatrix-%s' % dataset_name)
-	models = [IRT(), MIRT(dim=2), MIRT(q=q)]  # , MHRM(dim=2), 
+	models = [IRT(), MIRT(dim=2), MIRT(dim=3), MIRT(q=q)]  # , MHRM(dim=2), 
 	dataset.load_subset()
 	print(dataset)
 	for i_exp in range(STUDENT_FOLD):
@@ -50,7 +50,7 @@ for dataset_name in ['fraction']:
 				print(model.checksum)
 				model.training_step()
 				p = model.compute_all_predictions()
-				model.compute_all_errors(p, row_mask, col_mask)
+				model.compute_train_test_error(p)
 				print(datetime.now())
 			break
 		break
