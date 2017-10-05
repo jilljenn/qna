@@ -1,8 +1,8 @@
-# coding=utf8
 from datetime import datetime
 from calc import logloss, surround, avgstd
 from conf import dataset_name, nb_competences_values, STUDENT_FOLD, QUESTION_FOLD, SHUFFLE_TEST
 from my_io import IO, Dataset, say
+import numpy as np
 import random
 import json
 import sys
@@ -34,7 +34,6 @@ def get_results(report, filename, files):
 	files.backup('stats-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), results)
 
 def simulate(model, train_data, test_data, validation_question_set):
-	model.training_step(train_data)
 
 	say(datetime.now())
 	say('=' * 10, model.name)
@@ -106,6 +105,7 @@ def main():
 	for i_exp in range(STUDENT_FOLD):
 		train_subset = dataset.train_subsets[i_exp]
 		test_subset = dataset.test_subsets[i_exp]
+		data = np.array(dataset.data)
 		for j_exp in range(QUESTION_FOLD):
 			validation_index = set(dataset.validation_question_sets[j_exp])
 			files.update(i_exp, j_exp)
@@ -113,11 +113,15 @@ def main():
 				begin = datetime.now()
 				print(begin)
 				filename = model.get_prefix() + '-%s-%s' % (dataset.nb_questions, model.get_dim())
-				train_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in train_subset]
-				test_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in test_subset]
-				report = simulate(model, train_dataset, test_dataset, validation_index)
-				get_results(report, filename, files)
-				files.backup('log-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), report)
+				train_data = data[np.ix_(train_subset, dataset.question_subset)]
+				test_data = data[np.ix_(test_subset, dataset.question_subset)]
+				model.r_data = model.prepare_data(train_data)
+				model.training_step(train_data)
+				p = model.compute_all_predictions()
+				model.compute_train_test_error(p)
+				#report = simulate(model, train_dataset, test_dataset, validation_index)
+				#get_results(report, filename, files)
+				#files.backup('log-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), report)
 				print(datetime.now())
 
 
@@ -166,6 +170,9 @@ if __name__ == '__main__':
 	elif sys.argv[1] == 'genma':
 		from genma import GenMA
 		models = [GenMA(dim=int(sys.argv[2]))]
+	elif sys.argv[1] == 'mhrm':
+		from mhrm import MHRM
+		models = [MHRM(dim=2)]
 	else:
 		from irt import IRT
 		models = [IRT(criterion='MEPV')]

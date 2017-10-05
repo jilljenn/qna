@@ -12,7 +12,7 @@ class RPyInterface:
     def get_prefix(self):
         return ''
 
-    def prepare_data(self, data, row_mask, col_mask):
+    def prepare_data(self, data, row_mask=[], col_mask=[]):
         self.data = data
         self.test_rows = row_mask
         self.test_cols = col_mask

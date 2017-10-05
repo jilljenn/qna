@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import norm, multivariate_normal
+from rpyinterface import RPyInterface
 from my_io import Dataset
 
 # REAL = True
@@ -52,7 +53,7 @@ def hessian(Th, X):
     return np.tensordot(Lambda.T, XiXiT, axes=1)  # Shape n p+1 p+1
 
 
-class MHRM:
+class MHRM(RPyInterface):
     def __init__(self, dim, nb_iterations=100, nb_samples=50, nb_burned=5):
         c = 1  # Mean standard error of Gaussian prior
         self.name = 'MHRM'
@@ -90,6 +91,12 @@ class MHRM:
             Xs.append(iterate(Xs[-1]))
         return Xs[self.nb_burned:]
 
+    def compute_all_predictions(self):
+        Xs = self.impute(self.Th)
+        X = sum(X for X in Xs) / len(Xs)
+        p = proba1(self.Th, X)
+        return p
+
     def compute_all_errors(self):
         Xs = self.impute(self.Th)
         X = sum(X for X in Xs) / len(Xs)
@@ -124,6 +131,12 @@ class MHRM:
         self.Th = Th
         self.compute_all_errors()
         return Th
+
+    def get_prefix(self):
+        return 'mhrm'
+
+    def get_dim(self):
+        return self.dim
 
     def predict_performance(self):
         pass
