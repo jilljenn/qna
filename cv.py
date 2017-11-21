@@ -2,29 +2,37 @@ from conf import STUDENT_FOLD, QUESTION_FOLD
 from datetime import datetime
 from my_io import Dataset, IO
 from qmatrix import QMatrix
+from chrono import Chrono
 from irt import IRT
 from mirt import MIRT
 from mhrm import MHRM
+from zero import Zero
 import random
 import numpy as np
 
-u0 = 0
-a = 4685763
-b = 47831
-n = 47564875
-u = [u0]
-for i in range(2000):
-	u.append(((a * u[-1] + b) % n) % 20)
-print(u[:20])
+
 HIDDEN_RATE = 0.1
 
 
+def prepare_prng(nb_students, nb_questions):
+	nb_hidden = round(HIDDEN_RATE * nb_questions)
+	u0 = 0
+	a = 4685763
+	b = 47831
+	n = 47564875
+	u = [u0]
+	for i in range(nb_hidden * nb_students):
+		u.append(((a * u[-1] + b) % n) % nb_questions)
+	return u
+
+
+chrono = Chrono()
 files = IO()
-for dataset_name in ['fraction']:
+for dataset_name in ['berkeley']:
 	dataset = Dataset(dataset_name, files)
 	q = QMatrix()
-	q.load('qmatrix-%s' % dataset_name)
-	models = [IRT(), MIRT(dim=2), MIRT(dim=3), MIRT(q=q)]  # , MHRM(dim=2), 
+	#q.load('qmatrix-%s' % dataset_name)
+	models = [Zero(), IRT()]  # [IRT()]#, MIRT(dim=2), MIRT(dim=3), MIRT(q=q)]  # , MHRM(dim=2), 
 	dataset.load_subset()
 	print(dataset)
 	for i_exp in range(STUDENT_FOLD):
@@ -40,13 +48,18 @@ for dataset_name in ['fraction']:
 				data = np.array(dataset.data)
 				nb_students, nb_questions = data.shape
 				nb_hidden = round(HIDDEN_RATE * nb_questions)
+				chrono.save('prepare data')
+				u = prepare_prng(nb_students, nb_questions)
+				chrono.save('prepare prng')
 				row_mask = []
 				col_mask = []
 				for i in range(nb_students):
 					row_mask.extend([i] * nb_hidden)
 					col_mask.extend(u[nb_hidden * i:nb_hidden * (i + 1)])
 				# test_dataset = [[dataset.data[i][j] for j in dataset.question_subset] for i in test_subset]
+				chrono.save('prepare mask')
 				model.r_data = model.prepare_data(data, row_mask, col_mask)
+				chrono.save('prepare rdata')
 				print(model.checksum)
 				model.training_step()
 				p = model.compute_all_predictions()

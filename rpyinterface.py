@@ -1,4 +1,5 @@
 import rpy2.robjects as robjects
+from rpy2.rinterface import NA_Integer
 from calc import get_train_checksum
 import numpy as np
 
@@ -17,13 +18,13 @@ class RPyInterface:
         self.test_rows = row_mask
         self.test_cols = col_mask
         self.nb_students, self.nb_questions = data.shape
-        train_data_by_row = data.reshape(-1)
-        row = np.copy(train_data_by_row)
+        train_data = np.copy(data)
+        # Remove test entries from train
+        train_data[row_mask, col_mask] = -1
+        train_data_by_row = train_data.reshape(-1)
         r_train_data = r.matrix(robjects.IntVector(train_data_by_row), nrow=self.nb_students, byrow=True)
-        for i, j in zip(row_mask, col_mask):
-            row[i * self.nb_questions + j] = 2  # To compute checksum
-            r_train_data.rx[i + 1, j + 1] = robjects.NA_Integer
-        self.checksum = get_train_checksum(self.get_prefix(), row)
+        r_train_data.rx[r_train_data.ro == -1] = robjects.NA_Integer
+        self.checksum = get_train_checksum(self.get_prefix(), train_data_by_row)
         r_train_data.colnames = robjects.StrVector(['Q%d' % i for i in range(1, self.nb_questions + 1)])
         return r_train_data
 
