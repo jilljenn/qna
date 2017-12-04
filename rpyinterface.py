@@ -2,6 +2,7 @@ import rpy2.robjects as robjects
 from rpy2.rinterface import NA_Integer
 from calc import get_train_checksum
 import numpy as np
+import pickle
 
 r = robjects.r
 
@@ -12,6 +13,13 @@ class RPyInterface:
 
     def get_prefix(self):
         return ''
+
+    def load(self):
+        pass
+
+    def save(self):
+        with open('backup/' + self.checksum + '.pickle', 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
     def prepare_data(self, data, row_mask=[], col_mask=[]):
         self.data = data

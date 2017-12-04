@@ -1,5 +1,6 @@
 #!/bin/bash
 python subset.py
+mkdir -p $1/logs
 time python cat.py irt > $1/logs/irt
 time python cat.py qmspe > $1/logs/qmspe  # If you have pypy, it's faster
 # time python cat.py qmspe > $1/logs/qmspe

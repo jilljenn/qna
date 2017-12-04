@@ -6,7 +6,10 @@ from rpyinterface import RPyInterface
 from my_io import say
 from functools import reduce
 import random
+import pickle
 import numpy as np
+import os.path
+import json
 
 
 r = robjects.r
@@ -21,11 +24,12 @@ class IRT(RPyInterface):
         self.nb_students = None
         self.nb_questions = None
         self.coeff = None
+        self.r_scores = None
         self.scores = None
         self.validation_question_set = None
 
     def compute_all_predictions(self):
-        return np.array([self.predict_performance(theta=self.scores[i]) for i in range(self.nb_students)])  # ! Discrimination parameter
+        return np.array([self.predict_performance(theta=self.r_scores[i]) for i in range(self.nb_students)])  # ! Discrimination parameter
 
     # def compute_all_errors(self, mask):        
     #     print('Train RMSE:', ((((p - self.data) * mask) ** 2).sum() / mask.sum()) ** 0.5)
@@ -37,19 +41,34 @@ class IRT(RPyInterface):
         # self.nb_questions = len(train[0])
         # raw_data = list(map(int, reduce(lambda x, y: x + y, train)))
         # self.data = r.matrix(robjects.IntVector(raw_data), nrow=self.nb_students, byrow=True)
-        model = ltm.rasch(self.r_data)
-        self.coeff = ltm.coef_rasch(model)
-        ltm.factor_scores = SignatureTranslatedFunction(ltm.factor_scores, init_prm_translate={'resp_patterns': 'resp.patterns'})  # Mais dans quel monde vivons-nous ma p'tite dame
-        self.scores = ltm.factor_scores(model, resp_patterns=self.r_data).rx('score.dat')[0].rx('z1')[0]
-        r('data <- %s' % self.r_data.r_repr())
-        #r('data[1][1] <- NA')
-        r('coeff <- coef(rasch(data))')
-        r('one <- rep(1, %d)' % self.nb_questions)
-        r('itembank <- cbind(coeff[,2:1], 1 - one, one)')
-        # self.compute_all_errors()
+        if os.path.isfile(self.get_backup_path()):
+            print('Cool, already found!', self.checksum)
+            r.load(self.get_backup_path())
+            self.r_scores = r('scores')
+        else:
+	        model = ltm.rasch(self.r_data)
+	        self.coeff = ltm.coef_rasch(model)
+	        ltm.factor_scores = SignatureTranslatedFunction(ltm.factor_scores, init_prm_translate={'resp_patterns': 'resp.patterns'})  # Mais dans quel monde vivons-nous ma p'tite dame
+	        self.r_scores = ltm.factor_scores(model, resp_patterns=self.r_data).rx('score.dat')[0].rx('z1')[0]
+	        robjects.globalenv['scores'] = self.r_scores
+	        self.scores = np.array(self.r_scores)
+	        r('data <- %s' % self.r_data.r_repr())
+	        #r('data[1][1] <- NA')
+	        r('coeff <- coef(rasch(data))')
+	        r('one <- rep(1, %d)' % self.nb_questions)
+	        r('itembank <- cbind(coeff[,2:1], 1 - one, one)')
+	        self.itembank = np.array(r('itembank'))
+	        # self.compute_all_errors()
+	        r('save(itembank, scores, file="{:s}")'.format(self.get_backup_path()))
+	        self.save()  # To pickle file
 
-    def load(self, filename):
-        pass
+    def load(self):
+        with open('backup/' + self.checksum + '.pickle', 'rb') as f:
+            backup = pickle.load(f)
+        print(backup.__dict__.keys())
+        self.r_scores = backup.r_scores
+        self.scores = backup.scores
+        self.itembank = backup.itembank
 
     def init_test(self, validation_question_set):
         self.validation_question_set = validation_question_set
@@ -108,6 +127,9 @@ class IRT(RPyInterface):
 
     def get_prefix(self):
         return 'irt' if self.criterion == 'MFI' else 'mepv-irt'
+
+    def get_backup_path(self):
+        return 'backup/%s.rdata' % self.checksum
 
     def get_dim(self):
         return 1
