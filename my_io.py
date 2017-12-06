@@ -39,7 +39,18 @@ class IO(object):
         self.i = None
         self.j = None
 
+    def display_all_types(self, data, depth=0):
+        for key in data:
+            print('    ' * (depth + 1), key, type(data[key]))
+            if type(data[key]) == dict:
+                self.display_all_types(data[key], depth + 1)
+            if type(data[key]) == list:
+                print('    ' * (depth + 1), 'that contains', type(data[key][0]))
+                if type(data[key][0]) in [tuple, list]:
+                    print('    ' * (depth + 1), 'that contains', type(data[key][0][0]))
+
     def backup(self, filename, data):
+        # self.display_all_types(data)
         with open('%s/%s.json' % (self.get_folder_name(), filename), 'w') as f:
             f.write(json.dumps(data))
 

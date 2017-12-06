@@ -5,7 +5,8 @@ from itertools import product
 from my_io import IO, say
 from datetime import datetime
 from operator import mul
-# import numpy as np
+from rpyinterface import RPyInterface
+import numpy as np
 
 # state (over 2^K) => comp (over K) where K = nb_competences
 
@@ -23,7 +24,7 @@ LOOP_TIMEOUT = 10
 SLIP_GUESS_PRECISION = 1e-4
 ALPHA = 1e-4
 
-class QMatrix():
+class QMatrix(RPyInterface):
     def __init__(self, nb_competences=None, Q=None, slip=None, guess=None, prior=None):
         self.name = 'QMatrix'
         self.filename = None
@@ -31,9 +32,11 @@ class QMatrix():
         self.Q = Q
         self.prior = prior  # if prior else [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
         self.uniform_prior = [1. / (1 << self.nb_competences)] * (1 << self.nb_competences) if self.nb_competences else None
+        if self.prior is None:
+            self.prior = self.uniform_prior
         print('Prior', self.prior)
         self.p_states = None
-        self.p_test = None
+        self.p_test = self.uniform_prior
         self.slip = slip
         self.guess = guess
         self.error = None
@@ -52,6 +55,7 @@ class QMatrix():
         self.from_expert = True
         self.uniform_prior = [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
         self.prior = self.uniform_prior # q_data['prior'] if q_data['prior'] else [1. / (1 << self.nb_competences)] * (1 << self.nb_competences)
+        self.p_test = self.uniform_prior
 
     def save(self, filename):
         self.io.backup(filename, {'Q': self.Q, 'slip': self.slip, 'guess': self.guess, 'prior': self.prior, 'error': self.error, 'p_states': self.p_states})
@@ -68,6 +72,7 @@ class QMatrix():
 
     def training_step(self, train, opt_Q=True, opt_sg=True, timeout=LOOP_TIMEOUT):
         nb_students = len(train)
+        self.nb_students = nb_students
         nb_questions = len(train[0])
         if not self.Q:
             self.Q = [[random.randint(1, 2) == 2 for _ in range(self.nb_competences)] for _ in range(nb_questions)]
@@ -79,7 +84,7 @@ class QMatrix():
         self.display_qmatrix()
         self.infer_state(train)
         self.infer_prior()
-        print('AHA prior', self.prior)
+        #print('AHA prior', self.prior)
         while not self.from_expert and loop < timeout: # TODO
             # print 'Infer state %d' % loop
             self.infer_state(train)
@@ -116,10 +121,13 @@ class QMatrix():
 
     def init_test(self, validation_question_set):
         self.p_test = self.prior
+        assert self.p_test is not None
         self.validation_question_set = validation_question_set
 
     def compute_proba_question(self, question_id, p_states, mode=None):
         # proba = prod([p for comp, p in enumerate(p_competences) if self.Q[question_id][comp]])
+        assert p_states is not None
+        assert self.Q is not None
         proba = sum(p for state, p in enumerate(p_states) if self.match(self.Q[question_id], state))
         if not mode:
             return proba * (1 - self.slip[question_id]) + (1 - proba) * self.guess[question_id]
@@ -302,9 +310,12 @@ class QMatrix():
                 best_question = question_id
         return best_question
 
+    def compute_all_predictions(self):
+        return np.array([self.predict_performance() for i in range(self.nb_students)])
+
     def predict_performance(self, p_states=None):
         nb_questions = len(self.Q)
-        if not p_states:
+        if p_states is None:
             p_states = self.p_test
         return [self.compute_proba_question(question_id, p_states) for question_id in range(nb_questions)]
 

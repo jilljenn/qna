@@ -4,9 +4,10 @@ PREFIX = 'tmp'
 STUDENT_FOLD = 5
 QUESTION_FOLD = 2
 
-DEBUG = False  # DEBUG == True means only one slice of the cross validation
+SINGLE_STUDENT = False
+DEBUG = True  # DEBUG == True means only one slice of the cross validation
 VERBOSE = False
-SHUFFLE_TEST = True
+SHUFFLE_TEST = False
 
 if DEBUG:
     STUDENT_FOLD = 1

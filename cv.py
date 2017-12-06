@@ -28,11 +28,11 @@ def prepare_prng(nb_students, nb_questions):
 
 chrono = Chrono()
 files = IO()
-for dataset_name in ['berkeley']:
+for dataset_name in ['fraction']:
 	dataset = Dataset(dataset_name, files)
 	q = QMatrix()
-	#q.load('qmatrix-%s' % dataset_name)
-	models = [Zero(), IRT()]  # [IRT()]#, MIRT(dim=2), MIRT(dim=3), MIRT(q=q)]  # , MHRM(dim=2), 
+	q.load('qmatrix-%s' % dataset_name)
+	models = [Zero(), IRT(), MIRT(dim=2), MIRT(dim=3), MIRT(q=q)]  # [IRT()]#, MIRT(dim=2), MIRT(dim=3), MIRT(q=q)]  # , MHRM(dim=2), , MHRM(dim=2)
 	dataset.load_subset()
 	print(dataset)
 	for i_exp in range(STUDENT_FOLD):

@@ -44,7 +44,8 @@ class IRT(RPyInterface):
         if os.path.isfile(self.get_backup_path()):
             print('Cool, already found!', self.checksum)
             r.load(self.get_backup_path())
-            self.r_scores = r('scores')
+            #self.r_scores = r('scores')
+            self.load()
         else:
 	        model = ltm.rasch(self.r_data)
 	        self.coeff = ltm.coef_rasch(model)

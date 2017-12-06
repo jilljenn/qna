@@ -1,6 +1,6 @@
 from datetime import datetime
 from calc import logloss, surround, avgstd
-from conf import dataset_name, nb_competences_values, STUDENT_FOLD, QUESTION_FOLD, SHUFFLE_TEST
+from conf import dataset_name, nb_competences_values, STUDENT_FOLD, QUESTION_FOLD, SHUFFLE_TEST, SINGLE_STUDENT
 from my_io import IO, Dataset, say
 import numpy as np
 import random
@@ -12,7 +12,9 @@ def display(results):
 		print(name, results[name]['mean'])
 
 def nb_mistakes(performance, truth, validation_question_set):
-	return 0 if not validation_question_set else sum(round(performance[i]) != truth[i] for i in validation_question_set)
+	if not validation_question_set:
+		return 0
+	return int(sum(round(performance[i]) != truth[i] for i in validation_question_set))  # Beware of np.int64, not JSON serializable
 
 def dummy_count(performance, truth, replied_so_far):
 	nb_questions = len(performance)
@@ -48,7 +50,7 @@ def simulate(model, train_data, test_data, validation_question_set):
 		random.shuffle(test_data)
 	print(test_data[0])
 
-	for student_id in range(nb_students):
+	for student_id in ([0] if SINGLE_STUDENT else range(nb_students)):
 		if student_id % 10 == 0:
 			print(student_id)
 
@@ -69,7 +71,7 @@ def simulate(model, train_data, test_data, validation_question_set):
 
 			say('\nRound', t, '-> We ask question', question_id + 1, 'to the examinee.')
 			if model.name == 'IRT':
-				say('Difficulty:', model.coeff.rx(question_id + 1)[0])
+				say('Difficulty:', model.itembank[question_id, :])
 			elif model.name == 'QMatrix': 
 				say('It requires KC:', map(int, model.Q[question_id]))
 			elif model.name == 'MIRT':
@@ -115,13 +117,20 @@ def main():
 				filename = model.get_prefix() + '-%s-%s' % (dataset.nb_questions, model.get_dim())
 				train_data = data[np.ix_(train_subset, dataset.question_subset)]
 				test_data = data[np.ix_(test_subset, dataset.question_subset)]
-				model.r_data = model.prepare_data(train_data)
+				print(type(model))
+				try:
+					model.r_data = model.prepare_data(train_data)
+				except:
+					print('has no rpy interface')
+					pass
+				# Training
 				model.training_step(train_data)
 				p = model.compute_all_predictions()
 				model.compute_train_test_error(p)
-				#report = simulate(model, train_dataset, test_dataset, validation_index)
-				#get_results(report, filename, files)
-				#files.backup('log-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), report)
+				# Testing
+				report = simulate(model, train_data, test_data, validation_index)
+				get_results(report, filename, files)
+				files.backup('log-%s-%s-%s' % (dataset_name, filename, datetime.now().strftime('%d%m%Y%H%M%S')), report)
 				print(datetime.now())
 
 
