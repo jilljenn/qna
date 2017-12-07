@@ -60,12 +60,14 @@ for dataset_name in ['fraction']:
 				chrono.save('prepare mask')
 				model.r_data = model.prepare_data(data, row_mask, col_mask)
 				chrono.save('prepare rdata')
+				chrono.save('write to tmp')
 				print(model.checksum)
 				# model.load()
 				model.training_step()
 				chrono.save('train')
 				p = model.compute_all_predictions()
 				model.compute_train_test_error(p)
+				model.write_to_tmp()
 				print(datetime.now())
 			break
 		break

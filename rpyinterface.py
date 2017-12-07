@@ -1,6 +1,7 @@
 import rpy2.robjects as robjects
 from rpy2.rinterface import NA_Integer
 from calc import get_train_checksum
+from sklearn.metrics import roc_auc_score
 import numpy as np
 import pickle
 
@@ -45,6 +46,14 @@ class RPyInterface:
         if self.test_rows:
             self.compute_errors_on_subset(p, self.test_rows, self.test_cols)
 
+    def write_to_tmp(self):
+        with open('/tmp/train.dat', 'w') as f:
+            for i, j in zip(self.train_rows, self.train_cols):
+                f.write('::'.join(map(str, [i + 1, j + 1, '1' if self.data[i, j] else '0', 1])) + '\n')
+        with open('/tmp/test.dat', 'w') as f:
+            for i, j in zip(self.test_rows, self.test_cols):
+                f.write('::'.join(map(str, [i + 1, j + 1, '1' if self.data[i, j] else '0', 1])) + '\n')
+
     def compute_errors_on_subset(self, p, rows, cols, name='Test'):
         se = (p - self.data) ** 2
         rmse = se[rows, cols].mean() ** 0.5
@@ -54,6 +63,7 @@ class RPyInterface:
         print('%s mean NLL:' % name, mnll)
         acc = np.round(p) == self.data
         print('%s mean accuracy:' % name, acc[rows, cols].mean())
+        print('%s AUC:' % name, roc_auc_score(self.data[rows, cols], p[rows, cols]))
 
 
 if __name__ == '__main__':
