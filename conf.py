@@ -1,11 +1,12 @@
-dataset_name = 'fraction'
-PREFIX = 'tmp'
+dataset_name = 'timss2003'
+PREFIX = 'timss'
 
 STUDENT_FOLD = 5
 QUESTION_FOLD = 2
 
 SINGLE_STUDENT = False
-DEBUG = True  # DEBUG == True means only one slice of the cross validation
+ONE_SLICE = False
+DEBUG = False  # DEBUG == True means only one slice of the cross validation, and only one student
 VERBOSE = False
 SHUFFLE_TEST = False
 
@@ -40,11 +41,11 @@ model_names = {
     'baseline': 'Baseline',
     'mirt-qm-qmatrix-cdm': 'MIRT',
     'mirt-qm-qmatrix-cdm-new': 'MIRT',
-    'mirt-qm-qmatrix-ecpe': 'MIRT',
+    'mirt-qm-qmatrix-ecpe': 'GenMA',
     'mirt-qm-qmatrix-banach': 'MIRT',
     'mirt-qm-qmatrix-custom': 'MIRT',
     'mirt-qm-qmatrix-fake': 'MIRT',
-    'mirt-qm-qmatrix-fraction': 'MIRT',
+    'mirt-qm-qmatrix-fraction': 'GenMA',
     'mirt-qm-qmatrix-timss2003': 'MIRT',
     'mirt-qm-qmatrix-sat': 'MIRT',
     'cat': 'cat',

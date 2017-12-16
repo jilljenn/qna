@@ -66,7 +66,6 @@ class IRT(RPyInterface):
     def load(self):
         with open('backup/' + self.checksum + '.pickle', 'rb') as f:
             backup = pickle.load(f)
-        print(backup.__dict__.keys())
         self.r_scores = backup.r_scores
         self.scores = backup.scores
         self.itembank = backup.itembank
@@ -112,8 +111,8 @@ class IRT(RPyInterface):
         pattern = ['NA'] * self.nb_questions
         for i, pos in enumerate(replied_so_far):
             pattern[pos] = str(int(results_so_far[i]))
-        say('theta{} <- thetaEst(itembank, method="ML", c({}))'.format(var_id, ','.join(pattern)))
-        r('theta{} <- thetaEst(itembank, method="ML", c({}))'.format(var_id, ','.join(pattern)))
+        say('theta{} <- thetaEst(itembank, c({}))'.format(var_id, ','.join(pattern)))
+        r('theta{} <- thetaEst(itembank, c({}))'.format(var_id, ','.join(pattern)))  # , method="ML"
 
         # r('theta{} <- thetaEst(itembank[c({}),], c({}))'.format(var_id, ','.join(map(lambda x: str(x + 1), replied_so_far)), ','.join(map(str, scores_so_far))))
 

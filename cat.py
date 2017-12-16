@@ -1,6 +1,6 @@
 from datetime import datetime
 from calc import logloss, surround, avgstd
-from conf import dataset_name, nb_competences_values, STUDENT_FOLD, QUESTION_FOLD, SHUFFLE_TEST, SINGLE_STUDENT
+from conf import dataset_name, nb_competences_values, STUDENT_FOLD, QUESTION_FOLD, SHUFFLE_TEST, SINGLE_STUDENT, ONE_SLICE
 from my_io import IO, Dataset, say
 import numpy as np
 import random
@@ -40,15 +40,15 @@ def simulate(model, train_data, test_data, validation_question_set):
 	say(datetime.now())
 	say('=' * 10, model.name)
 
-	#print(len(test_data), 'students to consider')
+	print(len(test_data), 'students to consider')
 	nb_students = len(test_data)
 	nb_questions = len(test_data[0])
 	budget = nb_questions - len(validation_question_set)
 	report = {'mean_error': [], 'nb_mistakes': [], 'model_name': model.name, 'dim': model.get_dim()}
 
 	if SHUFFLE_TEST:
+		print('Shuffle', len(test_data))
 		random.shuffle(test_data)
-	print(test_data[0])
 
 	for student_id in ([0] if SINGLE_STUDENT else range(nb_students)):
 		if student_id % 10 == 0:
@@ -104,11 +104,11 @@ def main():
 	dataset = Dataset(dataset_name, files)
 	dataset.load_subset()
 	print(dataset)
-	for i_exp in range(STUDENT_FOLD):
+	for i_exp in [0] if ONE_SLICE else range(STUDENT_FOLD):
 		train_subset = dataset.train_subsets[i_exp]
 		test_subset = dataset.test_subsets[i_exp]
 		data = np.array(dataset.data)
-		for j_exp in range(QUESTION_FOLD):
+		for j_exp in [0] if ONE_SLICE else range(QUESTION_FOLD):
 			validation_index = set(dataset.validation_question_sets[j_exp])
 			files.update(i_exp, j_exp)
 			for model in models:
