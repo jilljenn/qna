@@ -7,9 +7,12 @@ import random
 import os.path
 
 
-DATASET_NAME = 'fraction'
+DATASET_NAME = 'castor6e'
 DATA_FOLDER = '/Users/jilljenn/code/TF-recomm/data'
 CSV_FOLDER = os.path.join(DATA_FOLDER, DATASET_NAME)
+if not os.path.isdir(CSV_FOLDER):
+    os.makedirs(CSV_FOLDER)
+
 CSV_TRAIN = os.path.join(CSV_FOLDER, 'train.csv')
 CSV_TEST = os.path.join(CSV_FOLDER, 'test.csv')
 CSV_VAL = os.path.join(CSV_FOLDER, 'val.csv')
