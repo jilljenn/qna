@@ -1,12 +1,12 @@
-dataset_name = 'timss2003'
-PREFIX = 'timss'
+dataset_name = 'fraction'
+PREFIX = 'fraction'
 
 STUDENT_FOLD = 5
 QUESTION_FOLD = 2
 
 SINGLE_STUDENT = False
 ONE_SLICE = False
-DEBUG = False  # DEBUG == True means only one slice of the cross validation, and only one student
+DEBUG = True  # DEBUG == True means only one slice of the cross validation, and only one student
 VERBOSE = False
 SHUFFLE_TEST = False
 
